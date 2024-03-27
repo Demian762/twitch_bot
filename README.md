@@ -11,6 +11,9 @@ Devuelve el saludo al autor del comando.
 Devuelve un número al azar entre 1 y 24 con el nombre del autor del comando.
 Está configurado para que devuelva un valor fijo para ciertos autores.
 
+**!quiensos**  
+Chiste interno
+
 **!redes**  
 Muestra en el chat el link para instagram y youtube.
 
