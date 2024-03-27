@@ -1,5 +1,5 @@
 from twitchio.ext import commands, routines
-from twitch_secrets import (twitch_token, rawg_url, rawg_key)
+from twitch_secrets import (access_token, rawg_url, rawg_key)
 from utiles import (steam_api, steam_price, precio_dolar)
 from rawgio import rawg
 import random
@@ -7,14 +7,14 @@ import random
 class Bot(commands.Bot):
 
     def __init__(self):
-        super().__init__(token=twitch_token,
+        super().__init__(token=access_token,
                          prefix='!',
                          initial_channels=['hablemosdepavadaspod', 'Demian762'])
         self.rawg = rawg(rawg_url, rawg_key)
         self.steam = steam_api()
         self.dolar = precio_dolar()
         print("Canales en vivo: " + str(self.connected_channels))
-        self.hola(commands.Context)
+        
 
     async def event_ready(self):
         print(f'Logueado a Twitch como {self.nick}.')
@@ -25,7 +25,7 @@ class Bot(commands.Bot):
 
     @commands.command()
     async def medimela(self, ctx: commands.Context):
-        hdp = ["demian762",self.nick]
+        hdp = ["demian762",self.nick,"hablemosdepavadaspod"]
         if ctx.author.name in hdp:
             largo = 25
         else:
