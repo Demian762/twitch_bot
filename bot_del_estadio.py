@@ -1,7 +1,6 @@
-import twitchio
 from twitchio.ext import commands, routines
 from twitch_secrets import (twitch_token, rawg_url, rawg_key)
-from utiles import (imprimir_md, steam_api)
+from utiles import (steam_api, steam_price, precio_dolar)
 from rawgio import rawg
 import random
 
@@ -10,25 +9,15 @@ class Bot(commands.Bot):
     def __init__(self):
         super().__init__(token=twitch_token,
                          prefix='!',
-                         initial_channels=['hablemosdepavadaspod']) # 'Demian762'
-        try:
-            self.rawg = rawg(rawg_url, rawg_key)
-        except:
-            print("Conexión con RAWG fallida.")
-        try:
-            self.steam = steam_api()
-        except:
-            print("No se pudo conectar a Steam.")
-
-        self.instanciacion.start()
+                         initial_channels=['hablemosdepavadaspod', 'Demian762'])
+        self.rawg = rawg(rawg_url, rawg_key)
+        self.steam = steam_api()
+        self.dolar = precio_dolar()
+        print("Canales en vivo: " + str(self.connected_channels))
+        self.hola(commands.Context)
 
     async def event_ready(self):
         print(f'Logueado a Twitch como {self.nick}.')
-
-    @routines.routine(seconds=1, iterations=1)
-    async def instanciacion(self):
-        if len(self.connected_channels) > 0:
-            await self.connected_channels[0].send("Acaba de entrar en juego EL BOT DEL ESTADIO")
         
     @commands.command()
     async def hola(self, ctx: commands.Context):
@@ -49,8 +38,6 @@ class Bot(commands.Bot):
     
     @commands.command()
     async def redes(self, ctx: commands.Context):
-        #texto = imprimir_md("./markdown/redes.md")
-        #await ctx.send(texto)
         await ctx.send('Instagram https://www.instagram.com/hablemosdepavadas/')
         await ctx.send('YouTube https://www.youtube.com/@hablemosdepavadaspodcast')
 
@@ -77,21 +64,18 @@ class Bot(commands.Bot):
             juego = juego + " " + i
         juego = juego.strip()
         nombre, puntaje = self.rawg.info(juego)
-
-        if nombre is not None or nombre is not False:
+        if nombre:
             if puntaje is not None:
                 await ctx.send(nombre + " tiene un puntaje de: " + str(puntaje) + " en Metacritic, según rawg.io.")
             else:
                 await ctx.send(nombre + " todavía no tiene puntaje en Metacritic según rawg.io.")
-            try:
-                steam_data = self.steam.apps.search_games(nombre)['apps'][0]
-                await ctx.send(steam_data['name'] + " tiene un precio en dólares de " + steam_data['price'] + " en Steam.")
-            except:
+            nombre_steam, precio = steam_price(nombre, self.steam, self.dolar)
+            if nombre_steam:
+                await ctx.send(nombre_steam + " tiene un precio en pesos de " + precio + " en Steam (con dólar tarjeta).")
+            else:
                 await ctx.send(f'No se encontró {nombre} en la base de datos de Steam.')
         else:
             await ctx.send(f'Escribí bien {ctx.author.name}!')
-
-
 
 bot = Bot()
 bot.run()
