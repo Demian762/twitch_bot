@@ -19,4 +19,4 @@ Muestra en el chat la programación semanal de HDP.
 Muestra en el chat el link al cafecito
 
 **!info nombre de juego**  
-Donde "nombre de juego" se reemplaza por cualquier videojuego que será buscado en la base RAWG.IO devolviendo su nombre y puntuación de metacritic.
+Donde "nombre de juego" se reemplaza por cualquier videojuego que será buscado en la base RAWG.IO devolviendo su nombre y puntuación de metacritic. Además, el nombre correctamente escrito será buscado en steam para mostrar su precio.
