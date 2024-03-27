@@ -1,5 +1,7 @@
 ## El/La BotDelEstadio es el bot OFICIAL de Hablemos de Pavadas, el pináculo de la ingeniería puesta al servicio de.... pavadas.
 
+---
+
 ### Acá dejo los comandos disponibles para que use LA VOZ DEL ESTADIO:
 
 **!hola**  
@@ -20,3 +22,11 @@ Muestra en el chat el link al cafecito
 
 **!info nombre de juego**  
 Donde "nombre de juego" se reemplaza por cualquier videojuego que será buscado en la base RAWG.IO devolviendo su nombre y puntuación de metacritic. Además, el nombre correctamente escrito será buscado en steam para mostrar su precio.
+
+---
+
+### FUENTES EXTERNAS:
+Conexión a Steam: https://pypi.org/project/python-steam-api/  
+Wraper de la API de Twitch: https://twitchio.dev/en/stable/index.html  
+Base de datos de videojuegos: https://api.rawg.io/docs/  
+Precio del dólar: https://dolarapi.com
