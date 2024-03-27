@@ -26,7 +26,7 @@ Donde "nombre de juego" se reemplaza por cualquier videojuego que será buscado 
 ---
 
 ### FUENTES EXTERNAS:
-Conexión a Steam: https://pypi.org/project/python-steam-api/
-Wraper de la API de Twitch: https://twitchio.dev/en/stable/index.html
-Base de datos de videojuegos: https://api.rawg.io/docs/
+Conexión a Steam: https://pypi.org/project/python-steam-api/  
+Wraper de la API de Twitch: https://twitchio.dev/en/stable/index.html  
+Base de datos de videojuegos: https://api.rawg.io/docs/  
 Precio del dólar: https://dolarapi.com
