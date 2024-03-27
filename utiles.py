@@ -1,4 +1,11 @@
 import Levenshtein
+from twitch_secrets import steam_api_key
+from steam import Steam
+
+def steam_api():
+    steam = Steam(steam_api_key)
+    print("conexión exitosa con Steam.")
+    return steam
 
 def imprimir_md(file_path):
     try:

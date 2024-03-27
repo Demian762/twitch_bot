@@ -1,7 +1,7 @@
 import twitchio
 from twitchio.ext import commands, routines
 from twitch_secrets import (twitch_token, rawg_url, rawg_key)
-from utiles import imprimir_md
+from utiles import (imprimir_md, steam_api)
 from rawgio import rawg
 import random
 
@@ -13,10 +13,13 @@ class Bot(commands.Bot):
                          initial_channels=['hablemosdepavadaspod']) # 'Demian762'
         try:
             self.rawg = rawg(rawg_url, rawg_key)
-            self.rawg_con = True
         except:
-            print("NO conectado a RAWG.")
-            self.rawg_con = False
+            print("Conexión con RAWG fallida.")
+        try:
+            self.steam = steam_api()
+        except:
+            print("No se pudo conectar a Steam.")
+
         self.instanciacion.start()
 
     async def event_ready(self):
@@ -28,11 +31,11 @@ class Bot(commands.Bot):
             await self.connected_channels[0].send("Acaba de entrar en juego EL BOT DEL ESTADIO")
         
     @commands.command()
-    async def hello(self, ctx: commands.Context):
-        await ctx.send(f'Hello {ctx.author.name}!')
+    async def hola(self, ctx: commands.Context):
+        await ctx.send(f'Hola {ctx.author.name}!')
 
     @commands.command()
-    async def largo(self, ctx: commands.Context):
+    async def medimela(self, ctx: commands.Context):
         hdp = ["demian762",self.nick]
         if ctx.author.name in hdp:
             largo = 25
@@ -46,10 +49,15 @@ class Bot(commands.Bot):
     
     @commands.command()
     async def redes(self, ctx: commands.Context):
-        texto = imprimir_md("./markdown/redes.md")
+        #texto = imprimir_md("./markdown/redes.md")
         #await ctx.send(texto)
         await ctx.send('Instagram https://www.instagram.com/hablemosdepavadas/')
         await ctx.send('YouTube https://www.youtube.com/@hablemosdepavadaspodcast')
+
+    @commands.command()
+    async def _botcolor(self, ctx: commands.Context, color: str):
+        await ctx.send('/color ' + color)
+        await ctx.send(f'{ctx.author.name} me cambió de color!')
 
     @commands.command()
     async def programacion(self, ctx: commands.Context):
@@ -64,19 +72,26 @@ class Bot(commands.Bot):
 
     @commands.command()
     async def info(self, ctx: commands.Context, *args):
-        if not self.rawg_con:
-            return await ctx.send(f'Perdón {ctx.author.name}, La base de datos está offline!')
         juego = ""
         for i in args:
             juego = juego + " " + i
         juego = juego.strip()
         nombre, puntaje = self.rawg.info(juego)
 
-        if nombre:
-            await ctx.send("Nombre completo del juego: " + nombre)
-            await ctx.send("Metacritic: " + str(puntaje))
+        if nombre is not None or nombre is not False:
+            if puntaje is not None:
+                await ctx.send(nombre + " tiene un puntaje de: " + str(puntaje) + " en Metacritic, según rawg.io.")
+            else:
+                await ctx.send(nombre + " todavía no tiene puntaje en Metacritic según rawg.io.")
+            try:
+                steam_data = self.steam.apps.search_games(nombre)['apps'][0]
+                await ctx.send(steam_data['name'] + " tiene un precio en dólares de " + steam_data['price'] + " en Steam.")
+            except:
+                await ctx.send(f'No se encontró {nombre} en la base de datos de Steam.')
         else:
             await ctx.send(f'Escribí bien {ctx.author.name}!')
+
+
 
 bot = Bot()
 bot.run()
