@@ -1,7 +1,35 @@
 import Levenshtein
 import requests
-from twitch_secrets import steam_api_key
+from secretos import steam_api_key
+from googleapiclient.discovery import build
+from secretos import youtube_api_key, hdp_channel_id
 from steam import Steam
+
+def build_yt_client():
+    yt_client = build('youtube', 'v3', developerKey=youtube_api_key)
+    return yt_client
+
+def get_videos_list(yt_client):
+    request = yt_client.search().list(
+        part="id",
+        channelId=hdp_channel_id,
+        maxResults=50,
+        order="rating"
+    )
+    response = request.execute()
+    videos = []
+    for i in response['items']:
+        video = i['id']['videoId']
+        videos.append(video)
+    print(f"Obtenida la lista con " + str(len(videos)) + " videos.")
+    return videos
+
+def get_video_details(video_id, yt_client):
+    request = yt_client.videos().list(part='snippet,statistics', id=video_id)
+    response = request.execute()
+    nombre_video = response['items'][0]['snippet']['title']
+    link_video = "https://www.youtube.com/watch?v="+video_id
+    return nombre_video, link_video
 
 def steam_api():
     try:

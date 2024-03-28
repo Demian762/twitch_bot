@@ -32,6 +32,9 @@ Se le suma un puntito que se guarda localmente en un dataframe (excel con estero
 **!consulta**  
 El que ejecuta el comando consulta en el dataframe cuantos puntitos tiene.
 
+**!recomendame**  
+Devuelve el nombre y el link de un video de youtube al azar.
+
 ---
 
 ### FUENTES EXTERNAS:
@@ -39,3 +42,4 @@ Conexión a Steam: https://pypi.org/project/python-steam-api/
 Wraper de la API de Twitch: https://twitchio.dev/en/stable/index.html  
 Base de datos de videojuegos: https://api.rawg.io/docs/  
 Precio del dólar: https://dolarapi.com
+YouTube Data API: https://developers.google.com/youtube/v3/getting-started?hl=es-419

@@ -1,6 +1,6 @@
 from twitchio.ext import commands
-from twitch_secrets import (access_token, rawg_url, rawg_key)
-from utiles import (steam_api, steam_price, precio_dolar)
+from secretos import (access_token, rawg_url, rawg_key)
+from utiles import (steam_api, steam_price, precio_dolar, build_yt_client, get_videos_list, get_video_details)
 from rawgio import rawg
 import pandas as pd
 import random
@@ -14,6 +14,8 @@ class Bot(commands.Bot):
         self.rawg = rawg(rawg_url, rawg_key)
         self.steam = steam_api()
         self.dolar = precio_dolar()
+        self.yt_client = build_yt_client()
+        self.videos = get_videos_list(self.yt_client)
         print("Canales en vivo: " + str(self.connected_channels))
 
     async def event_ready(self):
@@ -106,5 +108,16 @@ class Bot(commands.Bot):
             else:
                 await ctx.send(f'{nombre} tiene {puntitos} puntitos!')
 
+    @commands.command()
+    async def recomendame(self, ctx: commands.Context):
+        if len(self.videos) > 0:
+            indice = random.randint(0, len(self.videos) - 1)
+            video_id = self.videos.pop(indice)
+            nombre_video, link_video = get_video_details(video_id, self.yt_client)
+            await ctx.send(nombre_video)
+            await ctx.send(link_video)
+        else:
+            await ctx.send("Me quedé sin recomendaciones por hoy...")
+        
 bot = Bot()
 bot.run()
