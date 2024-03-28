@@ -1,7 +1,8 @@
-from twitchio.ext import commands, routines
+from twitchio.ext import commands
 from twitch_secrets import (access_token, rawg_url, rawg_key)
 from utiles import (steam_api, steam_price, precio_dolar)
 from rawgio import rawg
+import pandas as pd
 import random
 
 class Bot(commands.Bot):
@@ -14,7 +15,6 @@ class Bot(commands.Bot):
         self.steam = steam_api()
         self.dolar = precio_dolar()
         print("Canales en vivo: " + str(self.connected_channels))
-        
 
     async def event_ready(self):
         print(f'Logueado a Twitch como {self.nick}.')
@@ -46,14 +46,14 @@ class Bot(commands.Bot):
         await ctx.send('/color ' + color)
         await ctx.send(f'{ctx.author.name} me cambió de color!')
 
-    @commands.command()
+    @commands.command(aliases=("programación"))
     async def programacion(self, ctx: commands.Context):
         await ctx.send('MARTES de entre casa con Juan, noticias y jueguitos chill.')
         await ctx.send('MIÉRCOLES de PCMR con Demian, llevando al límite los FPS.')
         await ctx.send('VIERNES de Super Aventuras con Sergio y Juan, Aventuras gráficas con expertos en la materia.')
         await ctx.send('SÁBADOS de Contenido Retro con Ever, un viaje al pasado y la nostalgia.')
 
-    @commands.command()
+    @commands.command(aliases=("cafe"))
     async def cafecito(self, ctx: commands.Context):
         await ctx.send('Si les gusta nuestro contenido pueden ayudarnos con un cafecito a https://cafecito.app/hablemosdepavadas')
 
@@ -76,6 +76,35 @@ class Bot(commands.Bot):
                 await ctx.send(f'No se encontró {nombre} en la base de datos de Steam.')
         else:
             await ctx.send(f'Escribí bien {ctx.author.name}!')
+
+    @commands.command()
+    async def puntito(self, ctx: commands.Context, nombre: str):
+        nombre = nombre.lower()
+        df = pd.read_csv("twitch_bot\puntitos.csv")
+        if df[df["usuario"] == nombre].shape[0] == 0:
+            df = df._append({"usuario":nombre,"puntos":0}, ignore_index=True)
+        if ctx.author.name == "hablemosdepavadaspod":
+            puntos = df.loc[df[df["usuario"] == nombre].index[0],"puntos"]
+            df.loc[df[df["usuario"] == nombre].index[0],"puntos"] = puntos + 1
+            await ctx.send(f'{nombre} acaba de sumar un puntito!')
+        else:
+            puntos = df.loc[df[df["usuario"] == nombre].index[0],"puntos"]
+            df.loc[df[df["usuario"] == nombre].index[0],"puntos"] = puntos - 1
+            await ctx.send(f'{nombre} acaba de perder un puntito por hacerse el vivo!')
+        df.to_csv("twitch_bot\puntitos.csv", index=False)
+
+    @commands.command()
+    async def consulta(self, ctx: commands.Context):
+        nombre = ctx.author.name.lower()
+        df = pd.read_csv("twitch_bot\puntitos.csv")
+        if df[df["usuario"] == nombre].shape[0] == 0:
+            await ctx.send(f'{nombre} todavía no tiene puntitos!')
+        else:
+            puntitos = df[df["usuario"] == nombre]["puntos"].values[0]
+            if puntitos == 1 or puntitos == -1:
+                await ctx.send(f'{nombre} tiene {puntitos} puntito!')
+            else:
+                await ctx.send(f'{nombre} tiene {puntitos} puntitos!')
 
 bot = Bot()
 bot.run()

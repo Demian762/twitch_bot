@@ -26,6 +26,12 @@ Muestra en el chat el link al cafecito
 **!info nombre de juego**  
 Donde "nombre de juego" se reemplaza por cualquier videojuego que será buscado en la base RAWG.IO devolviendo su nombre y puntuación de metacritic. Además, el nombre correctamente escrito será buscado en steam para mostrar su precio.
 
+**!puntito nombre del viewer**  
+Se le suma un puntito que se guarda localmente en un dataframe (excel con esteroides).
+
+**!consulta**  
+El que ejecuta el comando consulta en el dataframe cuantos puntitos tiene.
+
 ---
 
 ### FUENTES EXTERNAS:
