@@ -1,9 +1,11 @@
-from twitchio.ext import commands
+from twitchio.ext import commands, routines
 from secretos import (access_token, rawg_url, rawg_key)
 from utiles import (steam_api, steam_price, precio_dolar, build_yt_client, get_videos_list, get_video_details)
 from rawgio import rawg
 import pandas as pd
 import random
+import asyncio
+from agenda import openSocket, sendMessage
 
 class Bot(commands.Bot):
 
@@ -17,6 +19,10 @@ class Bot(commands.Bot):
         self.yt_client = build_yt_client()
         self.videos = get_videos_list(self.yt_client)
         print("Canales en vivo: " + str(self.connected_channels))
+        self.s = openSocket()
+        sendMessage(self.s, "Hace su entrada, EL BOT DEL ESTADIO!")
+        self.redes_rutina.start()
+        self.programacion_rutina.start()
 
     async def event_ready(self):
         print(f'Logueado a Twitch como {self.nick}.')
@@ -37,12 +43,26 @@ class Bot(commands.Bot):
     @commands.command()
     async def quiensos(self, ctx: commands.Context):
         await ctx.send(f'En realidad soy Sergio... me descubrieron.')
+
+    @routines.routine(minutes=35, wait_first=True)
+    async def redes_rutina(self):
+        sendMessage(self.s, "Instagram https://www.instagram.com/hablemosdepavadas/")
+        sendMessage(self.s, "YouTube https://www.youtube.com/@hablemosdepavadas")
+        sendMessage(self.s, "https://www.tiktok.com/@hablemosdepavadas")
+
+    @routines.routine(minutes=45, wait_first=True)
+    async def programacion_rutina(self):
+        sendMessage(self.s, "MARTES de entre casa con Juan, noticias y jueguitos chill.")
+        sendMessage(self.s, "MIÉRCOLES de PCMR con Demian, llevando al límite los FPS.")
+        sendMessage(self.s, "VIERNES de Super Aventuras con Sergio y Juan, Aventuras gráficas con expertos en la materia.")
+        sendMessage(self.s, "SÁBADOS de Contenido Retro con Ever, un viaje al pasado y la nostalgia.")
     
     @commands.command()
     async def redes(self, ctx: commands.Context):
         await ctx.send('Instagram https://www.instagram.com/hablemosdepavadas/')
-        await ctx.send('YouTube https://www.youtube.com/@hablemosdepavadaspodcast')
-
+        await ctx.send('YouTube https://www.youtube.com/@hablemosdepavadas')
+        await ctx.send('TikTok https://www.tiktok.com/@hablemosdepavadas')
+        
     @commands.command()
     async def _botcolor(self, ctx: commands.Context, color: str):
         await ctx.send('/color ' + color)
