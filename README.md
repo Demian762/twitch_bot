@@ -35,6 +35,12 @@ El que ejecuta el comando consulta en el dataframe cuantos puntitos tiene.
 **!recomendame**  
 Devuelve el nombre y el link de un video de youtube al azar.
 
+**!ultimo**  
+Devuelve el nombre y el link del último video de youtube.
+
+**!podcast**  
+Devuelve el nombre y el link del último podcast en youtube.
+
 **!decidir**  
 Permite elejir al azar entre diferentes opciones.
 

@@ -14,7 +14,8 @@ def get_videos_list(yt_client):
         part="id",
         channelId=hdp_channel_id,
         maxResults=50,
-        order="rating"
+        order="rating",
+        type = "video"
     )
     response = request.execute()
     videos = []
@@ -23,6 +24,28 @@ def get_videos_list(yt_client):
         videos.append(video)
     print(f"Obtenida la lista con " + str(len(videos)) + " videos.")
     return videos
+
+def get_latest_video(yt_client):
+    request = yt_client.search().list(
+        part="id",
+        channelId=hdp_channel_id,
+        maxResults=1,
+        order="date",
+        type = "video"
+    )
+    response = request.execute()
+    video = response['items'][0]['id']['videoId']
+    return video
+
+def get_latest_podcast(yt_client):
+    request = yt_client.playlistItems().list(
+        part="snippet",
+        playlistId = "PL14j4uHK-mdSIxw-rA9MHHHiODkdOnk72",
+        maxResults=1,
+    )
+    response = request.execute()
+    video_id = response['items'][0]['snippet']['resourceId']['videoId']
+    return video_id
 
 def get_video_details(video_id, yt_client):
     request = yt_client.videos().list(part='snippet,statistics', id=video_id)

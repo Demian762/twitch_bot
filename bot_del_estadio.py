@@ -1,6 +1,13 @@
 from twitchio.ext import commands, routines
 from secretos import (access_token, rawg_url, rawg_key)
-from utiles import (steam_api, steam_price, precio_dolar, build_yt_client, get_videos_list, get_video_details)
+from utiles import (
+    steam_api,steam_price,
+    precio_dolar,
+    build_yt_client,
+    get_videos_list,
+    get_video_details,
+    get_latest_video,
+    get_latest_podcast)
 from rawgio import rawg
 import pandas as pd
 import random
@@ -78,7 +85,8 @@ class Bot(commands.Bot):
 
     @commands.command(aliases=("cafe",))
     async def cafecito(self, ctx: commands.Context):
-        await ctx.send('Si les gusta nuestro contenido pueden ayudarnos con un cafecito a https://cafecito.app/hablemosdepavadas')
+        await ctx.send("""Si les gusta nuestro contenido pueden ayudarnos con un cafecito
+                       a https://cafecito.app/hablemosdepavadas""")
 
     @commands.command()
     async def info(self, ctx: commands.Context, *args):
@@ -140,10 +148,25 @@ class Bot(commands.Bot):
         else:
             await ctx.send("Me quedé sin recomendaciones por hoy...")
 
+    @commands.command(aliases=("último", ))
+    async def ultimo(self, ctx: commands.Context):
+        video_id = get_latest_video(self.yt_client)
+        nombre_video, link_video = get_video_details(video_id, self.yt_client)
+        await ctx.send(nombre_video)
+        await ctx.send(link_video)
+
+    @commands.command()
+    async def podcast(self, ctx: commands.Context):
+        video_id = get_latest_podcast(self.yt_client)
+        nombre_video, link_video = get_video_details(video_id, self.yt_client)
+        await ctx.send(nombre_video)
+        await ctx.send(link_video)
+
     @commands.command(aliases=("decision", "decisión", "desicion", "desición",))
     async def decidir(self, ctx: commands.Context, *args):
         if len(args) == 0:
-            await ctx.send("Para decidir, después del comando pasame un número, la palabra moneda o las opciones que haya separadas por un espacio.")
+            await ctx.send("""Para decidir, después del comando pasame un número,
+                           la palabra moneda o las opciones que haya separadas por un espacio.""")
         elif len(args) == 1 and args[0].isdigit():
             eleccion = random.randint(1, int(args[0]))
             await ctx.send(f"Vamos por la opción {eleccion} !")
