@@ -35,6 +35,9 @@ El que ejecuta el comando consulta en el dataframe cuantos puntitos tiene.
 **!recomendame**  
 Devuelve el nombre y el link de un video de youtube al azar.
 
+**!decidir**  
+Permite elejir al azar entre diferentes opciones.
+
 ---
 
 ### FUENTES EXTERNAS:

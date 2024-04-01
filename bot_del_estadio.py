@@ -4,8 +4,7 @@ from utiles import (steam_api, steam_price, precio_dolar, build_yt_client, get_v
 from rawgio import rawg
 import pandas as pd
 import random
-import asyncio
-from agenda import openSocket, sendMessage
+from mensaje import openSocket, sendMessage
 
 class Bot(commands.Bot):
 
@@ -52,6 +51,7 @@ class Bot(commands.Bot):
 
     @routines.routine(minutes=45, wait_first=True)
     async def programacion_rutina(self):
+        sendMessage(self.s, "LUNES en modo fácil, gameplays completos, pero sin esfuerzo.")
         sendMessage(self.s, "MARTES de entre casa con Juan, noticias y jueguitos chill.")
         sendMessage(self.s, "MIÉRCOLES de PCMR con Demian, llevando al límite los FPS.")
         sendMessage(self.s, "VIERNES de Super Aventuras con Sergio y Juan, Aventuras gráficas con expertos en la materia.")
@@ -65,17 +65,18 @@ class Bot(commands.Bot):
         
     @commands.command()
     async def _botcolor(self, ctx: commands.Context, color: str):
-        await ctx.send('/color ' + color)
+        sendMessage(self.s, f"/color {color}")
         await ctx.send(f'{ctx.author.name} me cambió de color!')
 
-    @commands.command(aliases=("programación"))
+    @commands.command(aliases=("programación",))
     async def programacion(self, ctx: commands.Context):
+        await ctx.send('LUNES en modo fácil, gameplays completos, pero sin esfuerzo.')
         await ctx.send('MARTES de entre casa con Juan, noticias y jueguitos chill.')
         await ctx.send('MIÉRCOLES de PCMR con Demian, llevando al límite los FPS.')
         await ctx.send('VIERNES de Super Aventuras con Sergio y Juan, Aventuras gráficas con expertos en la materia.')
         await ctx.send('SÁBADOS de Contenido Retro con Ever, un viaje al pasado y la nostalgia.')
 
-    @commands.command(aliases=("cafe"))
+    @commands.command(aliases=("cafe",))
     async def cafecito(self, ctx: commands.Context):
         await ctx.send('Si les gusta nuestro contenido pueden ayudarnos con un cafecito a https://cafecito.app/hablemosdepavadas')
 
@@ -138,6 +139,24 @@ class Bot(commands.Bot):
             await ctx.send(link_video)
         else:
             await ctx.send("Me quedé sin recomendaciones por hoy...")
-        
+
+    @commands.command(aliases=("decision", "decisión", "desicion", "desición",))
+    async def decidir(self, ctx: commands.Context, *args):
+        if len(args) == 0:
+            await ctx.send("Para decidir, después del comando pasame un número, la palabra moneda o las opciones que haya separadas por un espacio.")
+        elif len(args) == 1 and args[0].isdigit():
+            eleccion = random.randint(1, int(args[0]))
+            await ctx.send(f"Vamos por la opción {eleccion} !")
+        elif len(args) == 1 and args[0] == "moneda":
+            eleccion = ["CARA", "CRUZ"]
+            eleccion = random.choice(eleccion)
+            await ctx.send(f"Tiraste una moneda y salió {eleccion}!")
+        elif len(args) == 1:
+            sendMessage(self.s, f"Y bueno, elijo \"{args[0]}\", mucha opción no me diste.")
+        elif len(args) > 1:
+            eleccion = random.choice(list(args))
+            await ctx.send(f"Me decidí por: {eleccion}")
+
+
 bot = Bot()
 bot.run()
