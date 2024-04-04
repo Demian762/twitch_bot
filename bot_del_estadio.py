@@ -11,14 +11,18 @@ from utiles import (
 from rawgio import rawg
 import pandas as pd
 import random
+import asyncio
 from mensaje import openSocket, sendMessage
+
+dont_spam = 2
 
 class Bot(commands.Bot):
 
     def __init__(self):
         super().__init__(token=access_token,
                          prefix='!',
-                         initial_channels=['hablemosdepavadaspod', 'Demian762'])
+                         initial_channels=['hablemosdepavadaspod', 'Demian762'],
+                         case_insensitive = True)
         self.rawg = rawg(rawg_url, rawg_key)
         self.steam = steam_api()
         self.dolar = precio_dolar()
@@ -26,13 +30,13 @@ class Bot(commands.Bot):
         self.videos = get_videos_list(self.yt_client)
         print("Canales en vivo: " + str(self.connected_channels))
         self.s = openSocket()
-        sendMessage(self.s, "Hace su entrada, EL BOT DEL ESTADIO!")
         self.redes_rutina.start()
         self.programacion_rutina.start()
+        sendMessage(self.s, "Hace su entrada, EL BOT DEL ESTADIO!")
 
     async def event_ready(self):
         print(f'Logueado a Twitch como {self.nick}.')
-        
+
     @commands.command()
     async def hola(self, ctx: commands.Context):
         await ctx.send(f'Hola {ctx.author.name}!')
@@ -44,19 +48,19 @@ class Bot(commands.Bot):
             largo = 25
         else:
             largo = int(random.uniform(1, 24))
-        await ctx.send(f'A {ctx.author.name} le mide {largo} centímetros')
+        await ctx.send(f'A {ctx.author.name} le mide {largo} centímetros.')
 
     @commands.command()
     async def quiensos(self, ctx: commands.Context):
         await ctx.send(f'En realidad soy Sergio... me descubrieron.')
 
-    @routines.routine(minutes=35, wait_first=True)
+    @routines.routine(minutes=25, wait_first=True)
     async def redes_rutina(self):
         sendMessage(self.s, "Instagram https://www.instagram.com/hablemosdepavadas/")
         sendMessage(self.s, "YouTube https://www.youtube.com/@hablemosdepavadas")
         sendMessage(self.s, "https://www.tiktok.com/@hablemosdepavadas")
 
-    @routines.routine(minutes=45, wait_first=True)
+    @routines.routine(minutes=30, wait_first=True)
     async def programacion_rutina(self):
         sendMessage(self.s, "LUNES en modo fácil, gameplays completos, pero sin esfuerzo.")
         sendMessage(self.s, "MARTES de entre casa con Juan, noticias y jueguitos chill.")
@@ -67,20 +71,21 @@ class Bot(commands.Bot):
     @commands.command()
     async def redes(self, ctx: commands.Context):
         await ctx.send('Instagram https://www.instagram.com/hablemosdepavadas/')
+        await asyncio.sleep(dont_spam)
         await ctx.send('YouTube https://www.youtube.com/@hablemosdepavadas')
+        await asyncio.sleep(dont_spam)
         await ctx.send('TikTok https://www.tiktok.com/@hablemosdepavadas')
         
-    @commands.command()
-    async def _botcolor(self, ctx: commands.Context, color: str):
-        sendMessage(self.s, f"/color {color}")
-        await ctx.send(f'{ctx.author.name} me cambió de color!')
-
     @commands.command(aliases=("programación",))
     async def programacion(self, ctx: commands.Context):
         await ctx.send('LUNES en modo fácil, gameplays completos, pero sin esfuerzo.')
+        await asyncio.sleep(dont_spam)
         await ctx.send('MARTES de entre casa con Juan, noticias y jueguitos chill.')
+        await asyncio.sleep(dont_spam)
         await ctx.send('MIÉRCOLES de PCMR con Demian, llevando al límite los FPS.')
+        await asyncio.sleep(dont_spam)
         await ctx.send('VIERNES de Super Aventuras con Sergio y Juan, Aventuras gráficas con expertos en la materia.')
+        await asyncio.sleep(dont_spam)
         await ctx.send('SÁBADOS de Contenido Retro con Ever, un viaje al pasado y la nostalgia.')
 
     @commands.command(aliases=("cafe",))
