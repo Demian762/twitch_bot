@@ -1,4 +1,3 @@
-import Levenshtein
 import requests
 from secretos import steam_api_key
 from googleapiclient.discovery import build
@@ -41,10 +40,10 @@ def get_latest_podcast(yt_client):
     request = yt_client.playlistItems().list(
         part="snippet",
         playlistId = "PL14j4uHK-mdSIxw-rA9MHHHiODkdOnk72",
-        maxResults=1,
+        maxResults=50,
     )
     response = request.execute()
-    video_id = response['items'][0]['snippet']['resourceId']['videoId']
+    video_id = response['items'][-1]['snippet']['resourceId']['videoId']
     return video_id
 
 def get_video_details(video_id, yt_client):
@@ -71,25 +70,6 @@ def steam_price(nombre, steam, dolar):
         return nombre_steam, precio
     except:
         return False, False
-
-def imprimir_md(file_path):
-    try:
-        with open(file_path, 'r') as file:
-            return file.read()
-    except FileNotFoundError:
-        print("El archivo no se encuentra.")
-
-def parecidos(string_dado, lista_strings):
-    mejor_coincidencia = None
-    menor_distancia = float('inf')
-
-    for string in lista_strings:
-        distancia = Levenshtein.distance(string_dado, string)
-        if distancia < menor_distancia:
-            menor_distancia = distancia
-            mejor_coincidencia = string
-
-    return mejor_coincidencia
 
 def precio_dolar():
     response = requests.get("https://dolarapi.com/v1/dolares/tarjeta")

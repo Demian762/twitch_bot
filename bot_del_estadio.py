@@ -80,7 +80,7 @@ class Bot(commands.Bot):
     async def programacion(self, ctx: commands.Context):
         await ctx.send('LUNES en modo fácil, gameplays completos, pero sin esfuerzo.')
         await asyncio.sleep(dont_spam)
-        await ctx.send('MARTES de entre casa con Juan, noticias y jueguitos chill.')
+        await ctx.send('MARTES de en tre casa con Juan, noticias y jueguitos chill.')
         await asyncio.sleep(dont_spam)
         await ctx.send('MIÉRCOLES de PCMR con Demian, llevando al límite los FPS.')
         await asyncio.sleep(dont_spam)
@@ -99,19 +99,31 @@ class Bot(commands.Bot):
         for i in args:
             juego = juego + " " + i
         juego = juego.strip()
-        nombre, puntaje = self.rawg.info(juego)
+        nombre, puntaje, fecha, tiempo = self.rawg.info(juego)
+        nombre_steam, precio = steam_price(nombre, self.steam, self.dolar)
+        sep = " // "
         if nombre:
-            if puntaje is not None:
-                await ctx.send(nombre + " tiene un puntaje de: " + str(puntaje) + " en Metacritic, según rawg.io.")
-            else:
-                await ctx.send(nombre + " todavía no tiene puntaje en Metacritic según rawg.io.")
-            nombre_steam, precio = steam_price(nombre, self.steam, self.dolar)
-            if nombre_steam:
-                await ctx.send(nombre_steam + " tiene un precio en pesos de " + precio + " en Steam (con dólar tarjeta).")
-            else:
-                await ctx.send(f'No se encontró {nombre} en la base de datos de Steam.')
+            output = nombre
         else:
             await ctx.send(f'Escribí bien {ctx.author.name}!')
+            return
+        if puntaje:
+            output = output + sep + str(puntaje) + " puntos en Metacritic"
+        if fecha:
+            output = output + sep + fecha
+        if tiempo != 0:
+            output = output + sep + str(tiempo) + " horas"
+        if nombre_steam:
+            output = output + sep + str(precio) + " pesos en Steam (con dólar tarjeta)"
+        output = output + "."
+        await ctx.send(output)
+
+    @commands.command()
+    async def lanzamientos(self, ctx: commands.Context, limite = 3):
+        output = self.rawg.lanzamientos(limite)
+        for game in output:
+            await ctx.send(game)
+            await asyncio.sleep(dont_spam)
 
     @commands.command()
     async def puntito(self, ctx: commands.Context, nombre: str):

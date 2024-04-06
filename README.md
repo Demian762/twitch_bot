@@ -44,6 +44,9 @@ Devuelve el nombre y el link del último podcast en youtube.
 **!decidir**  
 Permite elejir al azar entre diferentes opciones.
 
+**!lanzamientos**  
+Consulta los lanzamientos más cercanos. 
+
 ---
 
 ### FUENTES EXTERNAS:
