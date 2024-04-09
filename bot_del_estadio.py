@@ -54,19 +54,23 @@ class Bot(commands.Bot):
     async def quiensos(self, ctx: commands.Context):
         await ctx.send(f'En realidad soy Sergio... me descubrieron.')
 
-    @routines.routine(minutes=25, wait_first=True)
+    @routines.routine(minutes=15, wait_first=True)
     async def redes_rutina(self):
+
         sendMessage(self.s, "Instagram https://www.instagram.com/hablemosdepavadas/")
         sendMessage(self.s, "YouTube https://www.youtube.com/@hablemosdepavadas")
-        sendMessage(self.s, "https://www.tiktok.com/@hablemosdepavadas")
+        sendMessage(self.s, "TikTok https://www.tiktok.com/@hablemosdepavadas")
+        sendMessage(self.s, "Point&Click https://www.instagram.com/pointandclickstore/")
+        await asyncio.sleep(dont_spam)
 
-    @routines.routine(minutes=30, wait_first=True)
+    @routines.routine(minutes=20, wait_first=True)
     async def programacion_rutina(self):
         sendMessage(self.s, "LUNES en modo fácil, gameplays completos, pero sin esfuerzo.")
         sendMessage(self.s, "MARTES de entre casa con Juan, noticias y jueguitos chill.")
         sendMessage(self.s, "MIÉRCOLES de PCMR con Demian, llevando al límite los FPS.")
         sendMessage(self.s, "VIERNES de Super Aventuras con Sergio y Juan, Aventuras gráficas con expertos en la materia.")
         sendMessage(self.s, "SÁBADOS de Contenido Retro con Ever, un viaje al pasado y la nostalgia.")
+        await asyncio.sleep(dont_spam)
     
     @commands.command()
     async def redes(self, ctx: commands.Context):
@@ -75,12 +79,15 @@ class Bot(commands.Bot):
         await ctx.send('YouTube https://www.youtube.com/@hablemosdepavadas')
         await asyncio.sleep(dont_spam)
         await ctx.send('TikTok https://www.tiktok.com/@hablemosdepavadas')
+        await asyncio.sleep(dont_spam)
+        await ctx.send('Point&Click Store https://www.instagram.com/pointandclickstore/')
+        
         
     @commands.command(aliases=("programación",))
     async def programacion(self, ctx: commands.Context):
         await ctx.send('LUNES en modo fácil, gameplays completos, pero sin esfuerzo.')
         await asyncio.sleep(dont_spam)
-        await ctx.send('MARTES de en tre casa con Juan, noticias y jueguitos chill.')
+        await ctx.send('MARTES de entre casa con Juan, noticias y jueguitos chill.')
         await asyncio.sleep(dont_spam)
         await ctx.send('MIÉRCOLES de PCMR con Demian, llevando al límite los FPS.')
         await asyncio.sleep(dont_spam)
@@ -102,7 +109,7 @@ class Bot(commands.Bot):
         nombre, puntaje, fecha, tiempo = self.rawg.info(juego)
         nombre_steam, precio = steam_price(nombre, self.steam, self.dolar)
         sep = " // "
-        if nombre:
+        if nombre is not False:
             output = nombre
         else:
             await ctx.send(f'Escribí bien {ctx.author.name}!')
