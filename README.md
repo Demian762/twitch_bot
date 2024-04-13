@@ -50,6 +50,24 @@ Consulta los lanzamientos más cercanos.
 **!grog**  
 Le da de tomar grog al bot.
 
+**!peleadeinsultos**  
+También pueden usarse los comandos insulto, pelea, peleainsulto, peleainsulto o peleadeinsultos.  
+Entabla una pelea de insultos con el BOT.  
+ejemplo de una pelea    
+Usuario: !pelea  
+BotDelEstadio: ¿Has dejado ya de usar pañales?  
+Usuario: !pelea ¿Por qué? ¿Acaso querías pedir uno prestado?
+BotDelEstadio: Ouch!  
+
+El BOT suma un punto cuando gana el usuario y resta uno cuando pierde.  
+En caso que el contador llegue a -3 se termina la pelea y gana el BOT.  
+En caso que el contador llegue a 3 se termina la pelea y gana el usuario.  
+
+**!escupir**  
+Competencia de escupitajos!  
+Cada usuario puede escupir hasta 5 veces, se cuenta solo el último escupitajo.  
+Cada vez que un usuario escupe, se muestra quien es el que va ganando.  
+
 ---
 
 ### FUENTES EXTERNAS:

@@ -13,6 +13,44 @@ grog_list = [
     "hoy no manejo.... vine en auto???",
 ]
 
+insultos_dict = {
+    1:"¿Has dejado ya de usar pañales?",
+    2:"¡No hay palabras para describir lo asqueroso que eres!",
+    3:"¡He hablado con simios más educados que tu!",
+    4:"¡Llevarás mi espada como si fueras un pincho moruno!",
+    5:"¡Luchas como un ganadero!",
+    6:"¡No pienso aguantar tu insolencia aquí sentado!",
+    7:"¡Mi pañuelo limpiará tu sangre!",
+    8:"¡Ha llegado tu HORA, palurdo de ocho patas!",
+    9:"¡Una vez tuve un perro más listo que tu!",
+    10:"¡Nadie me ha sacado sangre jamás, y nadie lo hará!",
+    11:"¡Me das ganas de vomitar!",
+    12:"¡Tienes los modales de un mendigo!",
+    13:"¡He oído que eres un soplón despreciable!",
+    14:"¡La gente cae a mis pies al verme llegar!",
+    15:"¡Demasiado bobo para mi nivel de inteligencia!",
+    16:"¡Obtuve esta cicatriz en una batalla a muerte!",
+}
+
+respuestas_dict = {
+    1:"¿Por qué? ¿Acaso querías pedir uno prestado?",
+    2:"Sí que las hay, sólo que nunca las has aprendido.",
+    3:"Me alegra que asistieras a tu reunión familiar diaria.",
+    4:"Primero deberías dejar de usarla como un plumero.",
+    5:"Qué apropiado, tú peleas como una vaca.",
+    6:"Ya te están fastidiando otra vez las almorranas, ¿Eh?",
+    7:"Ah, ¿Ya has obtenido ese trabajo de barrendero?",
+    8:"Y yo tengo un SALUDO para ti, ¿Te enteras?",
+    9:"Te habrá enseñado todo lo que sabes.",
+    10:"¿TAN rápido corres?",
+    11:"Me haces pensar que alguien ya lo ha hecho.",
+    12:"Quería asegurarme de que estuvieras a gusto conmigo.",
+    13:"Qué pena me da que nadie haya oído hablar de ti",
+    14:"¿Incluso antes de que huelan tu aliento?",
+    15:"Estaría acabado si la usases alguna vez.",
+    16:"Espero que ya hayas aprendido a no tocarte la nariz.",
+}
+
 def build_yt_client():
     yt_client = build('youtube', 'v3', developerKey=youtube_api_key)
     return yt_client

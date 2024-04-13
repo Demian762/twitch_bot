@@ -1,4 +1,10 @@
 from twitchio.ext import commands, routines
+from Levenshtein import distance as lev
+from rawgio import rawg
+import pandas as pd
+from random import choice, randint, uniform
+import asyncio
+
 from secretos import (access_token, rawg_url, rawg_key)
 from utiles import (
     steam_api,steam_price,
@@ -8,13 +14,13 @@ from utiles import (
     get_video_details,
     get_latest_video,
     get_latest_podcast,
-    grog_list)
-from rawgio import rawg
-import pandas as pd
-import random
-import asyncio
+    grog_list,
+    insultos_dict,
+    respuestas_dict)
 from mensaje import openSocket, sendMessage
 
+
+limite = 15
 dont_spam = 2
 
 class Bot(commands.Bot):
@@ -26,6 +32,8 @@ class Bot(commands.Bot):
                          case_insensitive = True)
         self.rawg = rawg(rawg_url, rawg_key)
         self.grog_count = 0
+        self.pelea = {}
+        self.escupitajos = {}
         self.steam = steam_api()
         self.dolar = precio_dolar()
         self.yt_client = build_yt_client()
@@ -44,12 +52,16 @@ class Bot(commands.Bot):
         await ctx.send(f'Hola {ctx.author.name}!')
 
     @commands.command()
+    async def chiste(self, ctx: commands.Context):
+        await ctx.send(f'Vos sos un chiste {ctx.author.name}.')
+
+    @commands.command()
     async def medimela(self, ctx: commands.Context):
         hdp = ["demian762",self.nick,"hablemosdepavadaspod"]
         if ctx.author.name in hdp:
             largo = 25
         else:
-            largo = int(random.uniform(1, 24))
+            largo = int(uniform(1, 24))
         await ctx.send(f'A {ctx.author.name} le mide {largo} centímetros.')
 
     @commands.command()
@@ -175,7 +187,7 @@ class Bot(commands.Bot):
     @commands.command()
     async def recomendame(self, ctx: commands.Context):
         if len(self.videos) > 0:
-            indice = random.randint(0, len(self.videos) - 1)
+            indice = randint(0, len(self.videos) - 1)
             video_id = self.videos.pop(indice)
             nombre_video, link_video = get_video_details(video_id, self.yt_client)
             await ctx.send(nombre_video)
@@ -203,18 +215,83 @@ class Bot(commands.Bot):
             await ctx.send("""Para decidir, después del comando pasame un número,
                            la palabra moneda o las opciones que haya separadas por un espacio.""")
         elif len(args) == 1 and args[0].isdigit():
-            eleccion = random.randint(1, int(args[0]))
+            eleccion = randint(1, int(args[0]))
             await ctx.send(f"Vamos por la opción {eleccion} !")
         elif len(args) == 1 and args[0] == "moneda":
             eleccion = ["CARA", "CRUZ"]
-            eleccion = random.choice(eleccion)
+            eleccion = choice(eleccion)
             await ctx.send(f"Tiraste una moneda y salió {eleccion}!")
         elif len(args) == 1:
             sendMessage(self.s, f"Y bueno, elijo \"{args[0]}\", mucha opción no me diste.")
         elif len(args) > 1:
-            eleccion = random.choice(list(args))
+            eleccion = choice(list(args))
             await ctx.send(f"Me decidí por: {eleccion}")
 
+    @commands.command(aliases=("insulto", "pelea", "peleainsultos", "peleadeinsulto", "peleainsulto", "peleadeinsultos",))
+    async def insultos(self, ctx: commands.Context, *args):
+        nombre = ctx.author.name
+
+        respuesta = ""
+        for i in args:
+            respuesta = respuesta + " " + i
+        respuesta = respuesta.strip()
+
+        if not self.pelea.get(nombre):
+            self.pelea[nombre] = {"activa":False, "hist":[], "score": 0}
+
+        if self.pelea[nombre]["activa"]:
+            self.pelea[nombre]["activa"] = False
+            key = self.pelea[nombre]["hist"][-1]
+            num = lev(respuestas_dict.get(key),respuesta)
+
+            if num <= limite:
+                await ctx.send("ouch!")
+                score = self.pelea[nombre]["score"] + 1
+                self.pelea[nombre]["score"] = score
+                if score >= 3:
+                    await ctx.send(f"{nombre} ganó la pelea de insultos!")
+            else:
+                await ctx.send("ajaaa!!")
+                score = self.pelea[nombre]["score"] - 1
+                self.pelea[nombre]["score"] = score
+                if score <= -3:
+                    await ctx.send(f"{nombre} perdió la pelea de insultos!")
+            
+        else:
+            if self.pelea[nombre]["score"] >= 3 or self.pelea[nombre]["score"] <= -3:
+                await ctx.send("La pelea terminó!")
+            else:
+                self.pelea[nombre]["activa"] = True
+                if len(self.pelea[nombre]["hist"]) >= len(list(insultos_dict.keys())):
+                    self.pelea[nombre]["hist"] = []
+                while True:
+                    key = choice(list(insultos_dict.keys()))
+                    if key not in self.pelea[nombre]["hist"]:
+                        break
+                self.pelea[nombre]["hist"].append(key)
+                await ctx.send(insultos_dict.get(key))
+
+    @commands.command()
+    async def escupir(self, ctx: commands.Context):
+        nombre = ctx.author.name
+        escupida = randint(1,500)
+        if not self.escupitajos.get(nombre):
+            self.escupitajos[nombre] = {"escupida":escupida, "count":0}
+        else:
+            if self.escupitajos[nombre].get("count") >= 5:
+                await ctx.send(f"{nombre} se quedó sin saliva!")
+                return
+        self.escupitajos[nombre]["escupida"] = escupida
+        count = self.escupitajos[nombre].get("count")
+        self.escupitajos[nombre]["count"] = count + 1
+        await ctx.send(f"El escupitajo de {nombre} llegó a los {escupida} centímetros!")
+        lejos = 0
+        for k, v in self.escupitajos.items():
+            actual = self.escupitajos[k]["escupida"]
+            if actual > lejos:
+                lejos = actual
+                ganador = k
+        await ctx.send(f"El escupitajo ganador es de {ganador} con {lejos} centímetros!")
 
 bot = Bot()
 bot.run()
