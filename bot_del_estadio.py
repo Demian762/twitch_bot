@@ -2,7 +2,7 @@ from twitchio.ext import commands, routines
 from Levenshtein import distance as lev
 from rawgio import rawg
 import pandas as pd
-from random import choice, randint, uniform
+from random import choice, randint, uniform, triangular
 import asyncio
 
 from secretos import (access_token, rawg_url, rawg_key)
@@ -34,15 +34,15 @@ class Bot(commands.Bot):
         self.grog_count = 0
         self.pelea = {}
         self.escupitajos = {}
+        self.ganador = None
         self.steam = steam_api()
         self.dolar = precio_dolar()
         self.yt_client = build_yt_client()
         self.videos = get_videos_list(self.yt_client)
         print("Canales en vivo: " + str(self.connected_channels))
-        self.s = openSocket()
         self.redes_rutina.start()
         self.programacion_rutina.start()
-        sendMessage(self.s, "Hace su entrada, EL BOT DEL ESTADIO!")
+        sendMessage(openSocket(), "Hace su entrada, EL BOT DEL ESTADIO!")
 
     async def event_ready(self):
         print(f'Logueado a Twitch como {self.nick}.')
@@ -68,23 +68,29 @@ class Bot(commands.Bot):
     async def quiensos(self, ctx: commands.Context):
         await ctx.send(f'En realidad soy Sergio... me descubrieron.')
 
-    @routines.routine(minutes=15, wait_first=True)
-    async def redes_rutina(self):
-
-        sendMessage(self.s, "Instagram https://www.instagram.com/hablemosdepavadas/")
-        sendMessage(self.s, "YouTube https://www.youtube.com/@hablemosdepavadas")
-        sendMessage(self.s, "TikTok https://www.tiktok.com/@hablemosdepavadas")
-        sendMessage(self.s, "Point&Click https://www.instagram.com/pointandclickstore/")
-        await asyncio.sleep(dont_spam)
-
     @routines.routine(minutes=20, wait_first=True)
-    async def programacion_rutina(self):
-        sendMessage(self.s, "LUNES en modo fácil, gameplays completos, pero sin esfuerzo.")
-        sendMessage(self.s, "MARTES de entre casa con Juan, noticias y jueguitos chill.")
-        sendMessage(self.s, "MIÉRCOLES de PCMR con Demian, llevando al límite los FPS.")
-        sendMessage(self.s, "VIERNES de Super Aventuras con Sergio y Juan, Aventuras gráficas con expertos en la materia.")
-        sendMessage(self.s, "SÁBADOS de Contenido Retro con Ever, un viaje al pasado y la nostalgia.")
+    async def redes_rutina(self):
+        s = openSocket()
+        sendMessage(s, "Instagram https://www.instagram.com/hablemosdepavadas/")
         await asyncio.sleep(dont_spam)
+        sendMessage(s, "YouTube https://www.youtube.com/@hablemosdepavadas")
+        await asyncio.sleep(dont_spam)
+        sendMessage(s, "TikTok https://www.tiktok.com/@hablemosdepavadas")
+        await asyncio.sleep(dont_spam)
+        sendMessage(s, "Point&ClickStore https://www.instagram.com/pointandclickstore/")
+
+    @routines.routine(minutes=30, wait_first=True)
+    async def programacion_rutina(self):
+        s = openSocket()
+        sendMessage(s, "LUNES en modo fácil, gameplays completos, pero sin esfuerzo.")
+        await asyncio.sleep(dont_spam)
+        sendMessage(s, "MARTES de entre casa con Juan, noticias y jueguitos chill.")
+        await asyncio.sleep(dont_spam)
+        sendMessage(s, "MIÉRCOLES de PCMR con Demian, llevando al límite los FPS.")
+        await asyncio.sleep(dont_spam)
+        sendMessage(s, "VIERNES de Super Aventuras con Sergio y Juan, Aventuras gráficas con expertos en la materia.")
+        await asyncio.sleep(dont_spam)
+        sendMessage(s, "SÁBADOS de Contenido Retro con Ever, un viaje al pasado y la nostalgia.")
     
     @commands.command()
     async def redes(self, ctx: commands.Context):
@@ -271,10 +277,10 @@ class Bot(commands.Bot):
                 self.pelea[nombre]["hist"].append(key)
                 await ctx.send(insultos_dict.get(key))
 
-    @commands.command()
+    @commands.command(aliases=("spit","ptooie","ptooie!",))
     async def escupir(self, ctx: commands.Context):
         nombre = ctx.author.name
-        escupida = randint(1,500)
+        escupida = int(triangular(1,500,1))
         if not self.escupitajos.get(nombre):
             self.escupitajos[nombre] = {"escupida":escupida, "count":0}
         else:
@@ -291,7 +297,16 @@ class Bot(commands.Bot):
             if actual > lejos:
                 lejos = actual
                 ganador = k
+        self.ganador = [k, v["escupida"]]
         await ctx.send(f"El escupitajo ganador es de {ganador} con {lejos} centímetros!")
+
+    @commands.command()
+    async def ganador(self, ctx: commands.Context):
+        if self.ganador is not None:
+            await ctx.send(f"""{self.ganador[0]} va ganando el torneo de escupitajos,
+                           con un escupitajo de {self.ganador[1]} centímetros!""")
+        else:
+            await ctx.send("Todavía nadie escupió!")
 
 bot = Bot()
 bot.run()
