@@ -45,7 +45,10 @@ Devuelve el nombre y el link del último podcast en youtube.
 Permite elejir al azar entre diferentes opciones.
 
 **!lanzamientos**  
-Consulta los lanzamientos más cercanos. 
+Consulta los lanzamientos más cercanos.
+
+**!grog**  
+Le da de tomar grog al bot.
 
 ---
 
@@ -53,5 +56,5 @@ Consulta los lanzamientos más cercanos.
 Conexión a Steam: https://pypi.org/project/python-steam-api/  
 Wraper de la API de Twitch: https://twitchio.dev/en/stable/index.html  
 Base de datos de videojuegos: https://api.rawg.io/docs/  
-Precio del dólar: https://dolarapi.com
+Precio del dólar: https://dolarapi.com  
 YouTube Data API: https://developers.google.com/youtube/v3/getting-started?hl=es-419

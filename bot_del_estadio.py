@@ -7,7 +7,8 @@ from utiles import (
     get_videos_list,
     get_video_details,
     get_latest_video,
-    get_latest_podcast)
+    get_latest_podcast,
+    grog_list)
 from rawgio import rawg
 import pandas as pd
 import random
@@ -24,6 +25,7 @@ class Bot(commands.Bot):
                          initial_channels=['hablemosdepavadaspod', 'Demian762'],
                          case_insensitive = True)
         self.rawg = rawg(rawg_url, rawg_key)
+        self.grog_count = 0
         self.steam = steam_api()
         self.dolar = precio_dolar()
         self.yt_client = build_yt_client()
@@ -160,6 +162,15 @@ class Bot(commands.Bot):
                 await ctx.send(f'{nombre} tiene {puntitos} puntito!')
             else:
                 await ctx.send(f'{nombre} tiene {puntitos} puntitos!')
+
+    @commands.command()
+    async def grog(self, ctx: commands.Context):
+        if self.grog_count >= len(grog_list):
+            await ctx.send('El Bot está en coma etílico...')
+            return
+        mensaje = grog_list[self.grog_count]
+        await ctx.send(mensaje)
+        self.grog_count+=1
 
     @commands.command()
     async def recomendame(self, ctx: commands.Context):

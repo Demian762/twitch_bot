@@ -4,6 +4,15 @@ from googleapiclient.discovery import build
 from secretos import youtube_api_key, hdp_channel_id
 from steam import Steam
 
+grog_list = [
+    "Una pinta de grog para el Bot!",
+    "¡¡¡Otra pinta de grog para el Bot!!!",
+    "oootrhra pintita pal boott...",
+    "otra maz??, bueno a ver dale....",
+    "pará pará que tengo que..... WAAAAA ..... a verrr, dame dale....",
+    "hoy no manejo.... vine en auto???",
+]
+
 def build_yt_client():
     yt_client = build('youtube', 'v3', developerKey=youtube_api_key)
     return yt_client
