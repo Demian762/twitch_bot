@@ -6,6 +6,7 @@ from random import choice, randint, uniform, triangular
 import asyncio
 
 from secretos import (access_token, rawg_url, rawg_key)
+from configuracion import CONFIG
 from utiles import (
     steam_api,steam_price,
     precio_dolar,
@@ -20,16 +21,20 @@ from utiles import (
 from mensaje import openSocket, sendMessage
 
 
-limite = 15
-dont_spam = 2
+redes_rutina_timer = CONFIG.get("redes_rutina_timer")
+programacion_rutina_timer = CONFIG.get("programacion_rutina_timer")
+amigos_rutina_timer = CONFIG.get("amigos_rutina_timer")
+cafecito_rutina_timer = CONFIG.get("cafecito_rutina_timer")
+
 
 class Bot(commands.Bot):
 
-    def __init__(self):
+    def __init__(self, CONFIG):
         super().__init__(token=access_token,
                          prefix='!',
                          initial_channels=['hablemosdepavadaspod', 'Demian762'],
                          case_insensitive = True)
+        self.config = CONFIG
         self.rawg = rawg(rawg_url, rawg_key)
         self.grog_count = 0
         self.pelea = {}
@@ -42,6 +47,8 @@ class Bot(commands.Bot):
         print("Canales en vivo: " + str(self.connected_channels))
         self.redes_rutina.start()
         self.programacion_rutina.start()
+        self.amigos_rutina.start()
+        self.cafecito_rutina.start()
         sendMessage(openSocket(), "Hace su entrada, EL BOT DEL ESTADIO!")
 
     async def event_ready(self):
@@ -56,6 +63,10 @@ class Bot(commands.Bot):
         await ctx.send(f'Vos sos un chiste {ctx.author.name}.')
 
     @commands.command()
+    async def dolar(self, ctx: commands.Context):
+        await ctx.send(f'El dólar tarjeta está a {self.dolar} pesos.')
+
+    @commands.command()
     async def medimela(self, ctx: commands.Context):
         hdp = ["demian762",self.nick,"hablemosdepavadaspod"]
         if ctx.author.name in hdp:
@@ -68,52 +79,80 @@ class Bot(commands.Bot):
     async def quiensos(self, ctx: commands.Context):
         await ctx.send(f'En realidad soy Sergio... me descubrieron.')
 
-    @routines.routine(minutes=20, wait_first=True)
+    @routines.routine(minutes=redes_rutina_timer, wait_first=True)
     async def redes_rutina(self):
         s = openSocket()
+        sendMessage(s, "Nuestras REDES:")
+        await asyncio.sleep(self.config.get("dont_spam"))
         sendMessage(s, "Instagram https://www.instagram.com/hablemosdepavadas/")
-        await asyncio.sleep(dont_spam)
+        await asyncio.sleep(self.config.get("dont_spam"))
         sendMessage(s, "YouTube https://www.youtube.com/@hablemosdepavadas")
-        await asyncio.sleep(dont_spam)
+        await asyncio.sleep(self.config.get("dont_spam"))
         sendMessage(s, "TikTok https://www.tiktok.com/@hablemosdepavadas")
-        await asyncio.sleep(dont_spam)
-        sendMessage(s, "Point&ClickStore https://www.instagram.com/pointandclickstore/")
+        await asyncio.sleep(self.config.get("dont_spam"))
+        sendMessage(s, 'Spotify https://open.spotify.com/show/2sC1753wCmhBnDkZx7UOyj')
 
-    @routines.routine(minutes=30, wait_first=True)
+    @routines.routine(minutes=programacion_rutina_timer, wait_first=True)
     async def programacion_rutina(self):
         s = openSocket()
+        sendMessage(s, "Nuestra PROGRAMACIÓN:")
+        await asyncio.sleep(self.config.get("dont_spam"))
         sendMessage(s, "LUNES en modo fácil, gameplays completos, pero sin esfuerzo.")
-        await asyncio.sleep(dont_spam)
+        await asyncio.sleep(self.config.get("dont_spam"))
         sendMessage(s, "MARTES de entre casa con Juan, noticias y jueguitos chill.")
-        await asyncio.sleep(dont_spam)
+        await asyncio.sleep(self.config.get("dont_spam"))
         sendMessage(s, "MIÉRCOLES de PCMR con Demian, llevando al límite los FPS.")
-        await asyncio.sleep(dont_spam)
+        await asyncio.sleep(self.config.get("dont_spam"))
         sendMessage(s, "VIERNES de Super Aventuras con Sergio y Juan, Aventuras gráficas con expertos en la materia.")
-        await asyncio.sleep(dont_spam)
+        await asyncio.sleep(self.config.get("dont_spam"))
         sendMessage(s, "SÁBADOS de Contenido Retro con Ever, un viaje al pasado y la nostalgia.")
     
+    @routines.routine(minutes=amigos_rutina_timer, wait_first=True)
+    async def amigos_rutina(self):
+        s = openSocket()
+        sendMessage(s, "Nuestros AMIGOS:")
+        await asyncio.sleep(self.config.get("dont_spam"))
+        sendMessage(s, "Point and Click Store https://www.instagram.com/pointandclickstore/")
+        await asyncio.sleep(self.config.get("dont_spam"))
+        sendMessage(s, "POPLAND customs https://www.instagram.com/poplandcustoms/")
+        await asyncio.sleep(self.config.get("dont_spam"))
+        sendMessage(s, "Tobi Oulego https://www.instagram.com/toubi_/")
+
+
+    @routines.routine(minutes=cafecito_rutina_timer, wait_first=True)
+    async def cafecito_rutina(self):
+        s = openSocket()
+        sendMessage(s, "Si les gusta nuestro contenido pueden ayudarnos con un cafecito a https://cafecito.app/hablemosdepavadas")
+
     @commands.command()
     async def redes(self, ctx: commands.Context):
         await ctx.send('Instagram https://www.instagram.com/hablemosdepavadas/')
-        await asyncio.sleep(dont_spam)
+        await asyncio.sleep(self.config.get("dont_spam"))
         await ctx.send('YouTube https://www.youtube.com/@hablemosdepavadas')
-        await asyncio.sleep(dont_spam)
+        await asyncio.sleep(self.config.get("dont_spam"))
         await ctx.send('TikTok https://www.tiktok.com/@hablemosdepavadas')
-        await asyncio.sleep(dont_spam)
-        await ctx.send('Point&Click Store https://www.instagram.com/pointandclickstore/')
-        
+        await asyncio.sleep(self.config.get("dont_spam"))
+        await ctx.send('Spotify https://open.spotify.com/show/2sC1753wCmhBnDkZx7UOyj')
         
     @commands.command(aliases=("programación",))
     async def programacion(self, ctx: commands.Context):
         await ctx.send('LUNES en modo fácil, gameplays completos, pero sin esfuerzo.')
-        await asyncio.sleep(dont_spam)
+        await asyncio.sleep(self.config.get("dont_spam"))
         await ctx.send('MARTES de entre casa con Juan, noticias y jueguitos chill.')
-        await asyncio.sleep(dont_spam)
+        await asyncio.sleep(self.config.get("dont_spam"))
         await ctx.send('MIÉRCOLES de PCMR con Demian, llevando al límite los FPS.')
-        await asyncio.sleep(dont_spam)
+        await asyncio.sleep(self.config.get("dont_spam"))
         await ctx.send('VIERNES de Super Aventuras con Sergio y Juan, Aventuras gráficas con expertos en la materia.')
-        await asyncio.sleep(dont_spam)
+        await asyncio.sleep(self.config.get("dont_spam"))
         await ctx.send('SÁBADOS de Contenido Retro con Ever, un viaje al pasado y la nostalgia.')
+
+    @commands.command(aliases=("amigo",))
+    async def amigos(self, ctx: commands.Context):
+        await ctx.send('Point and Click Store https://www.instagram.com/pointandclickstore/')
+        await asyncio.sleep(self.config.get("dont_spam"))
+        await ctx.send('POPLAND customs https://www.instagram.com/poplandcustoms/')
+        await asyncio.sleep(self.config.get("dont_spam"))
+        await ctx.send('Tobi Oulego https://www.instagram.com/toubi_/')
 
     @commands.command(aliases=("cafe",))
     async def cafecito(self, ctx: commands.Context):
@@ -150,7 +189,7 @@ class Bot(commands.Bot):
         output = self.rawg.lanzamientos(limite)
         for game in output:
             await ctx.send(game)
-            await asyncio.sleep(dont_spam)
+            await asyncio.sleep(self.config.get("dont_spam"))
 
     @commands.command()
     async def puntito(self, ctx: commands.Context, nombre: str):
@@ -192,6 +231,9 @@ class Bot(commands.Bot):
 
     @commands.command()
     async def recomendame(self, ctx: commands.Context):
+        if self.grog_count >= len(grog_list):
+            await ctx.send('El Bot está en coma etílico...')
+            return
         if len(self.videos) > 0:
             indice = randint(0, len(self.videos) - 1)
             video_id = self.videos.pop(indice)
@@ -203,6 +245,9 @@ class Bot(commands.Bot):
 
     @commands.command(aliases=("último", ))
     async def ultimo(self, ctx: commands.Context):
+        if self.grog_count >= len(grog_list):
+            await ctx.send('El Bot está en coma etílico...')
+            return
         video_id = get_latest_video(self.yt_client)
         nombre_video, link_video = get_video_details(video_id, self.yt_client)
         await ctx.send(nombre_video)
@@ -210,6 +255,9 @@ class Bot(commands.Bot):
 
     @commands.command()
     async def podcast(self, ctx: commands.Context):
+        if self.grog_count >= len(grog_list):
+            await ctx.send('El Bot está en coma etílico...')
+            return
         video_id = get_latest_podcast(self.yt_client)
         nombre_video, link_video = get_video_details(video_id, self.yt_client)
         await ctx.send(nombre_video)
@@ -217,6 +265,9 @@ class Bot(commands.Bot):
 
     @commands.command(aliases=("decision", "decisión", "desicion", "desición",))
     async def decidir(self, ctx: commands.Context, *args):
+        if self.grog_count >= len(grog_list):
+            await ctx.send("El BOT está en pedo y no puede decidir nada.")
+            return
         if len(args) == 0:
             await ctx.send("""Para decidir, después del comando pasame un número,
                            la palabra moneda o las opciones que haya separadas por un espacio.""")
@@ -235,6 +286,9 @@ class Bot(commands.Bot):
 
     @commands.command(aliases=("insulto", "pelea", "peleainsultos", "peleadeinsulto", "peleainsulto", "peleadeinsultos",))
     async def insultos(self, ctx: commands.Context, *args):
+        if self.grog_count >= len(grog_list):
+            await ctx.send("El BOT está en pedo y no puede insultar a nadie.")
+            return
         nombre = ctx.author.name
 
         respuesta = ""
@@ -243,29 +297,35 @@ class Bot(commands.Bot):
         respuesta = respuesta.strip()
 
         if not self.pelea.get(nombre):
-            self.pelea[nombre] = {"activa":False, "hist":[], "score": 0}
+            self.pelea[nombre] = {"activa":False, "hist":[], "score": [0, 0]}
+            await ctx.send(f"{nombre} retó al BOT a una pelea de insultos! Debe ganarle tres veces!")
+            await asyncio.sleep(self.config.get("dont_spam"))
 
         if self.pelea[nombre]["activa"]:
             self.pelea[nombre]["activa"] = False
             key = self.pelea[nombre]["hist"][-1]
             num = lev(respuestas_dict.get(key),respuesta)
 
-            if num <= limite:
-                await ctx.send("ouch!")
-                score = self.pelea[nombre]["score"] + 1
-                self.pelea[nombre]["score"] = score
+            if num <= self.config.get("limite"):
+                await ctx.send(f"Ouch! Punto para {ctx.author.name}")
+                score = self.pelea[nombre]["score"][0] + 1
+                self.pelea[nombre]["score"][0] = score
                 if score >= 3:
+                    await asyncio.sleep(self.config.get("dont_spam"))
                     await ctx.send(f"{nombre} ganó la pelea de insultos!")
             else:
-                await ctx.send("ajaaa!!")
-                score = self.pelea[nombre]["score"] - 1
-                self.pelea[nombre]["score"] = score
+                await ctx.send("Ajaaa!! Punto para el BOT")
+                score = self.pelea[nombre]["score"][1] - 1
+                self.pelea[nombre]["score"][1] = score
                 if score <= -3:
+                    await asyncio.sleep(self.config.get("dont_spam"))
                     await ctx.send(f"{nombre} perdió la pelea de insultos!")
             
         else:
-            if self.pelea[nombre]["score"] >= 3 or self.pelea[nombre]["score"] <= -3:
-                await ctx.send("La pelea terminó!")
+            if self.pelea[nombre]["score"][0] >= 3:
+                await ctx.send("La pelea terminó! Ya me ganaste!")
+            elif self.pelea[nombre]["score"][1] >= 3:
+                await ctx.send("La pelea terminó! Fuiste derrotado!")
             else:
                 self.pelea[nombre]["activa"] = True
                 if len(self.pelea[nombre]["hist"]) >= len(list(insultos_dict.keys())):
@@ -277,7 +337,7 @@ class Bot(commands.Bot):
                 self.pelea[nombre]["hist"].append(key)
                 await ctx.send(insultos_dict.get(key))
 
-    @commands.command(aliases=("spit","ptooie","ptooie!",))
+    @commands.command(aliases=("spit","ptooie","ptooie!","garzo",))
     async def escupir(self, ctx: commands.Context):
         nombre = ctx.author.name
         escupida = int(triangular(1,500,1))
@@ -297,7 +357,7 @@ class Bot(commands.Bot):
             if actual > lejos:
                 lejos = actual
                 ganador = k
-        self.ganador = [k, v["escupida"]]
+                self.ganador = [k, v["escupida"]]
         await ctx.send(f"El escupitajo ganador es de {ganador} con {lejos} centímetros!")
 
     @commands.command()
@@ -308,5 +368,5 @@ class Bot(commands.Bot):
         else:
             await ctx.send("Todavía nadie escupió!")
 
-bot = Bot()
+bot = Bot(CONFIG)
 bot.run()
