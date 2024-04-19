@@ -52,6 +52,9 @@ Consulta los lanzamientos más cercanos.
 **!grog**  
 Le da de tomar grog al bot.  
 
+**!agua**  
+Le da de tomar agua al bot y lo recupera de la borrachera.  
+
 **!peleadeinsultos**  
 También pueden usarse los comandos insulto, pelea, peleainsulto, peleainsulto o peleadeinsultos.  
 Entabla una pelea de insultos con el BOT.  

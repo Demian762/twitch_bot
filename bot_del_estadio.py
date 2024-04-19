@@ -7,24 +7,14 @@ import asyncio
 
 from secretos import (access_token, rawg_url, rawg_key)
 from configuracion import CONFIG
-from utiles import (
-    steam_api,steam_price,
-    precio_dolar,
-    build_yt_client,
-    get_videos_list,
-    get_video_details,
-    get_latest_video,
-    get_latest_podcast,
-    grog_list,
-    insultos_dict,
-    respuestas_dict)
+from utiles import *
 from mensaje import openSocket, sendMessage
 
-
-redes_rutina_timer = CONFIG.get("redes_rutina_timer")
-programacion_rutina_timer = CONFIG.get("programacion_rutina_timer")
-amigos_rutina_timer = CONFIG.get("amigos_rutina_timer")
-cafecito_rutina_timer = CONFIG.get("cafecito_rutina_timer")
+spam_intensity = CONFIG.get("spam_intensity")
+redes_rutina_timer = CONFIG.get("redes_rutina_timer") * (1/spam_intensity)
+programacion_rutina_timer = CONFIG.get("programacion_rutina_timer") * (1/spam_intensity)
+amigos_rutina_timer = CONFIG.get("amigos_rutina_timer") * (1/spam_intensity)
+cafecito_rutina_timer = CONFIG.get("cafecito_rutina_timer") * (1/spam_intensity)
 
 
 class Bot(commands.Bot):
@@ -193,7 +183,7 @@ class Bot(commands.Bot):
 
     @commands.command()
     async def puntito(self, ctx: commands.Context, nombre: str):
-        nombre = nombre.lower()
+        nombre = nombre.lower().lstrip("@")
         df = pd.read_csv("twitch_bot\puntitos.csv")
         if df[df["usuario"] == nombre].shape[0] == 0:
             df = df._append({"usuario":nombre,"puntos":0}, ignore_index=True)
@@ -212,13 +202,13 @@ class Bot(commands.Bot):
         nombre = ctx.author.name.lower()
         df = pd.read_csv("twitch_bot\puntitos.csv")
         if df[df["usuario"] == nombre].shape[0] == 0:
-            await ctx.send(f'{nombre} todavía no tiene puntitos!')
+            await ctx.send(f'@{nombre} todavía no tiene puntitos!')
         else:
             puntitos = df[df["usuario"] == nombre]["puntos"].values[0]
             if puntitos == 1 or puntitos == -1:
-                await ctx.send(f'{nombre} tiene {puntitos} puntito!')
+                await ctx.send(f'@{nombre} tiene {puntitos} puntito!')
             else:
-                await ctx.send(f'{nombre} tiene {puntitos} puntitos!')
+                await ctx.send(f'@{nombre} tiene {puntitos} puntitos!')
 
     @commands.command()
     async def grog(self, ctx: commands.Context):
@@ -228,11 +218,17 @@ class Bot(commands.Bot):
         mensaje = grog_list[self.grog_count]
         await ctx.send(mensaje)
         self.grog_count+=1
+    
+    @commands.command(aliases=("aguita",))
+    async def agua(self, ctx: commands.Context):
+        if self.grog_count > 0:
+            self.grog_count = 0
+            await ctx.send(f'Gracias {ctx.author.name} por darle agua al Bot.')
 
     @commands.command()
     async def recomendame(self, ctx: commands.Context):
         if self.grog_count >= len(grog_list):
-            await ctx.send('El Bot está en coma etílico...')
+            await ctx.send('El Bot está en coma etílico y no puede recomendar nada...')
             return
         if len(self.videos) > 0:
             indice = randint(0, len(self.videos) - 1)
@@ -246,7 +242,7 @@ class Bot(commands.Bot):
     @commands.command(aliases=("último", ))
     async def ultimo(self, ctx: commands.Context):
         if self.grog_count >= len(grog_list):
-            await ctx.send('El Bot está en coma etílico...')
+            await ctx.send('El Bot está en coma etílico y no puede buscar cosas en YouTube...')
             return
         video_id = get_latest_video(self.yt_client)
         nombre_video, link_video = get_video_details(video_id, self.yt_client)
@@ -256,7 +252,7 @@ class Bot(commands.Bot):
     @commands.command()
     async def podcast(self, ctx: commands.Context):
         if self.grog_count >= len(grog_list):
-            await ctx.send('El Bot está en coma etílico...')
+            await ctx.send('El Bot está en coma etílico y no puede buscar cosas en YouTube...')
             return
         video_id = get_latest_podcast(self.yt_client)
         nombre_video, link_video = get_video_details(video_id, self.yt_client)
@@ -340,7 +336,7 @@ class Bot(commands.Bot):
     @commands.command(aliases=("spit","ptooie","ptooie!","garzo",))
     async def escupir(self, ctx: commands.Context):
         nombre = ctx.author.name
-        escupida = int(triangular(1,500,1))
+        escupida = int(triangular(2,500,1))
         if not self.escupitajos.get(nombre):
             self.escupitajos[nombre] = {"escupida":escupida, "count":0}
         else:
@@ -356,9 +352,7 @@ class Bot(commands.Bot):
             actual = self.escupitajos[k]["escupida"]
             if actual > lejos:
                 lejos = actual
-                ganador = k
                 self.ganador = [k, v["escupida"]]
-        await ctx.send(f"El escupitajo ganador es de {ganador} con {lejos} centímetros!")
 
     @commands.command()
     async def ganador(self, ctx: commands.Context):
@@ -368,5 +362,26 @@ class Bot(commands.Bot):
         else:
             await ctx.send("Todavía nadie escupió!")
 
+    @commands.command()
+    async def terminar(self, ctx: commands.Context):
+        if ctx.author.name == "hablemosdepavadaspod" and self.ganador is not None:
+            nombre = self.ganador[0]
+            await ctx.send(f"""{nombre} ganó el torneo de escupitajos,
+                con un escupitajo de {self.ganador[1]} centímetros!
+                Se lleva un puntito y se reinicia el torneo! """)
+            df = pd.read_csv("twitch_bot\puntitos.csv")
+            if df[df["usuario"] == nombre].shape[0] == 0:
+                df = df._append({"usuario":nombre,"puntos":0}, ignore_index=True)
+            puntos = df.loc[df[df["usuario"] == nombre].index[0],"puntos"]
+            df.loc[df[df["usuario"] == nombre].index[0],"puntos"] = puntos + 1
+            await ctx.send(f'{nombre} acaba de sumar un puntito!')
+            df.to_csv("twitch_bot\puntitos.csv", index=False)
+            self.escupitajos = {}
+            self.ganador = None
+        else:
+            await ctx.send("Na na na....")
+
+
 bot = Bot(CONFIG)
 bot.run()
+        
