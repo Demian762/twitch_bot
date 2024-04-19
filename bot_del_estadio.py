@@ -285,7 +285,7 @@ class Bot(commands.Bot):
         if self.grog_count >= len(grog_list):
             await ctx.send("El BOT está en pedo y no puede insultar a nadie.")
             return
-        nombre = ctx.author.name
+        nombre = ctx.author.name.lower()
 
         respuesta = ""
         for i in args:
@@ -309,6 +309,15 @@ class Bot(commands.Bot):
                 if score >= 3:
                     await asyncio.sleep(self.config.get("dont_spam"))
                     await ctx.send(f"{nombre} ganó la pelea de insultos!")
+                    df = pd.read_csv("twitch_bot\puntitos.csv")
+                    if df[df["usuario"] == nombre].shape[0] == 0:
+                        df = df._append({"usuario":nombre,"puntos":0}, ignore_index=True)
+                    puntos = df.loc[df[df["usuario"] == nombre].index[0],"puntos"]
+                    df.loc[df[df["usuario"] == nombre].index[0],"puntos"] = puntos + 1
+                    df.to_csv("twitch_bot\puntitos.csv", index=False)
+                    await asyncio.sleep(self.config.get("dont_spam"))
+                    await ctx.send(f'{nombre} acaba de sumar un puntito!')
+                    
             else:
                 await ctx.send("Ajaaa!! Punto para el BOT")
                 score = self.pelea[nombre]["score"][1] - 1
@@ -362,7 +371,7 @@ class Bot(commands.Bot):
         else:
             await ctx.send("Todavía nadie escupió!")
 
-    @commands.command()
+    @commands.command(aliases=("termina",))
     async def terminar(self, ctx: commands.Context):
         if ctx.author.name == "hablemosdepavadaspod" and self.ganador is not None:
             nombre = self.ganador[0]

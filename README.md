@@ -66,7 +66,7 @@ BotDelEstadio: Ouch!
 
 El BOT suma un punto cuando gana el usuario y resta uno cuando pierde.  
 En caso que el contador llegue a -3 se termina la pelea y gana el BOT.  
-En caso que el contador llegue a 3 se termina la pelea y gana el usuario.  
+En caso que el contador llegue a 3 se termina la pelea, gana el usuario y suma un puntito.  
 
 **!escupir**  
 Competencia de escupitajos!  
@@ -75,6 +75,9 @@ Cada vez que un usuario escupe, se muestra quien es el que va ganando.
 
 **!ganador**  
 Muestra quien va ganando el torneo de escupitajos.  
+
+**!terminar**  
+Finaliza el torneo de escupitajos, le otorga un puntito al ganador e inicia un nuevo torneo.  
 
 ---
 
