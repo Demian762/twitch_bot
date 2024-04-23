@@ -7,10 +7,11 @@ from steam import Steam
 grog_list = [
     "Una pinta de grog para el Bot!",
     "¡¡¡Otra pinta de grog para el Bot!!!",
+    "Un brindis por las aventuras gráficas!!",
     "oootrhra pintita pal boott...",
     "otra maz??, bueno a ver dale....",
-    "pará pará que tengo que..... WAAAAA ..... a verrr, dame dale....",
-    "hoy no manejo.... vine en auto???",
+    "oi no manejoo.... vine en auto???",
+    "pará pará ke tngo ke..... WAAAAA ..... a veh, dame dale....",
 ]
 
 insultos_dict = {

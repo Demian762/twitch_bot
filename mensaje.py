@@ -1,9 +1,14 @@
 
 import socket
+import asyncio
+
+from configuracion import CONFIG
 from secretos import channel_name, HOST, PORT, access_token, bot_channel_name
+
 
 PASS = "oauth:" + access_token # your Twitch OAuth token
 IDENT = "BotDelEstadio"  # Twitch username your using for your bot
+
 
 def openSocket():
     s = socket.socket()
@@ -15,6 +20,15 @@ def openSocket():
 
 def sendMessage(s, message):
     messageTemp = "PRIVMSG #" + channel_name + " :" + message
-    
     s.send(bytes(messageTemp + "\r\n", 'UTF-8'))
 
+async def mensaje(input):
+    s = openSocket()
+    
+    if isinstance(input, str):
+        sendMessage(s, input)
+        return
+    
+    for texto in input:
+        sendMessage(s, texto)
+        await asyncio.sleep(CONFIG.get("dont_spam"))

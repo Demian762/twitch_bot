@@ -79,6 +79,9 @@ Muestra quien va ganando el torneo de escupitajos.
 **!terminar**  
 Finaliza el torneo de escupitajos, le otorga un puntito al ganador e inicia un nuevo torneo.  
 
+**!VOT112**  
+Suma un voto para que el Sugar Daddy se saque la camisa.
+
 ---
 
 ### FUENTES EXTERNAS:  
