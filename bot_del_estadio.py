@@ -2,11 +2,11 @@ from twitchio.ext import commands, routines
 from Levenshtein import distance as lev
 from rawgio import rawg
 import pandas as pd
-from random import choice, randint, uniform, triangular
+from random import choice, randint, uniform, triangular, shuffle
 import asyncio
 
 from secretos import (access_token, rawg_url, rawg_key)
-from configuracion import CONFIG, lista_redes, lista_programacion, lista_amigos, cafecito_texto, coma_etilico_list
+from configuracion import *
 from utiles import *
 from mensaje import openSocket, sendMessage, mensaje
 
@@ -39,6 +39,7 @@ class Bot(commands.Bot):
         self.programacion_rutina.start()
         self.amigos_rutina.start()
         self.cafecito_rutina.start()
+        self.trivia_actual = None
         sendMessage(openSocket(), "Hace su entrada, EL BOT DEL ESTADIO!")
 
     async def event_ready(self):
@@ -112,10 +113,7 @@ class Bot(commands.Bot):
 
     @commands.command()
     async def info(self, ctx: commands.Context, *args):
-        juego = ""
-        for i in args:
-            juego = juego + " " + i
-        juego = juego.strip()
+        juego = get_args(args)
         nombre, puntaje, fecha, tiempo = self.rawg.info(juego)
         nombre_steam, precio = steam_price(nombre, self.steam, self.dolar)
         sep = " // "
@@ -138,7 +136,10 @@ class Bot(commands.Bot):
     @commands.command()
     async def lanzamientos(self, ctx: commands.Context, limite = 3):
         output = self.rawg.lanzamientos(limite)
-        await mensaje(output)
+        if output is not False:
+            await mensaje(output)
+        else:
+            await mensaje("No encontré lanzamientos.")
 
     @commands.command()
     async def puntito(self, ctx: commands.Context, nombre: str):
@@ -247,11 +248,8 @@ class Bot(commands.Bot):
             await mensaje(pedo)
             return
         nombre = ctx.author.name.lower()
+        respuesta = get_args(args)
 
-        respuesta = ""
-        for i in args:
-            respuesta = respuesta + " " + i
-        respuesta = respuesta.strip()
         enviar = []
         if not self.pelea.get(nombre):
             self.pelea[nombre] = {"activa":False, "hist":[], "score": [0, 0]}
@@ -329,8 +327,7 @@ class Bot(commands.Bot):
             await mensaje(pedo)
             return
         if self.ganador is not None:
-            await mensaje(f"""{self.ganador[0]} va ganando el torneo de escupitajos,
-                           con un escupitajo de {self.ganador[1]} centímetros!""")
+            await mensaje(f"{self.ganador[0]} va ganando el torneo de escupitajos, con un escupitajo de {self.ganador[1]} centímetros!")
         else:
             await ctx.send("Todavía nadie escupió!")
 
@@ -368,6 +365,40 @@ class Bot(commands.Bot):
         with open(archivo, 'w') as f:
             f.write(str(votos))
         await mensaje(f'{ctx.author.name} acaba de votar para ver al Sugar Daddy sin camisa! Van {votos} votos!')
+
+    @commands.command(aliases=("trivial",))
+    async def trivia(self, ctx: commands.Context, *args):
+        argumento = get_args(args)
+        if self.trivia_actual is None and len(argumento) == 0:
+            self.trivia_actual = choice(list(trivia.items()))
+            await mensaje(self.trivia_actual[0])
+        elif self.trivia_actual is None and len(argumento) > 0:
+            for k, v in trivia.items():
+                distancia = lev(argumento,k)
+                if distancia <= 10:
+                    self.trivia_actual = (k,v)
+                    break
+            if self.trivia_actual is None:
+                await mensaje(f'"{argumento}" no es una trivia!')
+                return
+            await mensaje(self.trivia_actual[0])
+            await asyncio.sleep(CONFIG.get("dont_spam"))
+            lista_desordenada = self.trivia_actual[1].copy()
+            shuffle(lista_desordenada)
+            await mensaje(lista_desordenada)
+            print(self.trivia_actual[1])
+        elif self.trivia_actual is not None and len(argumento) == 0:
+            await mensaje(f"Te faltó la respuesta {ctx.author.name}!")
+        elif self.trivia_actual is not None and argumento.lower() == "respuesta":
+            respuesta_correcta = self.trivia_actual[1][0]
+            await mensaje(f'La respuesta correcta es: "{respuesta_correcta}"')
+            self.trivia_actual = None
+        elif self.trivia_actual is not None and len(argumento) > 0:
+            if lev(argumento,self.trivia_actual[1][0]) < 2:
+                await mensaje(f'Correcto! Bien por {ctx.author.name}!')
+                self.trivia_actual = None
+            else:
+                await mensaje('Nooooo, incorrecto!!')
 
 
 bot = Bot(CONFIG)

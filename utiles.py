@@ -127,3 +127,11 @@ def precio_dolar():
     else:
         print("No se obtuvo el precio del dólar.")
         return 0
+
+
+def get_args(args):
+    respuesta = ""
+    for i in args:
+        respuesta = respuesta + " " + i
+    respuesta = respuesta.strip()
+    return respuesta
