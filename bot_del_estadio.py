@@ -372,9 +372,12 @@ class Bot(commands.Bot):
         if self.trivia_actual is None and len(argumento) == 0:
             self.trivia_actual = choice(list(trivia.items()))
             await mensaje(self.trivia_actual[0])
+            await asyncio.sleep(CONFIG.get("dont_spam"))
+            await mensaje(self.trivia_actual[1])
+            print(self.trivia_actual[1])
         elif self.trivia_actual is None and len(argumento) > 0:
             for k, v in trivia.items():
-                distancia = lev(argumento,k)
+                distancia = lev(argumento,k.lower())
                 if distancia <= 10:
                     self.trivia_actual = (k,v)
                     break
@@ -394,7 +397,7 @@ class Bot(commands.Bot):
             await mensaje(f'La respuesta correcta es: "{respuesta_correcta}"')
             self.trivia_actual = None
         elif self.trivia_actual is not None and len(argumento) > 0:
-            if lev(argumento,self.trivia_actual[1][0]) < 2:
+            if lev(argumento,self.trivia_actual[1][0].lower()) < trivia_limite[self.trivia_actual[0]]:
                 await mensaje(f'Correcto! Bien por {ctx.author.name}!')
                 self.trivia_actual = None
             else:

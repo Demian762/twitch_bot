@@ -32,6 +32,54 @@ lista_amigos = [
     "Tobi Oulego https://www.instagram.com/toubi_/",
 ]
 
+grog_list = [
+    "Una pinta de grog para el Bot!",
+    "¡¡¡Otra pinta de grog para el Bot!!!",
+    "Un brindis por las aventuras gráficas!!",
+    "oootrhra pintita pal boott...",
+    "otra maz??, bueno a ver dale....",
+    "oi no manejoo.... vine en auto???",
+    "pará pará ke tngo ke..... WAAAAA ..... a veh, dame dale....",
+]
+
+insultos_dict = {
+    1:"¿Has dejado ya de usar pañales?",
+    2:"¡No hay palabras para describir lo asqueroso que eres!",
+    3:"¡He hablado con simios más educados que tu!",
+    4:"¡Llevarás mi espada como si fueras un pincho moruno!",
+    5:"¡Luchas como un ganadero!",
+    6:"¡No pienso aguantar tu insolencia aquí sentado!",
+    7:"¡Mi pañuelo limpiará tu sangre!",
+    8:"¡Ha llegado tu HORA, palurdo de ocho patas!",
+    9:"¡Una vez tuve un perro más listo que tu!",
+    10:"¡Nadie me ha sacado sangre jamás, y nadie lo hará!",
+    11:"¡Me das ganas de vomitar!",
+    12:"¡Tienes los modales de un mendigo!",
+    13:"¡He oído que eres un soplón despreciable!",
+    14:"¡La gente cae a mis pies al verme llegar!",
+    15:"¡Demasiado bobo para mi nivel de inteligencia!",
+    16:"¡Obtuve esta cicatriz en una batalla a muerte!",
+}
+
+respuestas_dict = {
+    1:"¿Por qué? ¿Acaso querías pedir uno prestado?",
+    2:"Sí que las hay, sólo que nunca las has aprendido.",
+    3:"Me alegra que asistieras a tu reunión familiar diaria.",
+    4:"Primero deberías dejar de usarla como un plumero.",
+    5:"Qué apropiado, tú peleas como una vaca.",
+    6:"Ya te están fastidiando otra vez las almorranas, ¿Eh?",
+    7:"Ah, ¿Ya has obtenido ese trabajo de barrendero?",
+    8:"Y yo tengo un SALUDO para ti, ¿Te enteras?",
+    9:"Te habrá enseñado todo lo que sabes.",
+    10:"¿TAN rápido corres?",
+    11:"Me haces pensar que alguien ya lo ha hecho.",
+    12:"Quería asegurarme de que estuvieras a gusto conmigo.",
+    13:"Qué pena me da que nadie haya oído hablar de ti",
+    14:"¿Incluso antes de que huelan tu aliento?",
+    15:"Estaría acabado si la usases alguna vez.",
+    16:"Espero que ya hayas aprendido a no tocarte la nariz.",
+}
+
 coma_etilico_list = [
     "El bot está en coma etílico.",
     "El bot se fue a una reunión de alcohólicos anónimos.",
@@ -103,9 +151,67 @@ trivia = {
     "En el parque hay:": ["Todas las respuestas", "Un columpio", "Un pozo", "Un barco"]
 }
 
-
-
-
+trivia_limite = {
+    'El nombre oficial de la tienda de vudú es:': 4,
+    'El juego de Monkey Island antes se llamaba:': 11,
+    'La capitana Kate Capsize:': 35,
+    'Al fondo del Scumm Bar está:': 4,
+    'Morgan LeFlay apareció primero en:': 8,
+    "¿Quién es el experto local sobre 'Loom'?": 4,
+    '¿Cuál de estos ingredientes no hace falta para llegar a Monkey Island?': 5,
+    'La tienda de Wally está en:': 2,
+    'El circo de la isla Melée era de:': 13,
+    'En Monkey Island 2, ¿quién tenía un barco con fondo de cristal?': 10,
+    'La isla Escorbuto es famosa por:': 14,
+    'El nombre de la hechicera vudú es:': 6,
+    '¿Cuál de estos ingredientes no hace falta para elaborar un muñeco vudú?': 5,
+    'El Mono Loco era:': 35,
+    '¿Cuántos prisioneros hay en la cantera de hielo?': 2,
+    'La frase de Guybrush para distraer a la gente suele ser:': 31,
+    'Dave Grossman empezó a trabajar en Lucasfilm Games en:': 1,
+    'Guybrush lleva puestos:': 5,
+    'El primer Monkey Island salió para:': 5,
+    'El desarrollo del primer Monkey Island fueron:': 2,
+    'El primer juego en usar el sistema SCUMM:': 13,
+    '¿Qué ave aparece en el sello de Brrr Muda?': 2,
+    '¿Cuántas preguntas tiene el formulario de Brr Muda?': 2,
+    'El loro del blasón de Brr Muda sostiene...': 6,
+    'En la isla Blood está:': 16,
+    '¿Cuánto tiempo aguanta Guybrush sin respirar bajo el agua en este juego?': 1,
+    'Al final de Monkey Island 1, LeChuck es derrotado:': 14,
+    '¿Qué hay tallado en un árbol de la playa de Monkey Island?': 1,
+    '¿Cuántas ventanas iluminadas hay en la mansión de la gobernadora?': 4,
+    'En el puerto de escorbutifarras hay una enorme...': 6,
+    'Los banderines del parque de atracciones son:': 7,
+    'Las flores que hay junto al banco son:': 4,
+    '¿Cuál de estos libros no se encuentra en la librería de Carla?': 16,
+    'La pata del parque se puede alimentar con:': 5,
+    'Dee habla sin cesar sobre:': 4,
+    '¿Quién es el editor de El Heraldo Pirata?': 6,
+    '¿De quién es el velo nupcial que hay en el camarote de LeChuck?': 6,
+    '¿El suelo de qué habitación no para de revolverse?': 14,
+    '¿Qué pone en el letrero fuera de la cabeza de mono?': 21,
+    'El pollo fantasma con problemas digestivos se llama:': 1,
+    '¿Cuál es la primera norma de la cárcel de Melée?': 6,
+    '¿Qué criatura de alta mar se puede ver nadando desde la cofa de LeBarco?': 6,
+    'El escudo de armas del castillo de hielo de Brrr Muda está formado por:': 9,
+    'El ave de la playa de la isla Escorbuto es:': 26,
+    '¿Qué animal figura en el barco de Bella Fisher?': 3,
+    '¿Cómo se llama el pirata pícaro del libro favorito de Herman?': 6,
+    '¿Cuántos cuervos hay en la cofa de LeBarco?': 3,
+    '¿Qué especie marina no se halla en la pescadería de Mêlée?': 7,
+    'Un brote de escorbuto obliga a todos los barcos que vayan al norte de la isla Escorbuto a transportar:': 3,
+    'El contable de Stan se llama:': 1,
+    '¿Cuántos loros hay junto al puesto de escorbutifarras?': 3,
+    'El vendedor de escorbutifarras:': 9,
+    '¿Qué hay junto a un camino sin salida en la isla Terror?': 12,
+    '¿Dónde hay espinos?': 5,
+    '¿Cuántos esqueletos hay flotando en la playa de la isla Terror?': 3,
+    '¿Cuál de estos no está en el parque?': 5,
+    'La amiga de Chuckie se llama:': 3,
+    'La pareja del parque está dando de comer a:': 3,
+    'En el parque hay:': 17
+ }
 
 
 
