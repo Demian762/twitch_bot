@@ -8,6 +8,9 @@ CONFIG = {
     "cafecito_rutina_timer": 65,
 }
 
+daddy_points_file_path = "twitch_bot\storage\daddy_points.txt"
+puntitos_file_path = "twitch_bot\storage\puntitos.csv"
+
 lista_redes = [
     "Nuestras REDES:",
     "Instagram https://www.instagram.com/hablemosdepavadas/",

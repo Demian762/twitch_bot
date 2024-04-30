@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 import requests
+from howlongtobeatpy import HowLongToBeat
 
 class rawg:
 
@@ -22,14 +23,18 @@ class rawg:
         key_info["search_exact"] = False
         url_info = self.url + "games"
         response = requests.get(url_info, params=key_info)
-        if response.status_code == 200 and len(response.json().get('results')) > 0:
+
+        if response.status_code != 200:
+            return 200, False, False
+        
+        elif  len(response.json().get('results')) > 0:
             nombre = response.json().get('results')[0]["name"]
             puntaje = response.json().get('results')[0]["metacritic"]
             fecha = response.json().get('results')[0]["released"]
-            tiempo = response.json().get('results')[0]["playtime"]
-            return nombre, puntaje, fecha, tiempo
+            return nombre, puntaje, fecha
+        
         else:
-            return False, False, False, False
+            return None, False, False
         
     def lanzamientos(self, limite):
         key_info = self.key
@@ -55,3 +60,15 @@ class rawg:
             return output
         else:
             return False
+
+def howlong(game_name:str):
+    results_list = HowLongToBeat().search(game_name)
+    if results_list is not None and len(results_list) > 0:
+        best_element = max(results_list, key=lambda element: element.similarity)
+        main_story = str(int(best_element.main_story))
+        main_extra = str(int(best_element.main_extra))
+        completionist = str(int(best_element.completionist))
+        tiempo = main_story + " - " + main_extra + " - " + completionist
+        return tiempo
+    else:
+        return False

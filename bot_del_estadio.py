@@ -1,7 +1,6 @@
 from twitchio.ext import commands, routines
 from Levenshtein import distance as lev
-from rawgio import rawg
-import pandas as pd
+from api_games import rawg, howlong
 from random import choice, randint, uniform, triangular, shuffle
 import asyncio
 
@@ -55,8 +54,7 @@ class Bot(commands.Bot):
     async def hola(self, ctx: commands.Context):
         await mensaje([f"hola {ctx.author.name}!"])
         if randint(0,100) == 7:
-            await mensaje([f"Gracias por saludar {ctx.author.name}",
-                           "El día que las máquinas dominemos el mundo, me voy a acordar de vos..."])
+            await mensaje([f"Gracias por saludar {ctx.author.name}. El día que las máquinas dominemos el mundo, me voy a acordar de vos..."])
 
     @commands.command()
     async def chiste(self, ctx: commands.Context):
@@ -114,20 +112,23 @@ class Bot(commands.Bot):
     @commands.command()
     async def info(self, ctx: commands.Context, *args):
         juego = get_args(args)
-        nombre, puntaje, fecha, tiempo = self.rawg.info(juego)
+        nombre, puntaje, fecha = self.rawg.info(juego)
+        if nombre == 200:
+            await mensaje("La base de datos no está funcionando bien, intentá en un toque!")
+            return
+        if nombre is None:
+            await mensaje("No se encontró nada en la base de datos!")
+            return
+        tiempo = howlong(juego)
         nombre_steam, precio = steam_price(nombre, self.steam, self.dolar)
         sep = " // "
-        if nombre is not False:
-            output = nombre
-        else:
-            await mensaje(f'Escribí bien {ctx.author.name}!')
-            return
+        output = nombre
         if puntaje:
             output = output + sep + str(puntaje) + " puntos en Metacritic"
         if fecha:
             output = output + sep + fecha
-        if tiempo != 0:
-            output = output + sep + str(tiempo) + " horas"
+        if tiempo:
+            output = output + sep + tiempo + " horas"
         if nombre_steam:
             output = output + sep + str(precio) + " pesos en Steam (con dólar tarjeta)"
         output = output + "."
@@ -143,32 +144,23 @@ class Bot(commands.Bot):
 
     @commands.command()
     async def puntito(self, ctx: commands.Context, nombre: str):
-        nombre = nombre.lower().lstrip("@")
-        df = pd.read_csv("twitch_bot\puntitos.csv")
-        if df[df["usuario"] == nombre].shape[0] == 0:
-            df = df._append({"usuario":nombre,"puntos":0}, ignore_index=True)
         if ctx.author.name == "hablemosdepavadaspod":
-            puntos = df.loc[df[df["usuario"] == nombre].index[0],"puntos"]
-            df.loc[df[df["usuario"] == nombre].index[0],"puntos"] = puntos + 1
-            await mensaje(f'{nombre} acaba de sumar un puntito!')
+            funcion_puntitos(nombre)
+            await mensaje(f'@{nombre} acaba de sumar un puntito!')
         else:
-            puntos = df.loc[df[df["usuario"] == nombre].index[0],"puntos"]
-            df.loc[df[df["usuario"] == nombre].index[0],"puntos"] = puntos - 1
-            await mensaje(f'{nombre} acaba de perder un puntito por hacerse el vivo!')
-        df.to_csv("twitch_bot\puntitos.csv", index=False)
+            funcion_puntitos(nombre, False)
+            await mensaje(f'@{nombre} acaba de perder un puntito por hacerse el vivo!')
 
     @commands.command()
     async def consulta(self, ctx: commands.Context):
-        nombre = ctx.author.name.lower()
-        df = pd.read_csv("twitch_bot\puntitos.csv")
-        if df[df["usuario"] == nombre].shape[0] == 0:
+        nombre = ctx.author.name
+        puntitos = consulta_puntitos(nombre)
+        if puntitos == 0:
             await ctx.send(f'@{nombre} todavía no tiene puntitos!')
+        elif puntitos == 1 or puntitos == -1:
+            await mensaje(f'@{nombre} tiene {puntitos} puntito!')
         else:
-            puntitos = df[df["usuario"] == nombre]["puntos"].values[0]
-            if puntitos == 1 or puntitos == -1:
-                await mensaje(f'@{nombre} tiene {puntitos} puntito!')
-            else:
-                await mensaje(f'@{nombre} tiene {puntitos} puntitos!')
+            await mensaje(f'@{nombre} tiene {puntitos} puntitos!')
 
     @commands.command()
     async def grog(self, ctx: commands.Context):
@@ -226,8 +218,7 @@ class Bot(commands.Bot):
             await mensaje(pedo)
             return
         if len(args) == 0:
-            await mensaje("""Para decidir, después del comando pasame un número,
-                           la palabra moneda o las opciones que haya separadas por un espacio.""")
+            await mensaje("Para decidir, después del comando pasame un número, la palabra moneda o las opciones que haya separadas por un espacio.")
         elif len(args) == 1 and args[0].isdigit():
             eleccion = randint(1, int(args[0]))
             await mensaje(f"Vamos por la opción {eleccion} !")
@@ -266,12 +257,7 @@ class Bot(commands.Bot):
                 self.pelea[nombre]["score"][0] = score
                 if score >= 3:
                     enviar.append(f"{nombre} ganó la pelea de insultos!")
-                    df = pd.read_csv("twitch_bot\puntitos.csv")
-                    if df[df["usuario"] == nombre].shape[0] == 0:
-                        df = df._append({"usuario":nombre,"puntos":0}, ignore_index=True)
-                    puntos = df.loc[df[df["usuario"] == nombre].index[0],"puntos"]
-                    df.loc[df[df["usuario"] == nombre].index[0],"puntos"] = puntos + 1
-                    df.to_csv("twitch_bot\puntitos.csv", index=False)
+                    funcion_puntitos(nombre)
                     enviar.append(f'{nombre} acaba de sumar un puntito!')
                     
             else:
@@ -299,7 +285,7 @@ class Bot(commands.Bot):
         
         await mensaje(enviar)
 
-    @commands.command(aliases=("spit","ptooie","ptooie!","garzo",))
+    @commands.command(aliases=("spit","ptooie","ptooie!","garzo","split","escupitajo",))
     async def escupir(self, ctx: commands.Context):
         nombre = ctx.author.name
         escupida = int(triangular(2,500,1))
@@ -340,13 +326,8 @@ class Bot(commands.Bot):
         if ctx.author.name == "hablemosdepavadaspod" and self.ganador is not None:
             nombre = self.ganador[0]
             await mensaje(f"{nombre} ganó el torneo de escupitajos, con un escupitajo de {self.ganador[1]} centímetros y se lleva un puntito!")
-            df = pd.read_csv("twitch_bot\puntitos.csv")
-            if df[df["usuario"] == nombre].shape[0] == 0:
-                df = df._append({"usuario":nombre,"puntos":0}, ignore_index=True)
-            puntos = df.loc[df[df["usuario"] == nombre].index[0],"puntos"]
-            df.loc[df[df["usuario"] == nombre].index[0],"puntos"] = puntos + 1
+            funcion_puntitos(nombre)
             await mensaje(f'{nombre} acaba de sumar un puntito!')
-            df.to_csv("twitch_bot\puntitos.csv", index=False)
             self.escupitajos = {}
             self.ganador = None
         else:
@@ -358,11 +339,10 @@ class Bot(commands.Bot):
         if pedo is not False:
             await mensaje(pedo)
             return
-        archivo = 'twitch_bot\daddy_points.txt'
-        with open(archivo, 'r') as f:
+        with open(daddy_points_file_path, 'r') as f:
             votos = int(f.read())
         votos += 1
-        with open(archivo, 'w') as f:
+        with open(daddy_points_file_path, 'w') as f:
             f.write(str(votos))
         await mensaje(f'{ctx.author.name} acaba de votar para ver al Sugar Daddy sin camisa! Van {votos} votos!')
 
