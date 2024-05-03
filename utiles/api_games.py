@@ -1,6 +1,8 @@
 from datetime import date, timedelta
 import requests
 from howlongtobeatpy import HowLongToBeat
+from steam import Steam
+from utiles.secretos import steam_api_key
 
 class rawg:
 
@@ -72,3 +74,21 @@ def howlong(game_name:str):
         return tiempo
     else:
         return False
+    
+def steam_api():
+    try:
+        steam = Steam(steam_api_key)
+        print("conexión exitosa con Steam.")
+        return steam
+    except:
+        raise "No se pudo conectar a Steam."
+    
+def steam_price(nombre, steam, dolar):
+    try:
+        steam_data = steam.apps.search_games(nombre, "AR")['apps'][0]
+        precio = float(steam_data['price'].lstrip("$").rstrip(" USD"))
+        precio = str(round(precio * dolar, 2))
+        nombre_steam = steam_data['name']
+        return nombre_steam, precio
+    except:
+        return False, False

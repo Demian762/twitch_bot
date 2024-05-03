@@ -1,13 +1,16 @@
+import asyncio
 from twitchio.ext import commands, routines
 from Levenshtein import distance as lev
-from api_games import rawg, howlong
+from playsound import playsound
 from random import choice, randint, uniform, triangular, shuffle
-import asyncio
 
-from secretos import (access_token, rawg_url, rawg_key)
+from utiles.api_games import *
+from utiles.utiles_general import *
+from utiles.mensaje import *
+from utiles.api_youtube import *
+from utiles.secretos import (access_token, rawg_url, rawg_key)
 from configuracion import *
-from utiles import *
-from mensaje import openSocket, sendMessage, mensaje
+
 
 spam_intensity = CONFIG.get("spam_intensity")
 redes_rutina_timer = CONFIG.get("redes_rutina_timer") * (1/spam_intensity)
@@ -52,20 +55,36 @@ class Bot(commands.Bot):
 
     @commands.command()
     async def hola(self, ctx: commands.Context):
+        pedo = self.coma_etilico()
+        if pedo is not False:
+            await mensaje(pedo)
+            return
         await mensaje([f"hola {ctx.author.name}!"])
         if randint(0,100) == 7:
             await mensaje([f"Gracias por saludar {ctx.author.name}. El día que las máquinas dominemos el mundo, me voy a acordar de vos..."])
 
     @commands.command()
     async def chiste(self, ctx: commands.Context):
+        pedo = self.coma_etilico()
+        if pedo is not False:
+            await mensaje(pedo)
+            return
         await mensaje([f"Vos sos un chiste {ctx.author.name}."])
 
     @commands.command()
     async def dolar(self, ctx: commands.Context):
+        pedo = self.coma_etilico()
+        if pedo is not False:
+            await mensaje(pedo)
+            return
         await mensaje([f'El dólar tarjeta está a {self.dolar} pesos.'])
 
     @commands.command()
     async def medimela(self, ctx: commands.Context):
+        pedo = self.coma_etilico()
+        if pedo is not False:
+            await mensaje(pedo)
+            return
         hdp = ["demian762",self.nick,"hablemosdepavadaspod"]
         if ctx.author.name in hdp:
             largo = 25
@@ -75,7 +94,15 @@ class Bot(commands.Bot):
 
     @commands.command()
     async def quiensos(self, ctx: commands.Context):
+        pedo = self.coma_etilico()
+        if pedo is not False:
+            await mensaje(pedo)
+            return
         await mensaje(['En realidad soy Sergio... me descubrieron.'])
+
+    @commands.command()
+    async def gg(self, ctx: commands.Context):
+        playsound('storage/piripipi.mp3', False)
 
     @routines.routine(minutes=redes_rutina_timer, wait_first=True)
     async def redes_rutina(self):
@@ -95,22 +122,42 @@ class Bot(commands.Bot):
 
     @commands.command()
     async def redes(self, ctx: commands.Context):
+        pedo = self.coma_etilico()
+        if pedo is not False:
+            await mensaje(pedo)
+            return
         await mensaje(lista_redes)
         
     @commands.command(aliases=("programación",))
     async def programacion(self, ctx: commands.Context):
+        pedo = self.coma_etilico()
+        if pedo is not False:
+            await mensaje(pedo)
+            return
         await mensaje(lista_programacion)
 
     @commands.command(aliases=("amigo",))
     async def amigos(self, ctx: commands.Context):
+        pedo = self.coma_etilico()
+        if pedo is not False:
+            await mensaje(pedo)
+            return
         await mensaje(lista_amigos)
 
     @commands.command(aliases=("cafe",))
     async def cafecito(self, ctx: commands.Context):
+        pedo = self.coma_etilico()
+        if pedo is not False:
+            await mensaje(pedo)
+            return
         await mensaje(cafecito_texto)
 
     @commands.command()
     async def info(self, ctx: commands.Context, *args):
+        pedo = self.coma_etilico()
+        if pedo is not False:
+            await mensaje(pedo)
+            return
         juego = get_args(args)
         nombre, puntaje, fecha = self.rawg.info(juego)
         if nombre == 200:
@@ -136,6 +183,10 @@ class Bot(commands.Bot):
 
     @commands.command()
     async def lanzamientos(self, ctx: commands.Context, limite = 3):
+        pedo = self.coma_etilico()
+        if pedo is not False:
+            await mensaje(pedo)
+            return
         output = self.rawg.lanzamientos(limite)
         if output is not False:
             await mensaje(output)
@@ -144,6 +195,10 @@ class Bot(commands.Bot):
 
     @commands.command()
     async def puntito(self, ctx: commands.Context, nombre: str):
+        pedo = self.coma_etilico()
+        if pedo is not False:
+            await mensaje(pedo)
+            return
         if ctx.author.name == "hablemosdepavadaspod":
             funcion_puntitos(nombre)
             await mensaje(f'@{nombre} acaba de sumar un puntito!')
@@ -153,6 +208,10 @@ class Bot(commands.Bot):
 
     @commands.command()
     async def consulta(self, ctx: commands.Context):
+        pedo = self.coma_etilico()
+        if pedo is not False:
+            await mensaje(pedo)
+            return
         nombre = ctx.author.name
         puntitos = consulta_puntitos(nombre)
         if puntitos == 0:
@@ -240,49 +299,65 @@ class Bot(commands.Bot):
             return
         nombre = ctx.author.name.lower()
         respuesta = get_args(args)
-
         enviar = []
+
+        # Comienza la pelea si todavía no lo hizo.
         if not self.pelea.get(nombre):
-            self.pelea[nombre] = {"activa":False, "hist":[], "score": [0, 0]}
+            self.pelea[nombre] = {"hist":[], "score": [0, 0]}
             enviar.append(f"{nombre} retó al BOT a una pelea de insultos! Debe ganarle tres veces!")
 
-        if self.pelea[nombre]["activa"]:
-            self.pelea[nombre]["activa"] = False
+        # En caso de que la pelea esté terminada.
+        if self.pelea[nombre]["score"][0] >= 3:
+            await mensaje("La pelea terminó! Ya me ganaste!")
+            return
+        if self.pelea[nombre]["score"][1] >= 3:
+            await mensaje("La pelea terminó! Fuiste derrotado!")
+            return
+
+        # Envía el primer insulto si recién empieza la pelea.
+        if self.pelea[nombre]["hist"] == []:
+            key = choice(list(insultos_dict.keys()))
+            self.pelea[nombre]["hist"].append(key)
+            enviar.append(insultos_dict.get(key))
+        
+        # Si la pelea ya empezó, compara la última respuesta y vuelve a insultar si hace falta.
+        else:
             key = self.pelea[nombre]["hist"][-1]
             num = lev(respuestas_dict.get(key),respuesta)
 
+            # En caso de responder bien.
             if num <= self.config.get("limite"):
                 enviar.append(f"Ouch! Punto para {ctx.author.name}")
                 score = self.pelea[nombre]["score"][0] + 1
                 self.pelea[nombre]["score"][0] = score
-                if score >= 3:
+
+                # En caso de responder bien y ganar.
+                if self.pelea[nombre]["score"][0] >= 3:
                     enviar.append(f"{nombre} ganó la pelea de insultos!")
                     funcion_puntitos(nombre)
                     enviar.append(f'{nombre} acaba de sumar un puntito!')
-                    
+                    await mensaje(enviar)
+                    return
+
+            # En caso de responder mal.  
             else:
                 enviar.append("Ajaaa!! Punto para el BOT")
-                score = self.pelea[nombre]["score"][1] - 1
+                score = self.pelea[nombre]["score"][1] + 1
                 self.pelea[nombre]["score"][1] = score
-                if score <= -3:
+
+                if self.pelea[nombre]["score"][1] >= 3:
                     enviar.append(f"{nombre} perdió la pelea de insultos!")
+                    await mensaje(enviar)
+                    return
             
-        else:
-            if self.pelea[nombre]["score"][0] >= 3:
-                enviar.append("La pelea terminó! Ya me ganaste!")
-            elif self.pelea[nombre]["score"][1] >= 3:
-                enviar.append("La pelea terminó! Fuiste derrotado!")
-            else:
-                self.pelea[nombre]["activa"] = True
-                if len(self.pelea[nombre]["hist"]) >= len(list(insultos_dict.keys())):
-                    self.pelea[nombre]["hist"] = []
-                while True:
-                    key = choice(list(insultos_dict.keys()))
-                    if key not in self.pelea[nombre]["hist"]:
-                        break
-                self.pelea[nombre]["hist"].append(key)
-                enviar.append(insultos_dict.get(key))
-        
+            # Nuevo insulto
+            while True:
+                key = choice(list(insultos_dict.keys()))
+                if key not in self.pelea[nombre]["hist"]:
+                    break
+            self.pelea[nombre]["hist"].append(key)
+            enviar.append(insultos_dict.get(key))
+
         await mensaje(enviar)
 
     @commands.command(aliases=("spit","ptooie","ptooie!","garzo","split","escupitajo",))
@@ -348,6 +423,10 @@ class Bot(commands.Bot):
 
     @commands.command(aliases=("trivial",))
     async def trivia(self, ctx: commands.Context, *args):
+        pedo = self.coma_etilico()
+        if pedo is not False:
+            await mensaje(pedo)
+            return
         argumento = get_args(args)
         if self.trivia_actual is None and len(argumento) == 0:
             self.trivia_actual = choice(list(trivia.items()))

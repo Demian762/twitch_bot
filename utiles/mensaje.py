@@ -1,9 +1,8 @@
-
 import socket
 import asyncio
 
 from configuracion import CONFIG
-from secretos import channel_name, HOST, PORT, access_token, bot_channel_name
+from utiles.secretos import channel_name, HOST, PORT, access_token, bot_channel_name
 
 
 PASS = "oauth:" + access_token # your Twitch OAuth token

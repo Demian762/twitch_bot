@@ -1,15 +1,15 @@
 CONFIG = {
     "limite": 15,
     "dont_spam": 2,
-    "spam_intensity": 0.9,
+    "spam_intensity": 0.8,
     "redes_rutina_timer": 25,
     "programacion_rutina_timer": 30,
     "amigos_rutina_timer": 55,
     "cafecito_rutina_timer": 65,
 }
 
-daddy_points_file_path = "twitch_bot\storage\daddy_points.txt"
-puntitos_file_path = "twitch_bot\storage\puntitos.csv"
+daddy_points_file_path = "storage\daddy_points.txt"
+puntitos_file_path = "storage\puntitos.csv"
 
 lista_redes = [
     "Nuestras REDES:",
@@ -43,6 +43,15 @@ grog_list = [
     "otra maz??, bueno a ver dale....",
     "oi no manejoo.... vine en auto???",
     "pará pará ke tngo ke..... WAAAAA ..... a veh, dame dale....",
+]
+
+coma_etilico_list = [
+    "El bot está en coma etílico.",
+    "El bot se fue a una reunión de alcohólicos anónimos.",
+    "El bot está.... indispuesto.",
+    "Alguien que le de un vasito de agua al bot.",
+    "¡HIC!",
+    "El bot está llamando a Hugo",
 ]
 
 insultos_dict = {
@@ -82,13 +91,6 @@ respuestas_dict = {
     15:"Estaría acabado si la usases alguna vez.",
     16:"Espero que ya hayas aprendido a no tocarte la nariz.",
 }
-
-coma_etilico_list = [
-    "El bot está en coma etílico.",
-    "El bot se fue a una reunión de alcohólicos anónimos.",
-    "El bot está.... indispuesto.",
-    "Alguien que le de un vasito de agua al bot.",
-]
 
 cafecito_texto = "Si les gusta nuestro contenido pueden ayudarnos con un cafecito a https://cafecito.app/hablemosdepavadas"
 
