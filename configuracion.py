@@ -1,12 +1,14 @@
 CONFIG = {
     "limite": 15,
     "dont_spam": 2,
-    "spam_intensity": 0.8,
+    "spam_intensity": 0.73,
     "redes_rutina_timer": 25,
     "programacion_rutina_timer": 30,
     "amigos_rutina_timer": 55,
     "cafecito_rutina_timer": 65,
 }
+
+admins = ["hablemosdepavadaspod","demian762","everovius","juancater","pointandclickstore"]
 
 daddy_points_file_path = "storage\daddy_points.txt"
 puntitos_file_path = "storage\puntitos.csv"
@@ -33,6 +35,7 @@ lista_amigos = [
     "Point and Click Store https://www.instagram.com/pointandclickstore/",
     "POPLAND customs https://www.instagram.com/poplandcustoms/",
     "Tobi Oulego https://www.instagram.com/toubi_/",
+    "Ariel Barañano Actor Profesional https://www.instagram.com/ariel.baranano/",
 ]
 
 grog_list = [
@@ -52,6 +55,7 @@ coma_etilico_list = [
     "Alguien que le de un vasito de agua al bot.",
     "¡HIC!",
     "El bot está llamando a Hugo",
+    "Quedó re duro el bot..."
 ]
 
 insultos_dict = {

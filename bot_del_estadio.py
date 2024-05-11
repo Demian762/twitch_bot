@@ -53,7 +53,7 @@ class Bot(commands.Bot):
         else:
             return False
 
-    @commands.command()
+    @commands.command(aliases=("buenas",))
     async def hola(self, ctx: commands.Context):
         pedo = self.coma_etilico()
         if pedo is not False:
@@ -85,8 +85,8 @@ class Bot(commands.Bot):
         if pedo is not False:
             await mensaje(pedo)
             return
-        hdp = ["demian762",self.nick,"hablemosdepavadaspod"]
-        if ctx.author.name in hdp:
+
+        if ctx.author.name in admins:
             largo = 25
         else:
             largo = int(uniform(1, 24))
@@ -187,6 +187,9 @@ class Bot(commands.Bot):
         if pedo is not False:
             await mensaje(pedo)
             return
+        
+        if ctx.author.name not in admins and limite > 3:
+            limite = 3
         output = self.rawg.lanzamientos(limite)
         if output is not False:
             await mensaje(output)
@@ -199,7 +202,7 @@ class Bot(commands.Bot):
         if pedo is not False:
             await mensaje(pedo)
             return
-        if ctx.author.name == "hablemosdepavadaspod":
+        if ctx.author.name in admins:
             funcion_puntitos(nombre)
             await mensaje(f'@{nombre} acaba de sumar un puntito!')
         else:
@@ -360,7 +363,7 @@ class Bot(commands.Bot):
 
         await mensaje(enviar)
 
-    @commands.command(aliases=("spit","ptooie","ptooie!","garzo","split","escupitajo",))
+    @commands.command(aliases=("spit","ptooie","ptooie!","garzo","split","escupitajo","gallo","pollo","gargajo",))
     async def escupir(self, ctx: commands.Context):
         nombre = ctx.author.name
         escupida = int(triangular(2,500,1))
@@ -379,7 +382,8 @@ class Bot(commands.Bot):
             actual = self.escupitajos[k]["escupida"]
             if actual > lejos:
                 lejos = actual
-                self.ganador = [k, v["escupida"]]
+                if nombre not in admins:
+                    self.ganador = [k, v["escupida"]]
 
     @commands.command()
     async def ganador(self, ctx: commands.Context):
@@ -398,7 +402,7 @@ class Bot(commands.Bot):
         if pedo is not False:
             await mensaje(pedo)
             return
-        if ctx.author.name == "hablemosdepavadaspod" and self.ganador is not None:
+        if ctx.author.name in admins and self.ganador is not None:
             nombre = self.ganador[0]
             await mensaje(f"{nombre} ganó el torneo de escupitajos, con un escupitajo de {self.ganador[1]} centímetros y se lleva un puntito!")
             funcion_puntitos(nombre)
