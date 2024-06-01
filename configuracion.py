@@ -1,14 +1,14 @@
 CONFIG = {
     "limite": 15,
     "dont_spam": 2,
-    "spam_intensity": 0.73,
+    "spam_intensity": 0.65,
     "redes_rutina_timer": 25,
     "programacion_rutina_timer": 30,
     "amigos_rutina_timer": 55,
     "cafecito_rutina_timer": 65,
 }
 
-admins = ["hablemosdepavadaspod","demian762","everovius","juancater","pointandclickstore"]
+admins = ["hablemosdepavadaspod","hablemosdepavadas","demian762","everovius","juancater","pointandclickstore"]
 
 daddy_points_file_path = "storage\daddy_points.txt"
 puntitos_file_path = "storage\puntitos.csv"
@@ -19,6 +19,7 @@ lista_redes = [
     "YouTube https://www.youtube.com/@hablemosdepavadas",
     "TikTok https://www.tiktok.com/@hablemosdepavadas",
     "Spotify https://open.spotify.com/show/2sC1753wCmhBnDkZx7UOyj",
+    "Discord https://discord.com/invite/tMFFy6Vm",
 ]
 
 lista_programacion = [

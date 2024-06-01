@@ -365,7 +365,7 @@ class Bot(commands.Bot):
 
     @commands.command(aliases=("spit","ptooie","ptooie!","garzo","split","escupitajo","gallo","pollo","gargajo",))
     async def escupir(self, ctx: commands.Context):
-        nombre = ctx.author.name
+        nombre = ctx.author.name.lower()
         escupida = int(triangular(2,500,1))
         if not self.escupitajos.get(nombre):
             self.escupitajos[nombre] = {"escupida":escupida, "count":0}
@@ -402,7 +402,7 @@ class Bot(commands.Bot):
         if pedo is not False:
             await mensaje(pedo)
             return
-        if ctx.author.name in admins and self.ganador is not None:
+        if ctx.author.name.lower() in admins and self.ganador is not None:
             nombre = self.ganador[0]
             await mensaje(f"{nombre} ganó el torneo de escupitajos, con un escupitajo de {self.ganador[1]} centímetros y se lleva un puntito!")
             funcion_puntitos(nombre)
