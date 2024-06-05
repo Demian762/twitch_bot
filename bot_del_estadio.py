@@ -31,6 +31,8 @@ class Bot(commands.Bot):
         self.grog_count = 0
         self.pelea = {}
         self.escupitajos = {}
+        self.proteccion = False
+        self.margaritas = 0
         self.ganador = None
         self.steam = steam_api()
         self.dolar = precio_dolar()
@@ -99,6 +101,19 @@ class Bot(commands.Bot):
             await mensaje(pedo)
             return
         await mensaje(['En realidad soy Sergio... me descubrieron.'])
+
+    @commands.command()
+    async def proteccion(self, ctx: commands.Context):
+        pedo = self.coma_etilico()
+        if pedo is not False:
+            await mensaje(pedo)
+            return
+        if self.proteccion == False:
+            await mensaje("Aquí comienza el horario de protección al menor.")
+            self.proteccion = True
+        else:
+            await mensaje("Aquí finaliza el horario de protección al menor.")
+            self.proteccion = False
 
     @commands.command()
     async def gg(self, ctx: commands.Context):
@@ -223,6 +238,41 @@ class Bot(commands.Bot):
             await mensaje(f'@{nombre} tiene {puntitos} puntito!')
         else:
             await mensaje(f'@{nombre} tiene {puntitos} puntitos!')
+
+    @commands.command()
+    async def top(self, ctx: commands.Context):
+        pedo = self.coma_etilico()
+        if pedo is not False:
+            await mensaje(pedo)
+            return
+        nombre = ctx.author.name
+        if nombre in admins:
+            lista = ["El top 3 de puntitos es:"]
+            top = top_puntitos()
+            lista.extend(top)
+            await mensaje(lista)
+
+    @commands.command()
+    async def margarita(self, ctx: commands.Context):
+        pedo = self.coma_etilico()
+        if pedo is not False:
+            await mensaje(pedo)
+            return
+        nombre = ctx.author.name
+        if self.margaritas > 15:
+            await mensaje(f"¡¡LA RECALCADA CAJETA DE TU HERMANA {nombre}!!")
+            self.margaritas = 0
+        else:
+            await mensaje([f"{nombre} pregunta:","¿Me regalas una margarita?"])
+            self.margaritas += 1
+
+    @commands.command()
+    async def horny(self, ctx: commands.Context):
+        pedo = self.coma_etilico()
+        if pedo is not False:
+            await mensaje(pedo)
+            return
+        await mensaje("yametekudasaaaaaaaai")
 
     @commands.command()
     async def grog(self, ctx: commands.Context):
@@ -377,13 +427,11 @@ class Bot(commands.Bot):
         count = self.escupitajos[nombre].get("count")
         self.escupitajos[nombre]["count"] = count + 1
         await mensaje(f"El escupitajo de {nombre} llegó a los {escupida} centímetros!")
-        lejos = 0
-        for k, v in self.escupitajos.items():
-            actual = self.escupitajos[k]["escupida"]
-            if actual > lejos:
-                lejos = actual
-                if nombre not in admins:
-                    self.ganador = [k, v["escupida"]]
+        jugador_ganador = max(self.escupitajos, key=lambda k: self.escupitajos[k]["escupida"])
+        escupitajo_ganador = self.escupitajos[jugador_ganador].get("escupitajo")
+        if escupida > escupitajo_ganador and jugador_ganador not in admins:
+            self.ganador = [jugador_ganador, escupitajo_ganador]
+            await mensaje(f"{nombre} va ganando el torneo!")
 
     @commands.command()
     async def ganador(self, ctx: commands.Context):

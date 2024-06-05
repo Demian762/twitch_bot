@@ -38,3 +38,9 @@ def consulta_puntitos(nombre:str):
         return 0
     else:
         return df[df["usuario"] == nombre]["puntos"].values[0]
+    
+def top_puntitos():
+    df = pd.read_csv(puntitos_file_path)
+    df_sorted = df.sort_values(by='puntos', ascending=False).head(3)
+    lista = df_sorted['usuario'].tolist()
+    return lista

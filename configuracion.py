@@ -8,7 +8,7 @@ CONFIG = {
     "cafecito_rutina_timer": 65,
 }
 
-admins = ["hablemosdepavadaspod","hablemosdepavadas","demian762","everovius","juancater","pointandclickstore"]
+admins = ["hablemosdepavadaspod","demian762","everovius","juancater","pointandclickstore","lulumy27"]
 
 daddy_points_file_path = "storage\daddy_points.txt"
 puntitos_file_path = "storage\puntitos.csv"
