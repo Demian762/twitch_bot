@@ -33,6 +33,7 @@ class Bot(commands.Bot):
         self.escupitajos = {}
         self.proteccion = False
         self.margaritas = 0
+        self.cuantas_margaritas = randint(5,20)
         self.ganador = None
         self.steam = steam_api()
         self.dolar = precio_dolar()
@@ -259,9 +260,14 @@ class Bot(commands.Bot):
             await mensaje(pedo)
             return
         nombre = ctx.author.name
-        if self.margaritas > 15:
-            await mensaje(f"¡¡LA RECALCADA CAJETA DE TU HERMANA {nombre}!!")
-            self.margaritas = 0
+        if self.cuantas_margaritas is None:
+            await mensaje(f"Basta con la margarita, {nombre}.")
+            return
+        if self.margaritas >= self.cuantas_margaritas:
+            await mensaje(f"¡¡LA RECALCADA CAJETA DE TU HERMANA {nombre}!! TOMÁ UN PUNTITO!!")
+            funcion_puntitos(nombre)
+            await mensaje(f'{nombre} acaba de sumar un puntito...')
+            self.cuantas_margaritas = None
         else:
             await mensaje([f"{nombre} pregunta:","¿Me regalas una margarita?"])
             self.margaritas += 1

@@ -85,6 +85,21 @@ Suma un voto para que el Sugar Daddy se saque la camisa.
 **!trivia**  
 Desafiar al bot o pedirle ayuda sobre las trivias del Return to Monkey Island.  
 
+**!gg**  
+Reproduce un audio de victoria.  
+
+**!margarita**  
+¿Me regalas una margarita?  
+
+**!top**  
+Muestra los 3 usuarios con mas puntitos, solo lo pueden usar admins.  
+
+**!horny**  
+yameteeeeeee.  
+
+**!proteccion**  
+Inicia o finaliza el horario de protección al menor.  
+
 ---
 
 ### FUENTES EXTERNAS:  
