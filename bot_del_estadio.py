@@ -433,10 +433,12 @@ class Bot(commands.Bot):
         count = self.escupitajos[nombre].get("count")
         self.escupitajos[nombre]["count"] = count + 1
         await mensaje(f"El escupitajo de {nombre} llegó a los {escupida} centímetros!")
-        jugador_ganador = max(self.escupitajos, key=lambda k: self.escupitajos[k]["escupida"])
-        escupitajo_ganador = self.escupitajos[jugador_ganador].get("escupitajo")
-        if escupida > escupitajo_ganador and jugador_ganador not in admins:
-            self.ganador = [jugador_ganador, escupitajo_ganador]
+        if self.ganador is None and nombre not in admins:
+            self.ganador = [nombre, escupida]
+            await mensaje(f"{nombre} inició el torneo de escupitajos con {escupida} cm!")
+            return
+        if escupida > self.ganador[1] and nombre not in admins:
+            self.ganador = [nombre, escupida]
             await mensaje(f"{nombre} va ganando el torneo!")
 
     @commands.command()
