@@ -1,11 +1,7 @@
 CONFIG = {
     "limite": 15,
-    "dont_spam": 2,
-    "spam_intensity": 0.65,
-    "redes_rutina_timer": 25,
-    "programacion_rutina_timer": 30,
-    "amigos_rutina_timer": 55,
-    "cafecito_rutina_timer": 65,
+    "dont_spam": 1,
+    "rutina_timer": 10,
 }
 
 admins = ["hablemosdepavadaspod","demian762","everovius","juancater","pointandclickstore","lulumy27"]
@@ -14,30 +10,33 @@ daddy_points_file_path = "storage\daddy_points.txt"
 puntitos_file_path = "storage\puntitos.csv"
 
 lista_redes = [
-    "Nuestras REDES:",
-    "Instagram https://www.instagram.com/hablemosdepavadas/",
-    "YouTube https://www.youtube.com/@hablemosdepavadas",
-    "TikTok https://www.tiktok.com/@hablemosdepavadas",
-    "Spotify https://open.spotify.com/show/2sC1753wCmhBnDkZx7UOyj",
-    "Discord https://discord.com/invite/tMFFy6Vm",
+    "¡Seguinos en Instagram! https://www.instagram.com/hablemosdepavadas/",
+    "Acordate que resubimos todo a YouTube https://www.youtube.com/@hablemosdepavadas",
+    "¿Tenemos TikTok? parece que si... https://www.tiktok.com/@hablemosdepavadas",
+    "¿Te gustan los podcasts? seguinos en Spotify https://open.spotify.com/show/2sC1753wCmhBnDkZx7UOyj",
+    "¡Sumate a nuestro Discord! https://discord.gg/YDdPMDxFDd",
 ]
 
 lista_programacion = [
-    "Nuestra PROGRAMACIÓN:",
     "LUNES en modo fácil, gameplays completos, pero sin esfuerzo.",
     "MARTES de entre casa con Juan, noticias y jueguitos chill.",
     "MIÉRCOLES de PCMR con Demian, llevando al límite los FPS.",
     "VIERNES de Super Aventuras con Sergio y Juan, Aventuras gráficas con expertos en la materia.",
     "SÁBADOS de Contenido Retro con Ever, un viaje al pasado y la nostalgia.",
+    "DOMINGOS de té con Lulu y sus jueguitos relax.",
 ]
 
 lista_amigos = [
-    "Nuestros AMIGOS:",
-    "Point and Click Store https://www.instagram.com/pointandclickstore/",
-    "POPLAND customs https://www.instagram.com/poplandcustoms/",
-    "Tobi Oulego https://www.instagram.com/toubi_/",
-    "Ariel Barañano Actor Profesional https://www.instagram.com/ariel.baranano/",
+    "La recomendación de la casa, seguilo a Sergio de Point and Click Store https://www.instagram.com/pointandclickstore/",
+    "El mago de las impresoras 3D, mirá eso!! POPLAND customs https://www.instagram.com/poplandcustoms/",
+    "¿Te van las pelis de héroes? seguilo a Tobi Oulego https://www.instagram.com/soytoubi/",
+    "¿Necesitás un actor profesional? Acá tenés uno: Ariel Barañano Actor Profesional https://www.instagram.com/ariel.baranano/",
+    "Estás duro de tanto gaming? Llamalo a Javy el masajista: https://www.instagram.com/med.trad.china.javier?igsh=MTBmOGdlZmZ2Y2pwOQ=="
 ]
+
+cafecito_texto = "Si les gusta nuestro contenido pueden ayudarnos con un cafecito a https://cafecito.app/hablemosdepavadas"
+
+rutina_lista = [lista_redes,lista_amigos,[cafecito_texto]]
 
 grog_list = [
     "Una pinta de grog para el Bot!",
@@ -96,8 +95,6 @@ respuestas_dict = {
     15:"Estaría acabado si la usases alguna vez.",
     16:"Espero que ya hayas aprendido a no tocarte la nariz.",
 }
-
-cafecito_texto = "Si les gusta nuestro contenido pueden ayudarnos con un cafecito a https://cafecito.app/hablemosdepavadas"
 
 trivia = {
     "El nombre oficial de la tienda de vudú es:": ["La Casa Internacional de Vudú", "Vudú y Más", "La Tienda de Vudú", "La Casa Internacional de Mojo"],

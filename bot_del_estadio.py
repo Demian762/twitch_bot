@@ -3,6 +3,7 @@ from twitchio.ext import commands, routines
 from Levenshtein import distance as lev
 from playsound import playsound
 from random import choice, randint, uniform, triangular, shuffle
+from datetime import datetime
 
 from utiles.api_games import *
 from utiles.utiles_general import *
@@ -12,11 +13,7 @@ from utiles.secretos import (access_token, rawg_url, rawg_key)
 from configuracion import *
 
 
-spam_intensity = CONFIG.get("spam_intensity")
-redes_rutina_timer = CONFIG.get("redes_rutina_timer") * (1/spam_intensity)
-programacion_rutina_timer = CONFIG.get("programacion_rutina_timer") * (1/spam_intensity)
-amigos_rutina_timer = CONFIG.get("amigos_rutina_timer") * (1/spam_intensity)
-cafecito_rutina_timer = CONFIG.get("cafecito_rutina_timer") * (1/spam_intensity)
+rutina_timer = CONFIG.get("rutina_timer")
 
 
 class Bot(commands.Bot):
@@ -32,18 +29,18 @@ class Bot(commands.Bot):
         self.pelea = {}
         self.escupitajos = {}
         self.proteccion = False
+        self.dia_semana = datetime.now().strftime('%A')
         self.margaritas = 0
-        self.cuantas_margaritas = randint(5,20)
+        self.cuantas_margaritas = randint(1,10)
+        self.ultima_margarita = None
         self.ganador = None
         self.steam = steam_api()
         self.dolar = precio_dolar()
         self.yt_client = build_yt_client()
         self.videos = get_videos_list(self.yt_client)
         print("Canales en vivo: " + str(self.connected_channels))
-        self.redes_rutina.start()
-        self.programacion_rutina.start()
-        self.amigos_rutina.start()
-        self.cafecito_rutina.start()
+        self.rutinas_counter = {"actual":0,"total":len(rutina_lista)-1}
+        self.rutinas.start()
         self.trivia_actual = None
         sendMessage(openSocket(), "Hace su entrada, EL BOT DEL ESTADIO!")
 
@@ -103,6 +100,17 @@ class Bot(commands.Bot):
             return
         await mensaje(['En realidad soy Sergio... me descubrieron.'])
 
+    @commands.command(aliases=("salvar",))
+    async def guardar(self, ctx: commands.Context):
+        pedo = self.coma_etilico()
+        if pedo is not False:
+            await mensaje(pedo)
+            return
+        nombre = ctx.author.name
+        msj1 = f"{nombre} quiere recordarles que...."
+        msj2 = "¡¡¡GUARDEN LA PARTIDA!!!"
+        await mensaje([msj1,msj2])
+
     @commands.command()
     async def proteccion(self, ctx: commands.Context):
         pedo = self.coma_etilico()
@@ -120,21 +128,15 @@ class Bot(commands.Bot):
     async def gg(self, ctx: commands.Context):
         playsound('storage/piripipi.mp3', False)
 
-    @routines.routine(minutes=redes_rutina_timer, wait_first=True)
-    async def redes_rutina(self):
-        await mensaje(lista_redes)
-
-    @routines.routine(minutes=programacion_rutina_timer, wait_first=True)
-    async def programacion_rutina(self):
-        await mensaje(lista_programacion)
-    
-    @routines.routine(minutes=amigos_rutina_timer, wait_first=True)
-    async def amigos_rutina(self):
-        await mensaje(lista_amigos)
-
-    @routines.routine(minutes=cafecito_rutina_timer, wait_first=True)
-    async def cafecito_rutina(self):
-        await mensaje(cafecito_texto)
+    @routines.routine(minutes=rutina_timer, wait_first=True)
+    async def rutinas(self):
+        actual = self.rutinas_counter["actual"]
+        mensaje_actual = choice(rutina_lista[actual])
+        await mensaje(mensaje_actual)
+        if actual >= self.rutinas_counter["total"]:
+            self.rutinas_counter["actual"] = 0
+        else:
+            self.rutinas_counter["actual"] = actual + 1
 
     @commands.command()
     async def redes(self, ctx: commands.Context):
@@ -225,7 +227,7 @@ class Bot(commands.Bot):
             funcion_puntitos(nombre, False)
             await mensaje(f'@{nombre} acaba de perder un puntito por hacerse el vivo!')
 
-    @commands.command()
+    @commands.command(aliases=("puntos","punto","puntitos","score"))
     async def consulta(self, ctx: commands.Context):
         pedo = self.coma_etilico()
         if pedo is not False:
@@ -260,8 +262,14 @@ class Bot(commands.Bot):
             await mensaje(pedo)
             return
         nombre = ctx.author.name
+        if nombre in admins:
+            await mensaje("Los admins están sobrados de margaritas.")
+            return
         if self.cuantas_margaritas is None:
             await mensaje(f"Basta con la margarita, {nombre}.")
+            return
+        if nombre == self.ultima_margarita:
+            await mensaje(f"No no no, que pregunte otro ahora...")
             return
         if self.margaritas >= self.cuantas_margaritas:
             await mensaje(f"¡¡LA RECALCADA CAJETA DE TU HERMANA {nombre}!! TOMÁ UN PUNTITO!!")
@@ -271,6 +279,7 @@ class Bot(commands.Bot):
         else:
             await mensaje([f"{nombre} pregunta:","¿Me regalas una margarita?"])
             self.margaritas += 1
+            self.ultima_margarita = nombre
 
     @commands.command()
     async def horny(self, ctx: commands.Context):
@@ -329,7 +338,7 @@ class Bot(commands.Bot):
         nombre_video, link_video = get_video_details(video_id, self.yt_client)
         await mensaje([nombre_video, link_video])
 
-    @commands.command(aliases=("decision", "decisión", "desicion", "desición",))
+    @commands.command(aliases=("decision", "decisión", "desicion", "desición", "sorteo",))
     async def decidir(self, ctx: commands.Context, *args):
         pedo = self.coma_etilico()
         if pedo is not False:
@@ -423,6 +432,11 @@ class Bot(commands.Bot):
     async def escupir(self, ctx: commands.Context):
         nombre = ctx.author.name.lower()
         escupida = int(triangular(2,500,1))
+        if self.dia_semana == "Sunday":
+            await mensaje(f"Los domingos no se escupe {nombre}!!")
+            funcion_puntitos(nombre,False)
+            await mensaje(f"{nombre} acaba de perder un puntito...")
+            return
         if not self.escupitajos.get(nombre):
             self.escupitajos[nombre] = {"escupida":escupida, "count":0}
         else:
@@ -433,11 +447,13 @@ class Bot(commands.Bot):
         count = self.escupitajos[nombre].get("count")
         self.escupitajos[nombre]["count"] = count + 1
         await mensaje(f"El escupitajo de {nombre} llegó a los {escupida} centímetros!")
-        if self.ganador is None and nombre not in admins:
+        if nombre in admins:
+            return
+        if self.ganador is None:
             self.ganador = [nombre, escupida]
             await mensaje(f"{nombre} inició el torneo de escupitajos con {escupida} cm!")
             return
-        if escupida > self.ganador[1] and nombre not in admins:
+        if escupida > self.ganador[1]:
             self.ganador = [nombre, escupida]
             await mensaje(f"{nombre} va ganando el torneo!")
 

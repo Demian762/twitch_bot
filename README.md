@@ -100,6 +100,8 @@ yameteeeeeee.
 **!proteccion**  
 Inicia o finaliza el horario de protección al menor.  
 
+**!guardar**  
+Recuerda al streamer que guarde la partida.  
 ---
 
 ### FUENTES EXTERNAS:  
