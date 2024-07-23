@@ -31,7 +31,7 @@ lista_amigos = [
     "El mago de las impresoras 3D, mirá eso!! POPLAND customs https://www.instagram.com/poplandcustoms/",
     "¿Te van las pelis de héroes? seguilo a Tobi Oulego https://www.instagram.com/soytoubi/",
     "¿Necesitás un actor profesional? Acá tenés uno: Ariel Barañano Actor Profesional https://www.instagram.com/ariel.baranano/",
-    "Estás duro de tanto gaming? Llamalo a Javy el masajista: https://www.instagram.com/med.trad.china.javier?igsh=MTBmOGdlZmZ2Y2pwOQ=="
+    "¿Estás duro de tanto gaming? Llamalo a Javy el masajista: https://www.instagram.com/med.trad.china.javier?igsh=MTBmOGdlZmZ2Y2pwOQ=="
 ]
 
 cafecito_texto = "Si les gusta nuestro contenido pueden ayudarnos con un cafecito a https://cafecito.app/hablemosdepavadas"
