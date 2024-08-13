@@ -19,16 +19,13 @@ def get_args(args):
     respuesta = respuesta.strip().lower()
     return respuesta
 
-def funcion_puntitos(nombre:str, suma=True):
+def funcion_puntitos(nombre:str, cant=1):
     nombre = nombre.lower().lstrip("@")
     df = pd.read_csv(puntitos_file_path)
     if df[df["usuario"] == nombre].shape[0] == 0:
         df = df._append({"usuario":nombre,"puntos":0}, ignore_index=True)
     puntos = df.loc[df[df["usuario"] == nombre].index[0],"puntos"]
-    if suma:
-        df.loc[df[df["usuario"] == nombre].index[0],"puntos"] = puntos + 1
-    else:
-        df.loc[df[df["usuario"] == nombre].index[0],"puntos"] = puntos - 1    
+    df.loc[df[df["usuario"] == nombre].index[0],"puntos"] = puntos + cant
     df.to_csv(puntitos_file_path, index=False)
 
 def consulta_puntitos(nombre:str):

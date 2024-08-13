@@ -128,6 +128,10 @@ class Bot(commands.Bot):
     async def gg(self, ctx: commands.Context):
         playsound('storage/piripipi.mp3', False)
 
+    @commands.command()
+    async def dark(self, ctx: commands.Context):
+        playsound('storage/dark.mpeg', False)
+
     @routines.routine(minutes=rutina_timer, wait_first=True)
     async def rutinas(self):
         actual = self.rutinas_counter["actual"]
@@ -145,6 +149,14 @@ class Bot(commands.Bot):
             await mensaje(pedo)
             return
         await mensaje(lista_redes)
+    
+    @commands.command()
+    async def discord(self, ctx: commands.Context):
+        pedo = self.coma_etilico()
+        if pedo is not False:
+            await mensaje(pedo)
+            return
+        await mensaje("¡Sumate a nuestro Discord! https://discord.gg/YDdPMDxFDd")
         
     @commands.command(aliases=("programación",))
     async def programacion(self, ctx: commands.Context):
@@ -214,6 +226,19 @@ class Bot(commands.Bot):
         else:
             await mensaje("No encontré lanzamientos.")
 
+    @commands.command(aliases="bienvenido")
+    async def bienvenida(self, ctx: commands.Context, nombre: str):
+        pedo = self.coma_etilico()
+        if pedo is not False:
+            await mensaje(pedo)
+            return
+        if ctx.author.name in admins:
+            funcion_puntitos(nombre, 5)
+            await mensaje(f'@{nombre} acaba de sumar cinco puntitos de bienvenida!')
+        else:
+            funcion_puntitos(nombre, -1)
+            await mensaje(f'@{nombre} acaba de perder un puntito por hacerse el vivo!')
+
     @commands.command()
     async def puntito(self, ctx: commands.Context, nombre: str):
         pedo = self.coma_etilico()
@@ -222,10 +247,10 @@ class Bot(commands.Bot):
             return
         if ctx.author.name in admins:
             funcion_puntitos(nombre)
-            await mensaje(f'@{nombre} acaba de sumar un puntito!')
+            await mensaje(f'@{nombre.lstrip("@")} acaba de sumar un puntito!')
         else:
-            funcion_puntitos(nombre, False)
-            await mensaje(f'@{nombre} acaba de perder un puntito por hacerse el vivo!')
+            funcion_puntitos(nombre, -1)
+            await mensaje(f'@{nombre.lstrip("@")} acaba de perder un puntito por hacerse el vivo!')
 
     @commands.command(aliases=("puntos","punto","puntitos","score"))
     async def consulta(self, ctx: commands.Context):
@@ -434,7 +459,7 @@ class Bot(commands.Bot):
         escupida = int(triangular(2,500,1))
         if self.dia_semana == "Sunday":
             await mensaje(f"Los domingos no se escupe {nombre}!!")
-            funcion_puntitos(nombre,False)
+            funcion_puntitos(nombre, -1)
             await mensaje(f"{nombre} acaba de perder un puntito...")
             return
         if not self.escupitajos.get(nombre):
