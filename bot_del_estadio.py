@@ -7,6 +7,7 @@ from datetime import datetime
 
 from utiles.api_games import *
 from utiles.utiles_general import *
+from utiles.puntitos_manager import *
 from utiles.mensaje import *
 from utiles.api_youtube import *
 from utiles.secretos import (access_token, rawg_url, rawg_key)
@@ -131,6 +132,14 @@ class Bot(commands.Bot):
     @commands.command()
     async def dark(self, ctx: commands.Context):
         playsound('storage/dark.mpeg', False)
+
+    @commands.command()
+    async def quiereme(self, ctx: commands.Context):
+        playsound('storage/quiereme.wav', False)
+
+    @commands.command()
+    async def sacrilegioso(self, ctx: commands.Context):
+        playsound('storage/sacrilegioso.mpeg', False)
 
     @routines.routine(minutes=rutina_timer, wait_first=True)
     async def rutinas(self):
@@ -268,7 +277,7 @@ class Bot(commands.Bot):
             await mensaje(f'@{nombre} tiene {puntitos} puntitos!')
 
     @commands.command()
-    async def top(self, ctx: commands.Context):
+    async def top(self, ctx: commands.Context, n=3):
         pedo = self.coma_etilico()
         if pedo is not False:
             await mensaje(pedo)
@@ -276,9 +285,24 @@ class Bot(commands.Bot):
         nombre = ctx.author.name
         if nombre in admins:
             lista = ["El top 3 de puntitos es:"]
-            top = top_puntitos()
+            top = top_puntitos(n)
             lista.extend(top)
             await mensaje(lista)
+
+    @commands.command()
+    async def sorteo(self, ctx: commands.Context):
+        pedo = self.coma_etilico()
+        if pedo is not False:
+            await mensaje(pedo)
+            return
+        autor = ctx.author.name
+        if autor in admins:
+            ganador = sorteo_puntitos()
+            texto = ["¡SORTEO INICIADO!","sorteando...."]
+            await mensaje(texto)
+            await asyncio.sleep(randint(1,30))
+            texto = ["AND THE WINNER IS:", ganador]
+            await mensaje(texto)
 
     @commands.command()
     async def margarita(self, ctx: commands.Context):
@@ -363,7 +387,7 @@ class Bot(commands.Bot):
         nombre_video, link_video = get_video_details(video_id, self.yt_client)
         await mensaje([nombre_video, link_video])
 
-    @commands.command(aliases=("decision", "decisión", "desicion", "desición", "sorteo",))
+    @commands.command(aliases=("decision", "decisión", "desicion", "desición",))
     async def decidir(self, ctx: commands.Context, *args):
         pedo = self.coma_etilico()
         if pedo is not False:
@@ -515,11 +539,7 @@ class Bot(commands.Bot):
         if pedo is not False:
             await mensaje(pedo)
             return
-        with open(daddy_points_file_path, 'r') as f:
-            votos = int(f.read())
-        votos += 1
-        with open(daddy_points_file_path, 'w') as f:
-            f.write(str(votos))
+        votos = daddy_point()
         await mensaje(f'{ctx.author.name} acaba de votar para ver al Sugar Daddy sin camisa! Van {votos} votos!')
 
     @commands.command(aliases=("trivial",))
