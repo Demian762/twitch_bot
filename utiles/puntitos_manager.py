@@ -42,7 +42,7 @@ def funcion_puntitos(nombre:str, cant=1):
             puntitos = row['puntos'] + cant
             historicos = row['historico'] + cant
             hoja.update_cell(idx + 2, 2, puntitos)
-            hoja.update_cell(idx + 2, 2, historicos)
+            hoja.update_cell(idx + 2, 3, historicos)
             return
     nuevo_nombre = [nombre, cant, cant]
     hoja.append_row(nuevo_nombre)

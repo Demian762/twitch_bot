@@ -14,17 +14,17 @@ from utiles.secretos import (access_token, rawg_url, rawg_key)
 from configuracion import *
 
 
-rutina_timer = CONFIG.get("rutina_timer")
+rutina_timer = configuracion_basica.get("rutina_timer")
 
 
 class Bot(commands.Bot):
 
-    def __init__(self, CONFIG):
+    def __init__(self):
         super().__init__(token=access_token,
                          prefix='!',
                          initial_channels=['hablemosdepavadaspod', 'Demian762'],
                          case_insensitive = True)
-        self.config = CONFIG
+        self.config = configuracion_basica
         self.rawg = rawg(rawg_url, rawg_key)
         self.grog_count = 0
         self.pelea = {}
@@ -552,7 +552,7 @@ class Bot(commands.Bot):
         if self.trivia_actual is None and len(argumento) == 0:
             self.trivia_actual = choice(list(trivia.items()))
             await mensaje(self.trivia_actual[0])
-            await asyncio.sleep(CONFIG.get("dont_spam"))
+            await asyncio.sleep(configuracion_basica.get("dont_spam"))
             await mensaje(self.trivia_actual[1])
             print(self.trivia_actual[1])
         elif self.trivia_actual is None and len(argumento) > 0:
@@ -565,7 +565,7 @@ class Bot(commands.Bot):
                 await mensaje(f'"{argumento}" no es una trivia!')
                 return
             await mensaje(self.trivia_actual[0])
-            await asyncio.sleep(CONFIG.get("dont_spam"))
+            await asyncio.sleep(configuracion_basica.get("dont_spam"))
             lista_desordenada = self.trivia_actual[1].copy()
             shuffle(lista_desordenada)
             await mensaje(lista_desordenada)
@@ -583,7 +583,5 @@ class Bot(commands.Bot):
             else:
                 await mensaje('Nooooo, incorrecto!!')
 
-
-bot = Bot(CONFIG)
+bot = Bot()
 bot.run()
-        

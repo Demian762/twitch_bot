@@ -1,7 +1,7 @@
 import socket
 import asyncio
 
-from configuracion import CONFIG
+from configuracion import configuracion_basica
 from utiles.secretos import channel_name, HOST, PORT, access_token, bot_channel_name
 
 
@@ -30,4 +30,4 @@ async def mensaje(input):
     
     for texto in input:
         sendMessage(s, texto)
-        await asyncio.sleep(CONFIG.get("dont_spam"))
+        await asyncio.sleep(configuracion_basica.get("dont_spam"))

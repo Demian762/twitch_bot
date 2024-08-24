@@ -1,4 +1,4 @@
-CONFIG = {
+configuracion_basica = {
     "limite": 15,
     "dont_spam": 1,
     "rutina_timer": 10,
