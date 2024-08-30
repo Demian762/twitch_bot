@@ -21,6 +21,7 @@ lista_programacion = [
     "LUNES en modo fácil, gameplays completos, pero sin esfuerzo.",
     "MARTES de entre casa con Juan, noticias y jueguitos chill.",
     "MIÉRCOLES de PCMR con Demian, llevando al límite los FPS.",
+    "JUEVES de cine. Hay de todo, pero no hay drama.",
     "VIERNES de Super Aventuras con Sergio y Juan, Aventuras gráficas con expertos en la materia.",
     "SÁBADOS de Contenido Retro con Ever, un viaje al pasado y la nostalgia.",
     "DOMINGOS de té con Lulu y sus jueguitos relax.",

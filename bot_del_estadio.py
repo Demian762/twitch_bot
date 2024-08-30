@@ -243,10 +243,10 @@ class Bot(commands.Bot):
             return
         if ctx.author.name in admins:
             funcion_puntitos(nombre, 5)
-            await mensaje(f'@{nombre} acaba de sumar cinco puntitos de bienvenida!')
+            await mensaje(f'@{nombre.lstrip("@")} acaba de sumar cinco puntitos de bienvenida!')
         else:
             funcion_puntitos(nombre, -1)
-            await mensaje(f'@{nombre} acaba de perder un puntito por hacerse el vivo!')
+            await mensaje(f'@{nombre.lstrip("@")} acaba de perder un puntito por hacerse el vivo!')
 
     @commands.command()
     async def puntito(self, ctx: commands.Context, nombre: str):
