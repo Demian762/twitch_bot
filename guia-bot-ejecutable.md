@@ -1,0 +1,28 @@
+para instalar en local:
+pip install playsound
+pip install python-Levenshtein
+pip install -U twitchio
+pip install howlongtobeatpy (la 1.0.7 anda mal)
+pip install python-steam-api
+pip install google-api-python-client
+pip install gspread
+pip install requests
+pip install pandas
+
+Para instalar en ambiente virtual:
+en la terminal de git bash
+
+python -m venv bot-env
+source bot-env/Scripts/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+pip install -U pyinstaller
+(
+corregir la version de steam_web_api -version.py
+    except Exception:
+    __version__ = "2.0.4"
+)
+pyinstaller --onefile bot_del_estadio.py
+deactivate
+
+

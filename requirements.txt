@@ -1,0 +1,9 @@
+playsound==1.3.0
+python-Levenshtein==0.25.1
+twitchio==2.10.0
+howlongtobeatpy==1.0.6
+python-steam-api==2.0.4
+google-api-python-client==2.144.0
+gspread==6.1.2
+requests==2.32.3
+pandas==2.2.2

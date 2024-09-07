@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 import requests
 from howlongtobeatpy import HowLongToBeat
-from steam import Steam
+from steam_web_api  import Steam
 from utiles.secretos import steam_api_key
 
 class rawg:
