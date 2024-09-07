@@ -1,6 +1,6 @@
 import requests
-import pandas as pd
-from configuracion import puntitos_file_path
+import os
+import sys
 
 
 def precio_dolar():
@@ -18,3 +18,10 @@ def get_args(args):
         respuesta = respuesta + " " + i
     respuesta = respuesta.strip().lower()
     return respuesta
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except AttributeError:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)

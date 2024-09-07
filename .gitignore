@@ -2,3 +2,6 @@ __pycache__
 secretos.py
 pruebas.ipynb
 backlog.txt
+bot-env
+build
+dist

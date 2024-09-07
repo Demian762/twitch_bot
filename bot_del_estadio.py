@@ -1,7 +1,7 @@
 import asyncio
 from twitchio.ext import commands, routines
 from Levenshtein import distance as lev
-from playsound import playsound
+import winsound
 from random import choice, randint, uniform, triangular, shuffle
 from datetime import datetime
 
@@ -127,19 +127,28 @@ class Bot(commands.Bot):
 
     @commands.command()
     async def gg(self, ctx: commands.Context):
-        playsound('storage/piripipi.mp3', False)
+        audio_path = resource_path("storage\piripipi.wav")
+        winsound.PlaySound(audio_path,winsound.SND_FILENAME)
 
     @commands.command()
     async def dark(self, ctx: commands.Context):
-        playsound('storage/dark.mpeg', False)
+        audio_path = resource_path("storage\dark.wav")
+        winsound.PlaySound(audio_path,winsound.SND_FILENAME)
 
     @commands.command()
     async def quiereme(self, ctx: commands.Context):
-        playsound('storage/quiereme.wav', False)
+        audio_path = resource_path("storage\quiereme.wav")
+        winsound.PlaySound(audio_path,winsound.SND_FILENAME)
 
     @commands.command()
     async def sacrilegioso(self, ctx: commands.Context):
-        playsound('storage/sacrilegioso.mpeg', False)
+        audio_path = resource_path("storage\sacrilegioso.wav")
+        winsound.PlaySound(audio_path,winsound.SND_FILENAME)
+
+    @commands.command()
+    async def sad(self, ctx: commands.Context):
+        audio_path = resource_path("storage\sadsong.wav")
+        winsound.PlaySound(audio_path,winsound.SND_FILENAME)
 
     @routines.routine(minutes=rutina_timer, wait_first=True)
     async def rutinas(self):
