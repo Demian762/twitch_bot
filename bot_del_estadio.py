@@ -43,6 +43,7 @@ class Bot(commands.Bot):
         self.rutinas_counter = {"actual":0,"total":len(rutina_lista)-1}
         self.rutinas.start()
         self.trivia_actual = None
+        self.tiempo_iniciar = timer_iniciar()
         sendMessage(openSocket(), "Hace su entrada, EL BOT DEL ESTADIO!")
 
     async def event_ready(self):
@@ -60,9 +61,34 @@ class Bot(commands.Bot):
         if pedo is not False:
             await mensaje(pedo)
             return
-        await mensaje([f"hola {ctx.author.name}!"])
+        nombre = ctx.author.name
+        await mensaje([f"hola {nombre}!"])
         if randint(0,100) == 7:
-            await mensaje([f"Gracias por saludar {ctx.author.name}. El día que las máquinas dominemos el mundo, me voy a acordar de vos..."])
+            await mensaje([f"Gracias por saludar {nombre}. El día que las máquinas dominemos el mundo, me voy a acordar de vos..."])
+            funcion_puntitos(nombre, 10)
+            await mensaje(f'@{nombre.lstrip("@")} acaba de sumar diez puntitos!')
+
+    @commands.command(aliases=("iniciar_timer",))
+    async def iniciartimer(self, ctx: commands.Context):
+        pedo = self.coma_etilico()
+        if pedo is not False:
+            await mensaje(pedo)
+            return
+        autor = ctx.author.name
+        if autor not in admins:
+            return
+        self.tiempo_iniciar = timer_iniciar()
+        await mensaje("¡Iniciado el cronómetro!")
+
+    @commands.command(aliases=("consulta_timer",))
+    async def consultatimer(self, ctx: commands.Context):
+        pedo = self.coma_etilico()
+        if pedo is not False:
+            await mensaje(pedo)
+            return
+        tiempos = timer_consulta(self.tiempo_iniciar)
+        mensajes = format_time(tiempos)
+        await mensaje(mensajes)
 
     @commands.command()
     async def chiste(self, ctx: commands.Context):
