@@ -68,7 +68,7 @@ class Bot(commands.Bot):
             funcion_puntitos(nombre, 10)
             await mensaje(f'@{nombre.lstrip("@")} acaba de sumar diez puntitos!')
 
-    @commands.command(aliases=("iniciar_timer",))
+    @commands.command(aliases=("iniciotimer","reiniciartimer","timerinicio","timeriniciar","timerreiniciar",))
     async def iniciartimer(self, ctx: commands.Context):
         pedo = self.coma_etilico()
         if pedo is not False:
@@ -80,7 +80,7 @@ class Bot(commands.Bot):
         self.tiempo_iniciar = timer_iniciar()
         await mensaje("¡Iniciado el cronómetro!")
 
-    @commands.command(aliases=("consulta_timer",))
+    @commands.command(aliases=("timer","timerconsulta",))
     async def consultatimer(self, ctx: commands.Context):
         pedo = self.coma_etilico()
         if pedo is not False:

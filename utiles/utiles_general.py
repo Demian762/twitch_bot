@@ -30,11 +30,10 @@ def resource_path(relative_path):
 # funciones del timer
 
 def timer_iniciar():
-    tiempo = time.perf_counter()
-    return tiempo
+    return time.monotonic()
 
 def timer_consulta(tiempo_iniciar):
-    tiempo_actual = time.perf_counter()
+    tiempo_actual = time.monotonic()
     diferencia = tiempo_actual - tiempo_iniciar
     horas, resto = divmod(diferencia, 3600)
     minutos, segundos = divmod(resto, 60)
@@ -45,6 +44,6 @@ def format_time(tiempos):
     unidades = ["horas", "minutos", "segundos", "milisegundos"]
     resultado = [
         f"{valor} {unidad[:-1] if valor == 1 else unidad}"
-        for valor, unidad in zip(sorted(tiempos, reverse=False), unidades) if valor != 0
+        for valor, unidad in zip(tiempos, unidades) if valor != 0
     ]
     return resultado
