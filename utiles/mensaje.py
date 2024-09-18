@@ -6,7 +6,6 @@ from utiles.secretos import channel_name, HOST, PORT, access_token, bot_channel_
 
 
 PASS = "oauth:" + access_token # your Twitch OAuth token
-IDENT = "BotDelEstadio"  # Twitch username your using for your bot
 
 
 def openSocket():
