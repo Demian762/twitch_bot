@@ -176,6 +176,16 @@ class Bot(commands.Bot):
         audio_path = resource_path("storage\sadsong.wav")
         winsound.PlaySound(audio_path,winsound.SND_FILENAME)
 
+    @commands.command(aliases=("wansaia82","ariel",))
+    async def wansaia(self, ctx: commands.Context):
+        autor = ctx.author.name
+        permitidos = admins + ["wansaia82"]
+        if autor not in permitidos:
+            print("audio no reproducido")
+            return
+        audio_path = resource_path("storage\wansaia82.wav")
+        winsound.PlaySound(audio_path,winsound.SND_FILENAME)
+
     @routines.routine(minutes=rutina_timer, wait_first=True)
     async def rutinas(self):
         actual = self.rutinas_counter["actual"]
