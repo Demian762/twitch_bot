@@ -181,9 +181,17 @@ class Bot(commands.Bot):
         autor = ctx.author.name
         permitidos = admins + ["wansaia82"]
         if autor not in permitidos:
-            print("audio no reproducido")
             return
         audio_path = resource_path("storage\wansaia82.wav")
+        winsound.PlaySound(audio_path,winsound.SND_FILENAME)
+
+    @commands.command(aliases=("redfallen","theredfallen",))
+    async def red(self, ctx: commands.Context):
+        autor = ctx.author.name
+        permitidos = admins + ["theredfallen"]
+        if autor not in permitidos:
+            return
+        audio_path = resource_path("storage\presta.wav")
         winsound.PlaySound(audio_path,winsound.SND_FILENAME)
 
     @routines.routine(minutes=rutina_timer, wait_first=True)
