@@ -176,6 +176,12 @@ class Bot(commands.Bot):
         audio_path = resource_path("storage\sadsong.wav")
         winsound.PlaySound(audio_path,winsound.SND_FILENAME)
 
+    @commands.command(aliases=("boca","bostero",))
+    async def boque(self, ctx: commands.Context):
+        audio_path = resource_path("storage\boca.wav")
+        await mensaje(["boooooca boca","boca boca booooooca","booooooca boca boca"])
+        winsound.PlaySound(audio_path,winsound.SND_FILENAME)
+
     @commands.command(aliases=("wansaia82","ariel",))
     async def wansaia(self, ctx: commands.Context):
         autor = ctx.author.name
@@ -185,7 +191,7 @@ class Bot(commands.Bot):
         audio_path = resource_path("storage\wansaia82.wav")
         winsound.PlaySound(audio_path,winsound.SND_FILENAME)
 
-    @commands.command(aliases=("redfallen","theredfallen",))
+    @commands.command(aliases=("redfallen","theredfallen","presta"))
     async def red(self, ctx: commands.Context):
         autor = ctx.author.name
         permitidos = admins + ["theredfallen"]
@@ -193,6 +199,7 @@ class Bot(commands.Bot):
             return
         audio_path = resource_path("storage\presta.wav")
         winsound.PlaySound(audio_path,winsound.SND_FILENAME)
+        await mensaje("🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈")
 
     @routines.routine(minutes=rutina_timer, wait_first=True)
     async def rutinas(self):
