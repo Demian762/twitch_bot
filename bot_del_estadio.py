@@ -178,9 +178,10 @@ class Bot(commands.Bot):
 
     @commands.command(aliases=("boca","bostero",))
     async def boque(self, ctx: commands.Context):
-        audio_path = resource_path("storage\boca.wav")
-        await mensaje(["boooooca boca","boca boca booooooca","booooooca boca boca"])
+        audio_path = resource_path("storage\Boca.wav") # con mayuscula, no toma bien el "\b"
+        await mensaje("booooooca")
         winsound.PlaySound(audio_path,winsound.SND_FILENAME)
+        await mensaje(["boooooca booooooca","boca boca booooooca","booooooca boca boca"])
 
     @commands.command(aliases=("wansaia82","ariel",))
     async def wansaia(self, ctx: commands.Context):

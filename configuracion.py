@@ -4,7 +4,7 @@ configuracion_basica = {
     "rutina_timer": 10,
 }
 
-admins = ["hablemosdepavadaspod","demian762","everovius","juancater","pointandclickstore","lulumy27"]
+admins = ["hablemosdepavadaspod","demian762","everovius","juancatera","pointandclickstore","lulumy27"]
 
 daddy_points_file_path = "storage\daddy_points.txt"
 puntitos_file_path = "storage\puntitos.csv"
