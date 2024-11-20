@@ -30,7 +30,7 @@ lista_programacion = [
 lista_amigos = [
     "La recomendación de la casa, seguilo a Sergio de Point and Click Store https://www.instagram.com/pointandclickstore/",
     "El mago de las impresoras 3D, mirá eso!! POPLAND customs https://www.instagram.com/poplandcustoms/",
-    "¿Te van las pelis de héroes? seguilo a Tobi Oulego https://www.instagram.com/soytoubi/",
+    "¿Te van el cine y las entrevistas? seguilo a Tobi en https://www.instagram.com/soytoubi/",
     "¿Necesitás un actor profesional? Acá tenés uno: Ariel Barañano Actor Profesional https://www.instagram.com/ariel.baranano/",
     "¿Estás duro de tanto gaming? Llamalo a Javy el masajista: https://www.instagram.com/med.trad.china.javier?igsh=MTBmOGdlZmZ2Y2pwOQ==",
     "Te vas a volver loco con los pines de funkonauta! buscalos en su IG https://www.instagram.com/funkonauta/"
