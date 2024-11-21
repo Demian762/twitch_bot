@@ -11,7 +11,7 @@ puntitos_file_path = "storage\puntitos.csv"
 
 lista_redes = [
     "¡Seguinos en Instagram! https://www.instagram.com/hablemosdepavadas/",
-    "Acordate que resubimos todo a YouTube https://www.youtube.com/@hablemosdepavadas",
+    "Acordate que resubimos CASI todo a YouTube https://www.youtube.com/@hablemosdepavadas",
     "¿Tenemos TikTok? parece que si... https://www.tiktok.com/@hablemosdepavadas",
     "¿Te gustan los podcasts? seguinos en Spotify https://open.spotify.com/show/2sC1753wCmhBnDkZx7UOyj",
     "¡Sumate a nuestro Discord! https://discord.gg/YDdPMDxFDd",
