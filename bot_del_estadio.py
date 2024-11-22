@@ -152,6 +152,19 @@ class Bot(commands.Bot):
             self.proteccion = False
 
     @commands.command()
+    async def spam(self, ctx: commands.Context):
+        pedo = self.coma_etilico()
+        if pedo is not False:
+            await mensaje(pedo)
+            return
+        autor = ctx.author.name
+        if autor not in admins:
+            return
+        await mensaje(spam_messenges)
+        await mensaje(spam_messenges)
+        await mensaje(spam_messenges)
+
+    @commands.command()
     async def gg(self, ctx: commands.Context):
         audio_path = resource_path("storage\piripipi.wav")
         winsound.PlaySound(audio_path,winsound.SND_FILENAME)

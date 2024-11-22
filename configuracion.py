@@ -36,6 +36,18 @@ lista_amigos = [
     "Te vas a volver loco con los pines de funkonauta! buscalos en su IG https://www.instagram.com/funkonauta/"
 ]
 
+spam_messenges = [
+    "HOLA",
+    "VENGO A SPAMEAR",
+    "SEGURO QUE HAY ALGO QUE QUIEREN TAPAR",
+    "ASI QUE NO SE LES OCURRA HACER SCROLL PARA ARRIBA",
+    "BUENO",
+    "SE ME ACABO RAPIDO LA IMAGINACION",
+    "PERO SE QUE PUEDO HACER ALGO PARA SPAMEAR",
+    "PUEDO REPETIR TRES VECES ESTA LISTA DE MENSAJES!"
+]
+
+
 cafecito_texto = "Si les gusta nuestro contenido pueden ayudarnos con un cafecito a https://cafecito.app/hablemosdepavadas"
 
 rutina_lista = [lista_redes,lista_amigos,[cafecito_texto]]
