@@ -44,6 +44,8 @@ class Bot(commands.Bot):
         self.rutinas.start()
         self.trivia_actual = None
         self.tiempo_iniciar = timer_iniciar()
+        audio_path = resource_path("storage\holis.wav")
+        winsound.PlaySound(audio_path,winsound.SND_FILENAME)
         sendMessage(openSocket(), "Hace su entrada, EL BOT DEL ESTADIO!")
 
     async def event_ready(self):
