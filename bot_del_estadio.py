@@ -171,6 +171,11 @@ class Bot(commands.Bot):
         audio_path = resource_path("storage\holis.wav")
         winsound.PlaySound(audio_path,winsound.SND_FILENAME)
 
+    @commands.command(aliases=("zaraza","indyforever",))
+    async def indy(self, ctx: commands.Context):
+        audio_path = resource_path("storage\zazaraza.wav")
+        winsound.PlaySound(audio_path,winsound.SND_FILENAME)
+
     @commands.command()
     async def gg(self, ctx: commands.Context):
         audio_path = resource_path("storage\piripipi.wav")
