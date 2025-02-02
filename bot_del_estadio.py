@@ -39,8 +39,9 @@ class Bot(commands.Bot):
         self.dolar = precio_dolar()
         self.yt_client = build_yt_client()
         self.videos = get_videos_list(self.yt_client)
-        print("Canales en vivo: " + str(self.connected_channels))
+        self.lista_programacion = get_programacion()
         self.rutinas_counter = {"actual":0,"total":len(rutina_lista)-1}
+        self.puntitos_dados = []
         self.rutinas.start()
         self.trivia_actual = None
         self.tiempo_iniciar = timer_iniciar()
@@ -65,10 +66,13 @@ class Bot(commands.Bot):
             return
         nombre = ctx.author.name
         await mensaje([f"hola {nombre}!"])
-        if randint(0,100) == 7:
-            await mensaje([f"Gracias por saludar {nombre}. El día que las máquinas dominemos el mundo, me voy a acordar de vos..."])
-            funcion_puntitos(nombre, 10)
-            await mensaje(f'@{nombre.lstrip("@")} acaba de sumar diez puntitos!')
+        if nombre not in self.puntitos_dados:
+            self.puntitos_dados.append(nombre)
+            funcion_puntitos(nombre, 1)
+            await mensaje(f'@{nombre.lstrip("@")} acaba de sumar un puntito!')
+        else:
+            await mensaje(f'Ya tenés tu puntito de hoy @{nombre.lstrip("@")}, no jodas....')
+
 
     @commands.command(aliases=("iniciotimer","reiniciartimer","timerinicio","timeriniciar","timerreiniciar",))
     async def iniciartimer(self, ctx: commands.Context):
@@ -171,6 +175,16 @@ class Bot(commands.Bot):
         audio_path = resource_path("storage\holis.wav")
         winsound.PlaySound(audio_path,winsound.SND_FILENAME)
 
+    @commands.command(aliases=("helldivers","forsuperearth",))
+    async def helldiver(self, ctx: commands.Context):
+        audio_path = resource_path("storage\helldiver.wav")
+        winsound.PlaySound(audio_path,winsound.SND_FILENAME)
+
+    @commands.command()
+    async def cuervo(self, ctx: commands.Context):
+        audio_path = resource_path("storage\cuervo.wav")
+        winsound.PlaySound(audio_path,winsound.SND_FILENAME)
+
     @commands.command(aliases=("zaraza","indyforever",))
     async def indy(self, ctx: commands.Context):
         audio_path = resource_path("storage\zazaraza.wav")
@@ -259,7 +273,7 @@ class Bot(commands.Bot):
         if pedo is not False:
             await mensaje(pedo)
             return
-        await mensaje(lista_programacion)
+        await mensaje(self.lista_programacion)
 
     @commands.command(aliases=("amigo",))
     async def amigos(self, ctx: commands.Context):

@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 import requests
+import time
 from howlongtobeatpy import HowLongToBeat
 from steam_web_api  import Steam
 from utiles.secretos import steam_api_key
@@ -14,7 +15,7 @@ class rawg:
     def test_connection(self):
         response = requests.get(self.url, params=self.key)
         if response.status_code != 200:
-            raise Exception(f"Error al conectar con RAWG.io, status code = {response.status_code}")
+            print(f"Error al conectar con RAWG.io, status code = {response.status_code}")
         else:
             print("Conexión exitosa a rawg.io.")
     
@@ -24,9 +25,14 @@ class rawg:
         key_info["search_precise"] = False
         key_info["search_exact"] = False
         url_info = self.url + "games"
-        response = requests.get(url_info, params=key_info)
-
+        for _ in range(3):
+            response = requests.get(url_info, params=key_info)
+            if response.status_code == 200:
+                break
+            time.sleep(2)
+        print(response)
         if response.status_code != 200:
+            print(response.status_code)
             return 200, False, False
         
         elif  len(response.json().get('results')) > 0:

@@ -68,3 +68,10 @@ def daddy_point():
     votos = df[0]["daddy_points"] + 1
     hoja.update_cell(2, 1, votos)
     return votos
+
+def get_programacion():
+    hoja = sh.get_worksheet(2)
+    programacion_dict = hoja.get_all_records()
+    lista = []
+    for i in programacion_dict: lista.append(i['programacion'])
+    return lista

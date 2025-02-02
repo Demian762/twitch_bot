@@ -1,13 +1,10 @@
 configuracion_basica = {
     "limite": 15,
     "dont_spam": 1,
-    "rutina_timer": 10,
+    "rutina_timer": 15,
 }
 
-admins = ["hablemosdepavadaspod","demian762","everovius","juancatera","pointandclickstore","lulumy27"]
-
-daddy_points_file_path = "storage\daddy_points.txt"
-puntitos_file_path = "storage\puntitos.csv"
+admins = ["hablemosdepavadaspod","demian762","everovius","juancatera","pointandclickstore","lulumy27","mat_max_hdp"]
 
 lista_redes = [
     "¡Seguinos en Instagram! https://www.instagram.com/hablemosdepavadas/",
@@ -15,16 +12,6 @@ lista_redes = [
     "¿Tenemos TikTok? parece que si... https://www.tiktok.com/@hablemosdepavadas",
     "¿Te gustan los podcasts? seguinos en Spotify https://open.spotify.com/show/2sC1753wCmhBnDkZx7UOyj",
     "¡Sumate a nuestro Discord! https://discord.gg/YDdPMDxFDd",
-]
-
-lista_programacion = [
-    "LUNES en modo fácil, gameplays completos, pero sin esfuerzo.",
-    "MARTES de entre casa con Juan, noticias y jueguitos chill.",
-    "MIÉRCOLES de PCMR con Demian, llevando al límite los FPS.",
-    "JUEVES de cine. Hay de todo, pero no hay drama.",
-    "VIERNES de Super Aventuras con Sergio y Juan, Aventuras gráficas con expertos en la materia.",
-    "SÁBADOS de Contenido Retro con Ever, un viaje al pasado y la nostalgia.",
-    "DOMINGOS de té con Lulu y sus jueguitos relax.",
 ]
 
 lista_amigos = [
@@ -50,7 +37,7 @@ spam_messenges = [
 
 cafecito_texto = "Si les gusta nuestro contenido pueden ayudarnos con un cafecito a https://cafecito.app/hablemosdepavadas"
 
-rutina_lista = [lista_redes,lista_amigos,[cafecito_texto]]
+rutina_lista = [lista_redes,[cafecito_texto]]
 
 grog_list = [
     "Una pinta de grog para el Bot!",
