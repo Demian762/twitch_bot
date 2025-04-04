@@ -32,7 +32,7 @@ def top_puntitos(n=3):
 
     return top_n_names[:n]
 
-def funcion_puntitos(nombre:str, cant=1):
+def funcion_puntitos(nombre:str, cant: int=1):
     nombre = nombre.lower().lstrip("@")
     hoja = sh.get_worksheet(0)
     df = hoja.get_all_records()

@@ -86,7 +86,7 @@ class Bot(commands.Bot):
         self.tiempo_iniciar = timer_iniciar()
         await mensaje("¡Iniciado el cronómetro!")
 
-    @commands.command(aliases=("timer","timerconsulta",))
+    @commands.command(aliases=("timer","timerconsulta","horas","tiempo"))
     async def consultatimer(self, ctx: commands.Context):
         pedo = self.coma_etilico()
         if pedo is not False:
@@ -169,6 +169,11 @@ class Bot(commands.Bot):
         await mensaje(spam_messenges)
         await mensaje(spam_messenges)
         await mensaje(spam_messenges)
+
+    @commands.command(aliases=("yeahbaby","yeababy","larry","marit","marit887"))
+    async def baby(self, ctx: commands.Context):
+        audio_path = resource_path("storage\yeahbaby.wav")
+        winsound.PlaySound(audio_path,winsound.SND_FILENAME)
 
     @commands.command()
     async def holis(self, ctx: commands.Context):
@@ -577,7 +582,7 @@ class Bot(commands.Bot):
 
         await mensaje(enviar)
 
-    @commands.command(aliases=("spit","ptooie","ptooie!","garzo","split","escupitajo","gallo","pollo","gargajo",))
+    @commands.command(aliases=("spit","ptooie","garzo","split","escupitajo","gallo","pollo","gargajo",))
     async def escupir(self, ctx: commands.Context):
         nombre = ctx.author.name.lower()
         escupida = int(triangular(2,500,1))
@@ -601,10 +606,20 @@ class Bot(commands.Bot):
         if self.ganador is None:
             self.ganador = [nombre, escupida]
             await mensaje(f"{nombre} inició el torneo de escupitajos con {escupida} cm!")
+            funcion_puntitos(nombre)
+            await mensaje(f"{nombre} acaba de ganar un puntito!")
             return
         if escupida > self.ganador[1]:
+            ganador_previo = self.ganador[0]
             self.ganador = [nombre, escupida]
-            await mensaje(f"{nombre} va ganando el torneo!")
+            if ganador_previo != self.ganador[0]:
+                await mensaje(f"{nombre} va ganando el torneo!")
+                funcion_puntitos(nombre)
+                await mensaje(f"{nombre} acaba de ganar un puntito!")
+                funcion_puntitos(nombre, cant=-1)
+                await mensaje(f"{ganador_previo} acaba de perder un puntito!")
+            else:
+                await mensaje(f"{nombre} mejoró su propia marca!")
 
     @commands.command()
     async def ganador(self, ctx: commands.Context):
@@ -625,9 +640,8 @@ class Bot(commands.Bot):
             return
         if ctx.author.name.lower() in admins and self.ganador is not None:
             nombre = self.ganador[0]
-            await mensaje(f"{nombre} ganó el torneo de escupitajos, con un escupitajo de {self.ganador[1]} centímetros y se lleva un puntito!")
-            funcion_puntitos(nombre)
-            await mensaje(f'{nombre} acaba de sumar un puntito!')
+            await mensaje(f"{nombre} ganó el torneo de escupitajos, con un escupitajo de {self.ganador[1]} centímetros!")
+            await mensaje(f"Se reinicia el torneo!")
             self.escupitajos = {}
             self.ganador = None
         else:
