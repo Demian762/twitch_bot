@@ -19,12 +19,15 @@ python -m pip install -r requirements.txt
 pip list
 pip install -U pyinstaller
 (
-corregir la version de steam_web_api -version.py
-    except Exception:
+corregir la version de ---> bot-env/Lib/site-packages/steam_web_api/_version.py
+except Exception:
     __version__ = "2.0.4"
 )
 
-pyinstaller --onefile --add-data "storage/*:storage" --add-binary "D:\02 - prácticas Python\twitch_bot\bot-env\Lib\site-packages\fake_useragent\data\browsers.json;fake_useragent/data" --paths="D:/02 - prácticas Python/twitch_bot/bot-env/Lib/site-packages" bot_del_estadio.py
+corregir la extension de ---> browsers.jsonl
+D:\\02 - practicas Python\\00_twitch_bot\\bot-env\\Lib\\site-packages\\fake_useragent\\data\\browsers.json'
+
+pyinstaller --onefile --add-data "storage/*:storage" --add-binary "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\fake_useragent\data\browsers.json;fake_useragent/data" --paths="D:/02 - practicas Python/00_twitch_bot/bot-env/Lib/site-packages" bot_del_estadio.py
 
 deactivate
 

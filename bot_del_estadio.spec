@@ -3,8 +3,8 @@
 
 a = Analysis(
     ['bot_del_estadio.py'],
-    pathex=['D:/02 - prácticas Python/twitch_bot/bot-env/Lib/site-packages'],
-    binaries=[('D:\\02 - prácticas Python\\twitch_bot\\bot-env\\Lib\\site-packages\\fake_useragent\\data\\browsers.json', 'fake_useragent/data')],
+    pathex=['D:/02 - practicas Python/00_twitch_bot/bot-env/Lib/site-packages'],
+    binaries=[('D:\\02 - practicas Python\\00_twitch_bot\\bot-env\\Lib\\site-packages\\fake_useragent\\data\\browsers.json', 'fake_useragent/data')],
     datas=[('storage/*', 'storage')],
     hiddenimports=[],
     hookspath=[],
