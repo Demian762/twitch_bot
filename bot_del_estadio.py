@@ -170,11 +170,6 @@ class Bot(commands.Bot):
         await mensaje(spam_messenges)
         await mensaje(spam_messenges)
 
-    @commands.command(aliases=("yeahbaby","yeababy","larry","marit","marit887"))
-    async def baby(self, ctx: commands.Context):
-        audio_path = resource_path("storage\yeahbaby.wav")
-        winsound.PlaySound(audio_path,winsound.SND_FILENAME)
-
     @commands.command()
     async def holis(self, ctx: commands.Context):
         audio_path = resource_path("storage\holis.wav")
@@ -226,6 +221,15 @@ class Bot(commands.Bot):
         await mensaje("booooooca")
         winsound.PlaySound(audio_path,winsound.SND_FILENAME)
         await mensaje(["boooooca booooooca","boca boca booooooca","booooooca boca boca"])
+
+    @commands.command(aliases=("yeahbaby","yeababy","larry","marit","marit887"))
+    async def baby(self, ctx: commands.Context):
+        autor = ctx.author.name
+        permitidos = admins + ["marit887"]
+        if autor not in permitidos:
+            return
+        audio_path = resource_path("storage\yeahbaby.wav")
+        winsound.PlaySound(audio_path,winsound.SND_FILENAME)
 
     @commands.command(aliases=("wansaia82","ariel",))
     async def wansaia(self, ctx: commands.Context):
