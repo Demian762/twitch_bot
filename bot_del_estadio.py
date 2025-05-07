@@ -9,6 +9,7 @@ from utiles.api_games import *
 from utiles.utiles_general import *
 from utiles.puntitos_manager import *
 from utiles.mensaje import *
+from utiles.audios import *
 from utiles.api_youtube import *
 from utiles.secretos import (access_token, rawg_url, rawg_key)
 from configuracion import *
@@ -72,7 +73,6 @@ class Bot(commands.Bot):
             await mensaje(f'@{nombre.lstrip("@")} acaba de sumar un puntito!')
         else:
             await mensaje(f'Ya tenés tu puntito de hoy @{nombre.lstrip("@")}, no jodas....')
-
 
     @commands.command(aliases=("iniciotimer","reiniciartimer","timerinicio","timeriniciar","timerreiniciar",))
     async def iniciartimer(self, ctx: commands.Context):
@@ -170,84 +170,46 @@ class Bot(commands.Bot):
         await mensaje(spam_messenges)
         await mensaje(spam_messenges)
 
-    @commands.command()
-    async def holis(self, ctx: commands.Context):
-        audio_path = resource_path("storage\holis.wav")
-        winsound.PlaySound(audio_path,winsound.SND_FILENAME)
-
-    @commands.command(aliases=("helldivers","forsuperearth",))
-    async def helldiver(self, ctx: commands.Context):
-        audio_path = resource_path("storage\helldiver.wav")
-        winsound.PlaySound(audio_path,winsound.SND_FILENAME)
-
-    @commands.command()
-    async def cuervo(self, ctx: commands.Context):
-        audio_path = resource_path("storage\cuervo.wav")
-        winsound.PlaySound(audio_path,winsound.SND_FILENAME)
-
-    @commands.command(aliases=("zaraza","indyforever",))
-    async def indy(self, ctx: commands.Context):
-        audio_path = resource_path("storage\zazaraza.wav")
-        winsound.PlaySound(audio_path,winsound.SND_FILENAME)
-
-    @commands.command()
-    async def gg(self, ctx: commands.Context):
-        audio_path = resource_path("storage\piripipi.wav")
-        winsound.PlaySound(audio_path,winsound.SND_FILENAME)
-
-    @commands.command()
-    async def dark(self, ctx: commands.Context):
-        audio_path = resource_path("storage\dark.wav")
-        winsound.PlaySound(audio_path,winsound.SND_FILENAME)
-
-    @commands.command()
-    async def quiereme(self, ctx: commands.Context):
-        audio_path = resource_path("storage\quiereme.wav")
-        winsound.PlaySound(audio_path,winsound.SND_FILENAME)
-
-    @commands.command()
-    async def sacrilegioso(self, ctx: commands.Context):
-        audio_path = resource_path("storage\sacrilegioso.wav")
-        winsound.PlaySound(audio_path,winsound.SND_FILENAME)
-
-    @commands.command()
-    async def sad(self, ctx: commands.Context):
-        audio_path = resource_path("storage\sadsong.wav")
-        winsound.PlaySound(audio_path,winsound.SND_FILENAME)
-
-    @commands.command(aliases=("boca","bostero",))
-    async def boque(self, ctx: commands.Context):
-        audio_path = resource_path("storage\Boca.wav") # con mayuscula, no toma bien el "\b"
-        await mensaje("booooooca")
-        winsound.PlaySound(audio_path,winsound.SND_FILENAME)
-        await mensaje(["boooooca booooooca","boca boca booooooca","booooooca boca boca"])
-
-    @commands.command(aliases=("yeahbaby","yeababy","larry","marit","marit887"))
-    async def baby(self, ctx: commands.Context):
-        autor = ctx.author.name
-        permitidos = admins + ["marit887"]
-        if autor not in permitidos:
+    @commands.command(aliases=(comandos_general))
+    async def interactuar(self, ctx: commands.Context):
+        pedo = self.coma_etilico()
+        if pedo is not False:
+            await mensaje(pedo)
             return
-        audio_path = resource_path("storage\yeahbaby.wav")
-        winsound.PlaySound(audio_path,winsound.SND_FILENAME)
-
-    @commands.command(aliases=("wansaia82","ariel",))
-    async def wansaia(self, ctx: commands.Context):
         autor = ctx.author.name
-        permitidos = admins + ["wansaia82"]
-        if autor not in permitidos:
-            return
-        audio_path = resource_path("storage\wansaia82.wav")
-        winsound.PlaySound(audio_path,winsound.SND_FILENAME)
+        comando = ctx.message.content
 
-    @commands.command(aliases=("redfallen","theredfallen","presta"))
-    async def red(self, ctx: commands.Context):
-        autor = ctx.author.name
-        permitidos = admins + ["theredfallen"]
+        for llave, valores in comandos_audios.items():
+            if comando in valores:
+                comando = llave
+                break
+
+        if autor in autores_exclusivos.keys():
+            comando_exlusivo = autores_exclusivos.get(autor, None)
+            comando_exlusivo == comando
+                
+
+        
+        
+
+        if comando in comandos_mensajes.keys():
+            mensaje_string = comandos_mensajes.get(comando)
+            await mensaje(mensaje_string)
+            if comando not in comandos_audios.keys():
+                return
+
+
+
+
+
+
+
+        permitidos = admins + [""]
         if autor not in permitidos:
             return
         audio_path = resource_path("storage\presta.wav")
         winsound.PlaySound(audio_path,winsound.SND_FILENAME)
+        
         await mensaje("🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈")
 
     @routines.routine(minutes=rutina_timer, wait_first=True)
@@ -393,7 +355,7 @@ class Bot(commands.Bot):
             return
         nombre = ctx.author.name
         if nombre in admins:
-            lista = ["El top 3 de puntitos es:"]
+            lista = [f"El top {n} de puntitos es:"]
             top = top_puntitos(n)
             lista.extend(top)
             await mensaje(lista)
@@ -438,14 +400,6 @@ class Bot(commands.Bot):
             await mensaje([f"{nombre} pregunta:","¿Me regalas una margarita?"])
             self.margaritas += 1
             self.ultima_margarita = nombre
-
-    @commands.command()
-    async def horny(self, ctx: commands.Context):
-        pedo = self.coma_etilico()
-        if pedo is not False:
-            await mensaje(pedo)
-            return
-        await mensaje("yametekudasaaaaaaaai")
 
     @commands.command()
     async def grog(self, ctx: commands.Context):
