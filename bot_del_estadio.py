@@ -176,41 +176,33 @@ class Bot(commands.Bot):
         if pedo is not False:
             await mensaje(pedo)
             return
+        
         autor = ctx.author.name
-        comando = ctx.message.content
+        comando = str(ctx.message.content).lstrip("!").split(' ')[0]
+        comando_validado = None
 
         for llave, valores in comandos_audios.items():
             if comando in valores:
-                comando = llave
+                comando_validado = llave
                 break
 
-        if autor in autores_exclusivos.keys():
-            comando_exlusivo = autores_exclusivos.get(autor, None)
-            comando_exlusivo == comando
-                
+        if comando_validado:
+            audio_path = resource_path(f"storage\{comando_validado}.wav")
+            winsound.PlaySound(audio_path,winsound.SND_FILENAME)
+            mensaje_string = comandos_mensajes.get(comando_validado, None)
+        else:
+            mensaje_string = comandos_mensajes.get(comando, None)
 
-        
-        
+        await mensaje(mensaje_string)
 
-        if comando in comandos_mensajes.keys():
-            mensaje_string = comandos_mensajes.get(comando)
-            await mensaje(mensaje_string)
-            if comando not in comandos_audios.keys():
-                return
-
-
-
-
-
-
-
-        permitidos = admins + [""]
-        if autor not in permitidos:
+        if autor in admins:
             return
-        audio_path = resource_path("storage\presta.wav")
-        winsound.PlaySound(audio_path,winsound.SND_FILENAME)
-        
-        await mensaje("🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈")
+
+        for llave, valores in autores_exclusivos.items():
+            if comando_validado in valores and autor != llave:
+                funcion_puntitos(autor, -1)
+                funcion_puntitos(llave, 1)
+                await mensaje(f"@{autor} acaba de pagarle 1 puntito a @{llave} en concepto de regalías.")
 
     @routines.routine(minutes=rutina_timer, wait_first=True)
     async def rutinas(self):
@@ -347,6 +339,21 @@ class Bot(commands.Bot):
         else:
             await mensaje(f'@{nombre} tiene {puntitos} puntitos!')
 
+    @commands.command(aliases=())
+    async def historico(self, ctx: commands.Context):
+        pedo = self.coma_etilico()
+        if pedo is not False:
+            await mensaje(pedo)
+            return
+        nombre = ctx.author.name
+        puntitos = consulta_historica(nombre)
+        if puntitos == 0:
+            await ctx.send(f'@{nombre} todavía no tiene puntitos históricos!')
+        elif puntitos == 1 or puntitos == -1:
+            await mensaje(f'@{nombre} tiene {puntitos} puntito histórico!')
+        else:
+            await mensaje(f'@{nombre} tiene {puntitos} puntitos históricos!')
+
     @commands.command()
     async def top(self, ctx: commands.Context, n=3):
         pedo = self.coma_etilico()
@@ -392,12 +399,17 @@ class Bot(commands.Bot):
             await mensaje(f"No no no, que pregunte otro ahora...")
             return
         if self.margaritas >= self.cuantas_margaritas:
-            await mensaje(f"¡¡LA RECALCADA CAJETA DE TU HERMANA {nombre}!! TOMÁ UN PUNTITO!!")
-            funcion_puntitos(nombre)
-            await mensaje(f'{nombre} acaba de sumar un puntito...')
+            audio_path = resource_path(f"storage\margarita_2.wav")
+            winsound.PlaySound(audio_path,winsound.SND_FILENAME)
+            await mensaje(f"¡¡LA RECALCADA CAJETA DE TU HERMANA {nombre.upper()}!! TOMÁ TUS PUNTITOS!!")
+            funcion_puntitos(nombre, cant=2)
+            await mensaje(f'{nombre} acaba de sumar 2 puntitos...')
             self.cuantas_margaritas = None
         else:
             await mensaje([f"{nombre} pregunta:","¿Me regalas una margarita?"])
+            if self.margaritas == 0:
+                audio_path = resource_path(f"storage\margarita_1.wav")
+                winsound.PlaySound(audio_path,winsound.SND_FILENAME)
             self.margaritas += 1
             self.ultima_margarita = nombre
 
@@ -514,8 +526,8 @@ class Bot(commands.Bot):
                 # En caso de responder bien y ganar.
                 if self.pelea[nombre]["score"][0] >= 3:
                     enviar.append(f"{nombre} ganó la pelea de insultos!")
-                    funcion_puntitos(nombre)
-                    enviar.append(f'{nombre} acaba de sumar un puntito!')
+                    funcion_puntitos(nombre, cant=5)
+                    enviar.append(f'{nombre} acaba de sumar cinco puntitos!')
                     await mensaje(enviar)
                     return
 
@@ -544,40 +556,48 @@ class Bot(commands.Bot):
     async def escupir(self, ctx: commands.Context):
         nombre = ctx.author.name.lower()
         escupida = int(triangular(2,500,1))
-        if self.dia_semana == "Sunday":
-            await mensaje(f"Los domingos no se escupe {nombre}!!")
-            funcion_puntitos(nombre, -1)
+
+        if self.dia_semana == "Monday":
+            await mensaje(f"Los Lunes no se escupe {nombre}!!")
+            funcion_puntitos(nombre, cant=-1)
             await mensaje(f"{nombre} acaba de perder un puntito...")
             return
+
+        if self.ganador is not None and nombre == self.ganador[0]:
+            await mensaje(f"Vas ganando {nombre}, dejá que otros escupan!!")
+            return
+
         if not self.escupitajos.get(nombre):
             self.escupitajos[nombre] = {"escupida":escupida, "count":0}
         else:
             if self.escupitajos[nombre].get("count") >= 5:
                 await mensaje(f"{nombre} se quedó sin saliva!")
                 return
+
         self.escupitajos[nombre]["escupida"] = escupida
         count = self.escupitajos[nombre].get("count")
         self.escupitajos[nombre]["count"] = count + 1
         await mensaje(f"El escupitajo de {nombre} llegó a los {escupida} centímetros!")
+
         if nombre in admins:
             return
+        
         if self.ganador is None:
             self.ganador = [nombre, escupida]
             await mensaje(f"{nombre} inició el torneo de escupitajos con {escupida} cm!")
-            funcion_puntitos(nombre)
-            await mensaje(f"{nombre} acaba de ganar un puntito!")
+            funcion_puntitos(nombre, cant=2)
+            await mensaje(f"{nombre} acaba de ganar dos puntitos!")
             return
+        
         if escupida > self.ganador[1]:
             ganador_previo = self.ganador[0]
             self.ganador = [nombre, escupida]
-            if ganador_previo != self.ganador[0]:
-                await mensaje(f"{nombre} va ganando el torneo!")
-                funcion_puntitos(nombre)
-                await mensaje(f"{nombre} acaba de ganar un puntito!")
-                funcion_puntitos(nombre, cant=-1)
-                await mensaje(f"{ganador_previo} acaba de perder un puntito!")
-            else:
-                await mensaje(f"{nombre} mejoró su propia marca!")
+            await mensaje(f"{nombre} va ganando el torneo!")
+            funcion_puntitos(nombre, cant=2)
+            await mensaje(f"{nombre} acaba de ganar dos puntitos!")
+            funcion_puntitos(ganador_previo, cant=-2)
+            await mensaje(f"{ganador_previo} acaba de perder dos puntitos!")
+
 
     @commands.command()
     async def ganador(self, ctx: commands.Context):

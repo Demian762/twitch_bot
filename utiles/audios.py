@@ -22,8 +22,8 @@ comandos_mensajes = {
 
 autores_exclusivos = {
     'marit887':['yeahbaby'],
-    'wansaia82':['wansaia82','wansaia'],
-    'theredfallen':['presta']
+    'wansaia':['wansaia82','wansaia'],
+    'theredfallen':['presta'],
 }
 
-comandos_general = [item for sublista in comandos_audios.values() for item in sublista] + list(comandos_audios.keys())
+comandos_general = [item for sublista in comandos_audios.values() for item in sublista] + list(comandos_mensajes.keys())

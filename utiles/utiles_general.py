@@ -5,9 +5,9 @@ import time
 
 
 def precio_dolar():
-    response = requests.get("https://dolarapi.com/v1/dolares/tarjeta")
+    response = requests.get("https://dolarapi.com/v1/dolares/oficial")
     if response:
-        print("Dólar tarjeta a: " + str(response.json()['venta']))
+        print("Dólar oficial a: " + str(response.json()['venta']))
         return response.json()['venta']
     else:
         print("No se obtuvo el precio del dólar.")

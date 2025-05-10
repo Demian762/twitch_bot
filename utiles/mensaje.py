@@ -22,6 +22,8 @@ def sendMessage(s, message):
     s.send(bytes(messageTemp + "\r\n", 'UTF-8'))
 
 async def mensaje(input):
+    if input is None:
+        return
     s = openSocket()
     
     if isinstance(input, str):

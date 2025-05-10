@@ -5,3 +5,4 @@ backlog.txt
 bot-env
 build
 dist
+/ignored_files

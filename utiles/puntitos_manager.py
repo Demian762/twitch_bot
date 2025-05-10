@@ -15,6 +15,14 @@ def consulta_puntitos(nombre:str):
             return row['puntos']
     return 0
 
+def consulta_historica(nombre:str):
+    nombre = nombre.lower().lstrip("@")
+    df = sh.sheet1.get_all_records()
+    for row in df:
+        if row['nombre'] == nombre:
+            return row['historico']
+    return 0
+
 def top_puntitos(n=3):
     df = sh.sheet1.get_all_records()
     points_dict = defaultdict(list)
