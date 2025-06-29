@@ -9,6 +9,14 @@ pip install gspread
 pip install requests
 pip install pandas
 
+Para crear una dist:
+en la terminal de git bash
+source bot-env/Scripts/activate
+
+pyinstaller --onefile --add-data "storage/*:storage" --add-binary "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\fake_useragent\data\browsers.json;fake_useragent/data" --paths="D:/02 - practicas Python/00_twitch_bot/bot-env/Lib/site-packages" bot_del_estadio.py
+
+deactivate
+
 Para instalar en ambiente virtual:
 en la terminal de git bash
 
@@ -26,8 +34,6 @@ except Exception:
 
 corregir la extension de ---> browsers.jsonl
 D:\\02 - practicas Python\\00_twitch_bot\\bot-env\\Lib\\site-packages\\fake_useragent\\data\\browsers.json'
-
-pyinstaller --onefile --add-data "storage/*:storage" --add-binary "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\fake_useragent\data\browsers.json;fake_useragent/data" --paths="D:/02 - practicas Python/00_twitch_bot/bot-env/Lib/site-packages" bot_del_estadio.py
 
 deactivate
 

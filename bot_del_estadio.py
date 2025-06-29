@@ -391,6 +391,8 @@ class Bot(commands.Bot):
         nombre = ctx.author.name
         if nombre in admins:
             await mensaje("Los admins están sobrados de margaritas.")
+            audio_path = resource_path(f"storage\margarita_3.wav")
+            winsound.PlaySound(audio_path,winsound.SND_FILENAME)
             return
         if self.cuantas_margaritas is None:
             await mensaje(f"Basta con la margarita, {nombre}.")
@@ -423,7 +425,7 @@ class Bot(commands.Bot):
         await mensaje(texto)
         self.grog_count+=1
     
-    @commands.command(aliases=("aguita",))
+    @commands.command(aliases=("agüita","aguita"))
     async def agua(self, ctx: commands.Context):
         self.grog_count = 0
         await mensaje(f'Gracias {ctx.author.name} por darle agua al Bot.')
