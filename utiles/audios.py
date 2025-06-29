@@ -30,7 +30,7 @@ autores_exclusivos = {
     'marit887':['yeahbaby'],
     'wansaia':['wansaia82','wansaia'],
     'theredfallen':['presta'],
-    'roque':['sega'],
+    'roque04_':['sega'],
 }
 
 comandos_general = [item for sublista in comandos_audios.values() for item in sublista] + list(comandos_mensajes.keys())
