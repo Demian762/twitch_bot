@@ -18,6 +18,7 @@ comandos_audios = {
     'mario':['mario','nintendo','gameover'],
     'zelda':['zelda','link','item'],
     'alert':['alerta','alert','snake','metalgear','kojima'],
+    'ernesto':['ernesto','tenembaum'],
 }
 
 comandos_mensajes = {

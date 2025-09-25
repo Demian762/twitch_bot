@@ -4,7 +4,7 @@ configuracion_basica = {
     "rutina_timer": 15,
 }
 
-admins = ["hablemosdepavadaspod","demian762","everovius","juancatera","pointandclickstore","lulumy27","mat_max_hdp"]
+admins = ["hablemosdepavadaspod","demian762","everovius","juancatera","pointandclickstore","lulumy27","mat_max_hdp","wansaia"]
 
 lista_redes = [
     "¡Seguinos en Instagram! https://www.instagram.com/hablemosdepavadas/",
