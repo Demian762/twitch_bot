@@ -41,8 +41,16 @@ class Bot(commands.Bot):
         self.dolar = precio_dolar()
         self.yt_client = build_yt_client()
         self.videos = get_videos_list(self.yt_client)
+        video_id = get_latest_podcast(self.yt_client)
+        nombre_video, link_video = get_video_details(video_id, self.yt_client)
+        self.ultimo_podcast = f"{nombre_video} {link_video}"
+        video_id = get_latest_video(self.yt_client)
+        nombre_video, link_video = get_video_details(video_id, self.yt_client)
+        self.ultimo_video = f"{nombre_video} {link_video}"
         self.lista_programacion = get_programacion()
-        self.rutinas_counter = {"actual":0,"total":len(rutina_lista)-1}
+        self.rutina_lista = rutina_lista
+        self.rutina_lista.extend([self.ultimo_video,self.ultimo_podcast])
+        self.rutinas_counter = {"actual":0,"total":len(self.rutina_lista)-1}
         self.puntitos_dados = []
         self.rutinas.start()
         self.trivia_actual = None
@@ -120,7 +128,7 @@ class Bot(commands.Bot):
         if pedo is not False:
             await mensaje(pedo)
             return
-        await mensaje([f'El dólar tarjeta está a {self.dolar} pesos.'])
+        await mensaje([f'El dólar está a {self.dolar} pesos.'])
 
     @commands.command()
     async def medimela(self, ctx: commands.Context):
@@ -217,8 +225,10 @@ class Bot(commands.Bot):
     @routines.routine(minutes=rutina_timer, wait_first=True)
     async def rutinas(self):
         actual = self.rutinas_counter["actual"]
-        mensaje_actual = choice(rutina_lista[actual])
-        await mensaje(mensaje_actual)
+        mensaje_actual = self.rutina_lista[actual]
+
+        await mensaje([mensaje_actual])
+
         if actual >= self.rutinas_counter["total"]:
             self.rutinas_counter["actual"] = 0
         else:
@@ -497,6 +507,34 @@ class Bot(commands.Bot):
         elif len(args) > 1:
             eleccion = choice(list(args))
             await mensaje(f"Me decidí por: {eleccion}")
+
+    @commands.command(aliases=("dados",))
+    async def dado(self, ctx: commands.Context, formato: str = None):
+        pedo = self.coma_etilico()
+        if pedo is not False:
+            await mensaje(pedo)
+            return
+        
+        autor = ctx.author.name
+
+        if formato.lower() == "porcentaje":
+            resultado = randint(1, 100)
+            await mensaje(f"🎲 {autor} sacó {str(resultado)} puntos de porcentaje.")
+            return
+
+        formato = validate_dice_format(formato)
+        if not formato:
+            await mensaje("Poné bien el dado cheee...")
+            return
+        
+        cantidad, caras = formato.split('d')
+        cantidad = int(cantidad)
+        caras = int(caras)
+
+        resultados = [randint(1, caras) for _ in range(cantidad)]
+        total = sum(resultados)
+
+        await mensaje(f"🎲 {autor} sacó {str(total)} puntos.")
 
     @commands.command(aliases=("insulto", "pelea", "peleainsultos", "peleadeinsulto", "peleainsulto", "peleadeinsultos",))
     async def insultos(self, ctx: commands.Context, *args):

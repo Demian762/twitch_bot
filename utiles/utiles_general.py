@@ -47,3 +47,35 @@ def format_time(tiempos):
         for valor, unidad in zip(tiempos, unidades) if valor != 0
     ]
     return resultado
+
+def validate_dice_format(formato):
+    cantidad_permitida = 20
+    caras_permitidas = [4, 6, 8, 12, 20]
+
+    if not formato:
+        return None
+        
+    try:
+        # Convertir a minúscula y separar cantidad y caras
+        formato = formato.lower()
+        if 'd' not in formato:
+            return None
+            
+        cantidad, caras = formato.split('d')
+        
+        # Convertir a enteros
+        cantidad = int(cantidad)
+        caras = int(caras)
+        
+        # Validar límites
+        if cantidad < 1 or cantidad > cantidad_permitida:
+            return None
+            
+        if caras not in caras_permitidas:
+            return None
+            
+        # Devolver el formato validado
+        return f"{cantidad}d{caras}"
+        
+    except (ValueError, AttributeError):
+        return None

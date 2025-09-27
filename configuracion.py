@@ -1,7 +1,7 @@
 configuracion_basica = {
     "limite": 15,
     "dont_spam": 1,
-    "rutina_timer": 15,
+    "rutina_timer": 15, # 15 minutos default
 }
 
 admins = ["hablemosdepavadaspod","demian762","everovius","juancatera","pointandclickstore","lulumy27","mat_max_hdp","wansaia"]
@@ -37,7 +37,8 @@ spam_messenges = [
 
 cafecito_texto = "Si les gusta nuestro contenido pueden ayudarnos con un cafecito a https://cafecito.app/hablemosdepavadas"
 
-rutina_lista = [lista_redes,[cafecito_texto]]
+rutina_lista = lista_redes.copy()
+rutina_lista.extend([cafecito_texto])
 
 grog_list = [
     "Una pinta de grog para el Bot!",

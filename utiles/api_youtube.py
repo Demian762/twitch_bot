@@ -37,16 +37,17 @@ def get_latest_video(yt_client):
 def get_latest_podcast(yt_client):
     request = yt_client.playlistItems().list(
         part="snippet",
-        playlistId = "PL14j4uHK-mdSIxw-rA9MHHHiODkdOnk72",
+        playlistId = "PL14j4uHK-mdTO04RCRiFHg1NKPDv3b-sT",
         maxResults=50,
     )
     response = request.execute()
-    video_id = response['items'][-1]['snippet']['resourceId']['videoId']
+    video_id = response['items'][0]['snippet']['resourceId']['videoId']
     return video_id
 
 def get_video_details(video_id, yt_client):
     request = yt_client.videos().list(part='snippet,statistics', id=video_id)
     response = request.execute()
     nombre_video = response['items'][0]['snippet']['title']
+    nombre_video = nombre_video.split('#')[0].strip()
     link_video = "https://www.youtube.com/watch?v="+video_id
     return nombre_video, link_video
