@@ -1,0 +1,606 @@
+2025-09-27 03:48:24,682 [INFO] file_cache is only supported with oauth2client<4.0.0
+2025-09-27 03:48:30,242 [ERROR] Error crítico al inicializar el bot: property 'cogs' of 'Bot' object has no setter
+2025-09-27 03:48:55,767 [INFO] file_cache is only supported with oauth2client<4.0.0
+2025-09-27 03:49:01,296 [ERROR] Error crítico al inicializar el bot: Failed to load command <decidir>, a command with that name already exists.
+2025-09-27 03:49:40,098 [INFO] file_cache is only supported with oauth2client<4.0.0
+2025-09-27 03:49:45,741 [ERROR] Error crítico al inicializar el bot: Failed to load command <sorteo>, a command with that name already exists.
+2025-09-27 03:50:42,840 [INFO] file_cache is only supported with oauth2client<4.0.0
+2025-09-27 03:50:48,515 [ERROR] Error crítico al inicializar el bot: Failed to load command <sorteo>, a command with that name already exists.
+2025-09-27 03:52:34,889 [INFO] file_cache is only supported with oauth2client<4.0.0
+2025-09-27 03:52:40,377 [ERROR] Error crítico al inicializar el bot: Failed to load command <top>, a command with that name already exists.
+2025-09-27 03:53:08,696 [INFO] file_cache is only supported with oauth2client<4.0.0
+2025-09-27 03:53:14,136 [ERROR] Error crítico al inicializar el bot: Failed to load command <interactuar>, a command with that name already exists.
+2025-09-27 03:54:04,849 [INFO] file_cache is only supported with oauth2client<4.0.0
+2025-09-27 03:54:10,481 [ERROR] Error crítico al inicializar el bot: Failed to load command <podcast>, a command with that name already exists.
+2025-09-27 03:54:46,971 [INFO] file_cache is only supported with oauth2client<4.0.0
+2025-09-27 03:54:52,416 [ERROR] Error crítico al inicializar el bot: Failed to load command <ultimo>, a command with that name already exists.
+2025-09-27 03:55:42,185 [INFO] file_cache is only supported with oauth2client<4.0.0
+2025-09-27 03:55:47,688 [INFO] Bot inicializado correctamente
+2025-09-27 03:55:49,675 [INFO] Successfully logged onto Twitch WS: botdelestadio
+2025-09-27 03:55:49,739 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 03:55:50,905 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/getMe "HTTP/1.1 200 OK"
+2025-09-27 03:55:50,906 [INFO] Application started
+2025-09-27 03:55:51,123 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/deleteWebhook "HTTP/1.1 200 OK"
+2025-09-27 03:56:01,767 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/getUpdates "HTTP/1.1 200 OK"
+2025-09-27 03:56:11,985 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/getUpdates "HTTP/1.1 200 OK"
+2025-09-27 03:56:22,201 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/getUpdates "HTTP/1.1 200 OK"
+2025-09-27 03:56:32,416 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/getUpdates "HTTP/1.1 200 OK"
+2025-09-27 03:56:37,605 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/getUpdates "HTTP/1.1 200 OK"
+2025-09-27 03:56:38,584 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/getFile "HTTP/1.1 200 OK"
+2025-09-27 03:56:39,016 [INFO] HTTP Request: GET https://api.telegram.org/file/bot7990964960%3AAAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/voice/file_29.oga "HTTP/1.1 200 OK"
+2025-09-27 03:56:47,822 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/getUpdates "HTTP/1.1 200 OK"
+2025-09-27 03:56:58,037 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/getUpdates "HTTP/1.1 200 OK"
+2025-09-27 03:58:11,454 [INFO] file_cache is only supported with oauth2client<4.0.0
+2025-09-27 03:58:17,065 [INFO] Bot inicializado correctamente
+2025-09-27 03:58:19,078 [INFO] Successfully logged onto Twitch WS: botdelestadio
+2025-09-27 03:58:19,136 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 03:58:20,325 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/getMe "HTTP/1.1 200 OK"
+2025-09-27 03:58:20,326 [INFO] Application started
+2025-09-27 03:58:20,542 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/deleteWebhook "HTTP/1.1 200 OK"
+2025-09-27 03:58:31,205 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/getUpdates "HTTP/1.1 200 OK"
+2025-09-27 03:58:41,426 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/getUpdates "HTTP/1.1 200 OK"
+2025-09-27 03:58:51,647 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/getUpdates "HTTP/1.1 200 OK"
+2025-09-27 03:59:01,869 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/getUpdates "HTTP/1.1 200 OK"
+2025-09-27 03:59:12,090 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/getUpdates "HTTP/1.1 200 OK"
+2025-09-27 03:59:14,859 [ERROR] Task was destroyed but it is pending!
+task: <Task pending name='Task-1' coro=<Routine._routine() running at D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\twitchio\ext\routines\__init__.py:358> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2025-09-27 04:01:47,452 [INFO] file_cache is only supported with oauth2client<4.0.0
+2025-09-27 04:01:52,919 [INFO] Bot inicializado correctamente
+2025-09-27 04:01:54,947 [INFO] Successfully logged onto Twitch WS: botdelestadio
+2025-09-27 04:01:55,007 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 04:01:56,208 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/getMe "HTTP/1.1 200 OK"
+2025-09-27 04:01:56,208 [INFO] Application started
+2025-09-27 04:01:56,429 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/deleteWebhook "HTTP/1.1 200 OK"
+2025-09-27 04:02:07,077 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/getUpdates "HTTP/1.1 200 OK"
+2025-09-27 04:02:17,294 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/getUpdates "HTTP/1.1 200 OK"
+2025-09-27 04:02:20,555 [ERROR] Task was destroyed but it is pending!
+task: <Task pending name='Task-1' coro=<Routine._routine() running at D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\twitchio\ext\routines\__init__.py:358> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2025-09-27 04:07:40,795 [INFO] file_cache is only supported with oauth2client<4.0.0
+2025-09-27 04:07:46,394 [INFO] Bot inicializado correctamente
+2025-09-27 04:07:48,376 [INFO] Successfully logged onto Twitch WS: botdelestadio
+2025-09-27 04:07:48,433 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 04:07:49,693 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/getMe "HTTP/1.1 200 OK"
+2025-09-27 04:07:49,693 [INFO] Application started
+2025-09-27 04:07:49,934 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/deleteWebhook "HTTP/1.1 200 OK"
+2025-09-27 04:08:00,129 [ERROR] Task was destroyed but it is pending!
+task: <Task pending name='Task-1' coro=<Routine._routine() running at D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\twitchio\ext\routines\__init__.py:358> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2025-09-27 04:10:16,257 [INFO] file_cache is only supported with oauth2client<4.0.0
+2025-09-27 04:10:21,867 [INFO] Bot inicializado correctamente
+2025-09-27 04:10:23,928 [INFO] Successfully logged onto Twitch WS: botdelestadio
+2025-09-27 04:10:23,983 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 04:10:25,173 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/getMe "HTTP/1.1 200 OK"
+2025-09-27 04:10:25,174 [INFO] Application started
+2025-09-27 04:10:25,394 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/deleteWebhook "HTTP/1.1 200 OK"
+2025-09-27 04:10:36,048 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/getUpdates "HTTP/1.1 200 OK"
+2025-09-27 04:10:46,265 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/getUpdates "HTTP/1.1 200 OK"
+2025-09-27 04:10:56,482 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/getUpdates "HTTP/1.1 200 OK"
+2025-09-27 04:11:06,701 [INFO] HTTP Request: POST https://api.telegram.org/bot7990964960:AAFVhWafk9PLZpxu1GqIU1YONfw1HGXURC4/getUpdates "HTTP/1.1 200 OK"
+2025-09-27 04:11:10,776 [ERROR] Task was destroyed but it is pending!
+task: <Task pending name='Task-1' coro=<Routine._routine() running at D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\twitchio\ext\routines\__init__.py:358> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2025-09-27 04:13:16,677 [INFO] Bot inicializado correctamente
+2025-09-27 04:13:18,759 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 04:14:14,406 [ERROR] Task was destroyed but it is pending!
+task: <Task pending name='Task-1' coro=<Routine._routine() running at D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\twitchio\ext\routines\__init__.py:358> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2025-09-27 04:15:57,743 [INFO] Conexión exitosa a rawg.io.
+2025-09-27 04:15:57,744 [INFO] conexión exitosa con Steam.
+2025-09-27 04:15:57,779 [INFO] Dólar oficial a: 1350
+2025-09-27 04:15:58,456 [INFO] Obtenida la lista con 50 videos.
+2025-09-27 04:16:03,230 [INFO] Bot inicializado correctamente
+2025-09-27 04:16:05,318 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 04:19:10,920 [ERROR] Error en el bot: 'NoneType' object has no attribute 'name'
+2025-09-27 04:19:17,617 [ERROR] Task was destroyed but it is pending!
+task: <Task pending name='Task-1' coro=<Routine._routine() running at D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\twitchio\ext\routines\__init__.py:358> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2025-09-27 04:20:38,185 [INFO] Conexión exitosa a rawg.io.
+2025-09-27 04:20:38,186 [INFO] conexión exitosa con Steam.
+2025-09-27 04:20:38,212 [INFO] Dólar oficial a: 1350
+2025-09-27 04:20:38,948 [INFO] Obtenida la lista con 50 videos.
+2025-09-27 04:20:43,852 [INFO] Bot inicializado correctamente
+2025-09-27 04:20:45,902 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 04:21:23,329 [ERROR] Error en el bot: 'NoneType' object has no attribute 'name'
+2025-09-27 04:22:57,995 [ERROR] Task was destroyed but it is pending!
+task: <Task pending name='Task-1' coro=<Routine._routine() running at D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\twitchio\ext\routines\__init__.py:358> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2025-09-27 04:23:01,029 [INFO] Conexión exitosa a rawg.io.
+2025-09-27 04:23:01,029 [INFO] conexión exitosa con Steam.
+2025-09-27 04:23:01,058 [INFO] Dólar oficial a: 1350
+2025-09-27 04:23:01,795 [INFO] Obtenida la lista con 50 videos.
+2025-09-27 04:23:06,459 [INFO] Bot inicializado correctamente
+2025-09-27 04:23:08,552 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 04:23:22,139 [INFO] El comando 'tiraerror' no existe - Usuario: demian762
+2025-09-27 04:23:58,502 [ERROR] Error en _info: 'Bot' object has no attribute 'get_args'
+2025-09-27 04:25:51,554 [ERROR] Task was destroyed but it is pending!
+task: <Task pending name='Task-1' coro=<Routine._routine() running at D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\twitchio\ext\routines\__init__.py:358> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2025-09-27 04:25:54,685 [INFO] Conexión exitosa a rawg.io.
+2025-09-27 04:25:54,685 [INFO] conexión exitosa con Steam.
+2025-09-27 04:25:54,711 [INFO] Dólar oficial a: 1350
+2025-09-27 04:25:55,425 [INFO] Obtenida la lista con 50 videos.
+2025-09-27 04:26:00,079 [INFO] Bot inicializado correctamente
+2025-09-27 04:26:02,178 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 04:27:40,127 [ERROR] Task was destroyed but it is pending!
+task: <Task pending name='Task-1' coro=<Routine._routine() running at D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\twitchio\ext\routines\__init__.py:358> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2025-09-27 04:27:56,182 [INFO] Conexión exitosa a rawg.io.
+2025-09-27 04:27:56,182 [INFO] conexión exitosa con Steam.
+2025-09-27 04:27:56,216 [INFO] Dólar oficial a: 1350
+2025-09-27 04:27:56,876 [INFO] Obtenida la lista con 50 videos.
+2025-09-27 04:28:01,716 [INFO] Bot inicializado correctamente
+2025-09-27 04:28:03,778 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 04:28:37,394 [ERROR] Task was destroyed but it is pending!
+task: <Task pending name='Task-1' coro=<Routine._routine() running at D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\twitchio\ext\routines\__init__.py:358> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2025-09-27 04:28:39,947 [INFO] Conexión exitosa a rawg.io.
+2025-09-27 04:28:39,947 [INFO] conexión exitosa con Steam.
+2025-09-27 04:28:39,975 [INFO] Dólar oficial a: 1350
+2025-09-27 04:28:40,627 [INFO] Obtenida la lista con 50 videos.
+2025-09-27 04:28:45,205 [INFO] Bot inicializado correctamente
+2025-09-27 04:28:47,305 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 04:29:04,317 [INFO] Lanzamientos API - Status: 200, Desde: 2025-08-28, Hasta: 2025-11-26
+2025-09-27 04:29:04,318 [INFO] Lanzamientos API - Resultados encontrados: 5
+2025-09-27 04:29:38,007 [INFO] Conexión exitosa a rawg.io.
+2025-09-27 04:29:38,007 [INFO] conexión exitosa con Steam.
+2025-09-27 04:29:38,039 [INFO] Dólar oficial a: 1350
+2025-09-27 04:29:38,728 [INFO] Obtenida la lista con 50 videos.
+2025-09-27 04:29:43,299 [INFO] Bot inicializado correctamente
+2025-09-27 04:29:45,425 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 04:29:47,491 [ERROR] Exception happened while polling for updates.
+Traceback (most recent call last):
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_utils\networkloop.py", line 115, in network_retry_loop
+    if not await do_action():
+           ^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_utils\networkloop.py", line 108, in do_action
+    return action_cb_task.result()
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_updater.py", line 335, in polling_action_cb
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_extbot.py", line 658, in get_updates
+    updates = await super().get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\_bot.py", line 4593, in get_updates
+    await self._post(
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\_bot.py", line 691, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_extbot.py", line 362, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\_bot.py", line 720, in _do_post
+    result = await request.post(
+             ^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\request\_baserequest.py", line 197, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\request\_baserequest.py", line 355, in _request_wrapper
+    raise Conflict(message)
+telegram.error.Conflict: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2025-09-27 04:29:51,717 [ERROR] Exception happened while polling for updates.
+Traceback (most recent call last):
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_utils\networkloop.py", line 115, in network_retry_loop
+    if not await do_action():
+           ^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_utils\networkloop.py", line 108, in do_action
+    return action_cb_task.result()
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_updater.py", line 335, in polling_action_cb
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_extbot.py", line 658, in get_updates
+    updates = await super().get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\_bot.py", line 4593, in get_updates
+    await self._post(
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\_bot.py", line 691, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_extbot.py", line 362, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\_bot.py", line 720, in _do_post
+    result = await request.post(
+             ^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\request\_baserequest.py", line 197, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\request\_baserequest.py", line 355, in _request_wrapper
+    raise Conflict(message)
+telegram.error.Conflict: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2025-09-27 04:29:52,945 [ERROR] Exception happened while polling for updates.
+Traceback (most recent call last):
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_utils\networkloop.py", line 115, in network_retry_loop
+    if not await do_action():
+           ^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_utils\networkloop.py", line 108, in do_action
+    return action_cb_task.result()
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_updater.py", line 335, in polling_action_cb
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_extbot.py", line 658, in get_updates
+    updates = await super().get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\_bot.py", line 4593, in get_updates
+    await self._post(
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\_bot.py", line 691, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_extbot.py", line 362, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\_bot.py", line 720, in _do_post
+    result = await request.post(
+             ^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\request\_baserequest.py", line 197, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\request\_baserequest.py", line 355, in _request_wrapper
+    raise Conflict(message)
+telegram.error.Conflict: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2025-09-27 04:29:57,677 [ERROR] Exception happened while polling for updates.
+Traceback (most recent call last):
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_utils\networkloop.py", line 115, in network_retry_loop
+    if not await do_action():
+           ^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_utils\networkloop.py", line 108, in do_action
+    return action_cb_task.result()
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_updater.py", line 335, in polling_action_cb
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_extbot.py", line 658, in get_updates
+    updates = await super().get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\_bot.py", line 4593, in get_updates
+    await self._post(
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\_bot.py", line 691, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_extbot.py", line 362, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\_bot.py", line 720, in _do_post
+    result = await request.post(
+             ^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\request\_baserequest.py", line 197, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\request\_baserequest.py", line 355, in _request_wrapper
+    raise Conflict(message)
+telegram.error.Conflict: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2025-09-27 04:29:59,409 [ERROR] Exception happened while polling for updates.
+Traceback (most recent call last):
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_utils\networkloop.py", line 115, in network_retry_loop
+    if not await do_action():
+           ^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_utils\networkloop.py", line 108, in do_action
+    return action_cb_task.result()
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_updater.py", line 335, in polling_action_cb
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_extbot.py", line 658, in get_updates
+    updates = await super().get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\_bot.py", line 4593, in get_updates
+    await self._post(
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\_bot.py", line 691, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_extbot.py", line 362, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\_bot.py", line 720, in _do_post
+    result = await request.post(
+             ^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\request\_baserequest.py", line 197, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\request\_baserequest.py", line 355, in _request_wrapper
+    raise Conflict(message)
+telegram.error.Conflict: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2025-09-27 04:30:04,891 [ERROR] Exception happened while polling for updates.
+Traceback (most recent call last):
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_utils\networkloop.py", line 115, in network_retry_loop
+    if not await do_action():
+           ^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_utils\networkloop.py", line 108, in do_action
+    return action_cb_task.result()
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_updater.py", line 335, in polling_action_cb
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_extbot.py", line 658, in get_updates
+    updates = await super().get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\_bot.py", line 4593, in get_updates
+    await self._post(
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\_bot.py", line 691, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\ext\_extbot.py", line 362, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\_bot.py", line 720, in _do_post
+    result = await request.post(
+             ^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\request\_baserequest.py", line 197, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\telegram\request\_baserequest.py", line 355, in _request_wrapper
+    raise Conflict(message)
+telegram.error.Conflict: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2025-09-27 04:31:04,044 [INFO] Conexión exitosa a rawg.io.
+2025-09-27 04:31:04,045 [INFO] conexión exitosa con Steam.
+2025-09-27 04:31:04,071 [INFO] Dólar oficial a: 1350
+2025-09-27 04:31:04,819 [INFO] Obtenida la lista con 50 videos.
+2025-09-27 04:31:09,991 [INFO] Bot inicializado correctamente
+2025-09-27 04:31:12,076 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 04:31:22,852 [INFO] Lanzamientos API - Status: 200, Desde: 2025-08-28, Hasta: 2025-11-26
+2025-09-27 04:31:22,853 [INFO] Lanzamientos API - Resultados encontrados: 3
+2025-09-27 04:34:53,268 [ERROR] Error en comando grog: 'Bot' object has no attribute 'grog_count'
+2025-09-27 04:35:31,927 [ERROR] Task was destroyed but it is pending!
+task: <Task pending name='Task-1' coro=<Routine._routine() running at D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\twitchio\ext\routines\__init__.py:358> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2025-09-27 04:36:43,541 [INFO] Conexión exitosa a rawg.io.
+2025-09-27 04:36:43,542 [INFO] conexión exitosa con Steam.
+2025-09-27 04:36:43,734 [INFO] Dólar oficial a: 1350
+2025-09-27 04:36:44,494 [INFO] Obtenida la lista con 50 videos.
+2025-09-27 04:36:49,420 [INFO] Bot inicializado correctamente
+2025-09-27 04:36:51,537 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 04:40:14,274 [INFO] Conexión exitosa a rawg.io.
+2025-09-27 04:40:14,275 [INFO] conexión exitosa con Steam.
+2025-09-27 04:40:14,300 [INFO] Dólar oficial a: 1350
+2025-09-27 04:40:15,081 [INFO] Obtenida la lista con 50 videos.
+2025-09-27 04:40:19,860 [INFO] Bot inicializado correctamente
+2025-09-27 04:40:21,981 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 04:41:15,573 [ERROR] Task was destroyed but it is pending!
+task: <Task pending name='Task-1' coro=<Routine._routine() running at D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\twitchio\ext\routines\__init__.py:358> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2025-09-27 04:41:44,186 [INFO] Conexión exitosa a rawg.io.
+2025-09-27 04:41:44,186 [INFO] conexión exitosa con Steam.
+2025-09-27 04:41:44,214 [INFO] Dólar oficial a: 1350
+2025-09-27 04:41:44,856 [INFO] Obtenida la lista con 50 videos.
+2025-09-27 04:41:49,579 [INFO] Bot inicializado correctamente
+2025-09-27 04:41:51,652 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 04:42:47,867 [INFO] El comando 'proteccion' no existe - Usuario: demian762
+2025-09-27 04:44:22,198 [INFO] Conexión exitosa a rawg.io.
+2025-09-27 04:44:22,198 [INFO] conexión exitosa con Steam.
+2025-09-27 04:44:22,231 [INFO] Dólar oficial a: 1350
+2025-09-27 04:44:22,977 [INFO] Obtenida la lista con 50 videos.
+2025-09-27 04:44:27,783 [INFO] Cargando cog: BasicCommands
+2025-09-27 04:44:27,783 [ERROR] Error crítico al inicializar el bot: 'BasicCommands' object has no attribute 'get_commands'
+2025-09-27 04:44:49,517 [INFO] Conexión exitosa a rawg.io.
+2025-09-27 04:44:49,517 [INFO] conexión exitosa con Steam.
+2025-09-27 04:44:49,540 [INFO] Dólar oficial a: 1350
+2025-09-27 04:44:50,180 [INFO] Obtenida la lista con 50 videos.
+2025-09-27 04:44:54,942 [INFO] Cargando cog: BasicCommands
+2025-09-27 04:44:54,942 [INFO] Comandos en BasicCommands: ['guardar', 'hola', 'spam']
+2025-09-27 04:44:54,942 [INFO] Cargando cog: GameCommands
+2025-09-27 04:44:54,942 [INFO] Comandos en GameCommands: ['info', 'lanzamientos']
+2025-09-27 04:44:54,942 [INFO] Cargando cog: PointsCommands
+2025-09-27 04:44:54,945 [INFO] Comandos en PointsCommands: ['consulta', 'historico']
+2025-09-27 04:44:54,945 [INFO] Cargando cog: DrinkCommands
+2025-09-27 04:44:54,945 [INFO] Comandos en DrinkCommands: ['agua', 'grog']
+2025-09-27 04:44:54,945 [INFO] Cargando cog: YoutubeCommands
+2025-09-27 04:44:54,945 [INFO] Comandos en YoutubeCommands: ['podcast', 'recomendame', 'ultimo']
+2025-09-27 04:44:54,945 [INFO] Cargando cog: UtilityCommands
+2025-09-27 04:44:54,945 [INFO] Comandos en UtilityCommands: ['consultatimer', 'decidir', 'dolar', 'iniciartimer']
+2025-09-27 04:44:54,945 [INFO] Cargando cog: MinigamesCommands
+2025-09-27 04:44:54,945 [INFO] Comandos en MinigamesCommands: ['dado', 'escupir', 'ganador', 'margarita', 'terminar']
+2025-09-27 04:44:54,946 [INFO] Cargando cog: InfoCommands
+2025-09-27 04:44:54,946 [INFO] Comandos en InfoCommands: ['amigos', 'cafecito', 'discord', 'programacion', 'redes']
+2025-09-27 04:44:54,946 [INFO] Cargando cog: TriviaCommands
+2025-09-27 04:44:54,946 [INFO] Comandos en TriviaCommands: ['trivia']
+2025-09-27 04:44:54,946 [INFO] Cargando cog: InsultsCommands
+2025-09-27 04:44:54,946 [INFO] Comandos en InsultsCommands: ['insultos']
+2025-09-27 04:44:54,946 [INFO] Cargando cog: ExtraPointsCommands
+2025-09-27 04:44:54,947 [INFO] Comandos en ExtraPointsCommands: ['bienvenida', 'puntito', 'sorteo', 'top']
+2025-09-27 04:44:54,947 [INFO] Cargando cog: InteractionCommands
+2025-09-27 04:44:54,947 [INFO] Comandos en InteractionCommands: ['interactuar']
+2025-09-27 04:44:54,947 [INFO] Bot inicializado correctamente
+2025-09-27 04:44:57,047 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 04:45:49,242 [INFO] Conexión exitosa a rawg.io.
+2025-09-27 04:45:49,244 [INFO] conexión exitosa con Steam.
+2025-09-27 04:45:49,267 [INFO] Dólar oficial a: 1350
+2025-09-27 04:45:50,022 [INFO] Obtenida la lista con 50 videos.
+2025-09-27 04:45:55,170 [INFO] Cargando cog: BasicCommands
+2025-09-27 04:45:55,170 [INFO] Comandos en BasicCommands: ['guardar', 'hola', 'spam']
+2025-09-27 04:45:55,170 [INFO] Cargando cog: GameCommands
+2025-09-27 04:45:55,170 [INFO] Comandos en GameCommands: ['info', 'lanzamientos']
+2025-09-27 04:45:55,170 [INFO] Cargando cog: PointsCommands
+2025-09-27 04:45:55,171 [INFO] Comandos en PointsCommands: ['consulta', 'historico']
+2025-09-27 04:45:55,171 [INFO] Cargando cog: DrinkCommands
+2025-09-27 04:45:55,171 [INFO] Comandos en DrinkCommands: ['agua', 'grog']
+2025-09-27 04:45:55,171 [INFO] Cargando cog: YoutubeCommands
+2025-09-27 04:45:55,171 [INFO] Comandos en YoutubeCommands: ['podcast', 'recomendame', 'ultimo']
+2025-09-27 04:45:55,171 [INFO] Cargando cog: UtilityCommands
+2025-09-27 04:45:55,171 [INFO] Comandos en UtilityCommands: ['consultatimer', 'decidir', 'dolar', 'iniciartimer']
+2025-09-27 04:45:55,171 [INFO] Cargando cog: MinigamesCommands
+2025-09-27 04:45:55,172 [INFO] Comandos en MinigamesCommands: ['dado', 'escupir', 'ganador', 'margarita', 'terminar']
+2025-09-27 04:45:55,172 [INFO] Cargando cog: InfoCommands
+2025-09-27 04:45:55,172 [INFO] Comandos en InfoCommands: ['amigos', 'cafecito', 'discord', 'programacion', 'redes']
+2025-09-27 04:45:55,172 [INFO] Cargando cog: TriviaCommands
+2025-09-27 04:45:55,172 [INFO] Comandos en TriviaCommands: ['trivia']
+2025-09-27 04:45:55,172 [INFO] Cargando cog: InsultsCommands
+2025-09-27 04:45:55,172 [INFO] Comandos en InsultsCommands: ['insultos']
+2025-09-27 04:45:55,172 [INFO] Cargando cog: ExtraPointsCommands
+2025-09-27 04:45:55,173 [INFO] Comandos en ExtraPointsCommands: ['bienvenida', 'puntito', 'sorteo', 'top']
+2025-09-27 04:45:55,173 [INFO] Cargando cog: InteractionCommands
+2025-09-27 04:45:55,173 [INFO] Comandos en InteractionCommands: ['interactuar']
+2025-09-27 04:45:55,173 [INFO] Bot inicializado correctamente
+2025-09-27 04:45:57,285 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 04:46:23,804 [INFO] Conexión exitosa a rawg.io.
+2025-09-27 04:46:23,804 [INFO] conexión exitosa con Steam.
+2025-09-27 04:46:23,832 [INFO] Dólar oficial a: 1350
+2025-09-27 04:46:24,550 [INFO] Obtenida la lista con 50 videos.
+2025-09-27 04:46:29,288 [INFO] Cargando cog: BasicCommands
+2025-09-27 04:46:29,288 [INFO] Comandos en BasicCommands: ['guardar', 'hola', 'spam', 'test_proteccion']
+2025-09-27 04:46:29,288 [INFO] Cargando cog: GameCommands
+2025-09-27 04:46:29,289 [INFO] Comandos en GameCommands: ['info', 'lanzamientos']
+2025-09-27 04:46:29,289 [INFO] Cargando cog: PointsCommands
+2025-09-27 04:46:29,289 [INFO] Comandos en PointsCommands: ['consulta', 'historico']
+2025-09-27 04:46:29,289 [INFO] Cargando cog: DrinkCommands
+2025-09-27 04:46:29,289 [INFO] Comandos en DrinkCommands: ['agua', 'grog']
+2025-09-27 04:46:29,289 [INFO] Cargando cog: YoutubeCommands
+2025-09-27 04:46:29,289 [INFO] Comandos en YoutubeCommands: ['podcast', 'recomendame', 'ultimo']
+2025-09-27 04:46:29,289 [INFO] Cargando cog: UtilityCommands
+2025-09-27 04:46:29,290 [INFO] Comandos en UtilityCommands: ['consultatimer', 'decidir', 'dolar', 'iniciartimer']
+2025-09-27 04:46:29,290 [INFO] Cargando cog: MinigamesCommands
+2025-09-27 04:46:29,290 [INFO] Comandos en MinigamesCommands: ['dado', 'escupir', 'ganador', 'margarita', 'terminar']
+2025-09-27 04:46:29,290 [INFO] Cargando cog: InfoCommands
+2025-09-27 04:46:29,290 [INFO] Comandos en InfoCommands: ['amigos', 'cafecito', 'discord', 'programacion', 'redes']
+2025-09-27 04:46:29,290 [INFO] Cargando cog: TriviaCommands
+2025-09-27 04:46:29,291 [INFO] Comandos en TriviaCommands: ['trivia']
+2025-09-27 04:46:29,291 [INFO] Cargando cog: InsultsCommands
+2025-09-27 04:46:29,291 [INFO] Comandos en InsultsCommands: ['insultos']
+2025-09-27 04:46:29,291 [INFO] Cargando cog: ExtraPointsCommands
+2025-09-27 04:46:29,291 [INFO] Comandos en ExtraPointsCommands: ['bienvenida', 'puntito', 'sorteo', 'top']
+2025-09-27 04:46:29,291 [INFO] Cargando cog: InteractionCommands
+2025-09-27 04:46:29,291 [INFO] Comandos en InteractionCommands: ['interactuar']
+2025-09-27 04:46:29,291 [INFO] Bot inicializado correctamente
+2025-09-27 04:46:31,327 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 04:46:55,065 [INFO] Conexión exitosa a rawg.io.
+2025-09-27 04:46:55,065 [INFO] conexión exitosa con Steam.
+2025-09-27 04:46:55,091 [INFO] Dólar oficial a: 1350
+2025-09-27 04:46:55,851 [INFO] Obtenida la lista con 50 videos.
+2025-09-27 04:47:00,687 [INFO] Cargando cog: BasicCommands
+2025-09-27 04:47:00,687 [INFO] Comandos en BasicCommands: ['guardar', 'hola', 'spam']
+2025-09-27 04:47:00,687 [INFO] Cargando cog: GameCommands
+2025-09-27 04:47:00,687 [INFO] Comandos en GameCommands: ['info', 'lanzamientos']
+2025-09-27 04:47:00,687 [INFO] Cargando cog: PointsCommands
+2025-09-27 04:47:00,688 [INFO] Comandos en PointsCommands: ['consulta', 'historico']
+2025-09-27 04:47:00,688 [INFO] Cargando cog: DrinkCommands
+2025-09-27 04:47:00,688 [INFO] Comandos en DrinkCommands: ['agua', 'grog']
+2025-09-27 04:47:00,688 [INFO] Cargando cog: YoutubeCommands
+2025-09-27 04:47:00,688 [INFO] Comandos en YoutubeCommands: ['podcast', 'recomendame', 'ultimo']
+2025-09-27 04:47:00,688 [INFO] Cargando cog: UtilityCommands
+2025-09-27 04:47:00,688 [INFO] Comandos en UtilityCommands: ['consultatimer', 'decidir', 'dolar', 'iniciartimer']
+2025-09-27 04:47:00,688 [INFO] Cargando cog: MinigamesCommands
+2025-09-27 04:47:00,688 [INFO] Comandos en MinigamesCommands: ['dado', 'escupir', 'ganador', 'margarita', 'terminar']
+2025-09-27 04:47:00,688 [INFO] Cargando cog: InfoCommands
+2025-09-27 04:47:00,688 [INFO] Comandos en InfoCommands: ['amigos', 'cafecito', 'discord', 'programacion', 'redes']
+2025-09-27 04:47:00,688 [INFO] Cargando cog: TriviaCommands
+2025-09-27 04:47:00,688 [INFO] Comandos en TriviaCommands: ['trivia']
+2025-09-27 04:47:00,688 [INFO] Cargando cog: InsultsCommands
+2025-09-27 04:47:00,689 [INFO] Comandos en InsultsCommands: ['insultos']
+2025-09-27 04:47:00,689 [INFO] Cargando cog: ExtraPointsCommands
+2025-09-27 04:47:00,689 [INFO] Comandos en ExtraPointsCommands: ['bienvenida', 'puntito', 'sorteo', 'top']
+2025-09-27 04:47:00,689 [INFO] Cargando cog: InteractionCommands
+2025-09-27 04:47:00,689 [INFO] Comandos en InteractionCommands: ['interactuar']
+2025-09-27 04:47:00,689 [INFO] Bot inicializado correctamente
+2025-09-27 04:47:02,844 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 04:47:32,371 [INFO] Conexión exitosa a rawg.io.
+2025-09-27 04:47:32,371 [INFO] conexión exitosa con Steam.
+2025-09-27 04:47:32,399 [INFO] Dólar oficial a: 1350
+2025-09-27 04:47:33,241 [INFO] Obtenida la lista con 50 videos.
+2025-09-27 04:47:37,902 [INFO] Cargando cog: BasicCommands
+2025-09-27 04:47:37,904 [INFO] Comandos en BasicCommands: ['guardar', 'hola', 'proteccion', 'spam']
+2025-09-27 04:47:37,904 [INFO] Cargando cog: GameCommands
+2025-09-27 04:47:37,904 [INFO] Comandos en GameCommands: ['info', 'lanzamientos']
+2025-09-27 04:47:37,904 [INFO] Cargando cog: PointsCommands
+2025-09-27 04:47:37,904 [INFO] Comandos en PointsCommands: ['consulta', 'historico']
+2025-09-27 04:47:37,904 [INFO] Cargando cog: DrinkCommands
+2025-09-27 04:47:37,904 [INFO] Comandos en DrinkCommands: ['agua', 'grog']
+2025-09-27 04:47:37,904 [INFO] Cargando cog: YoutubeCommands
+2025-09-27 04:47:37,904 [INFO] Comandos en YoutubeCommands: ['podcast', 'recomendame', 'ultimo']
+2025-09-27 04:47:37,904 [INFO] Cargando cog: UtilityCommands
+2025-09-27 04:47:37,905 [INFO] Comandos en UtilityCommands: ['consultatimer', 'decidir', 'dolar', 'iniciartimer']
+2025-09-27 04:47:37,905 [INFO] Cargando cog: MinigamesCommands
+2025-09-27 04:47:37,905 [INFO] Comandos en MinigamesCommands: ['dado', 'escupir', 'ganador', 'margarita', 'terminar']
+2025-09-27 04:47:37,905 [INFO] Cargando cog: InfoCommands
+2025-09-27 04:47:37,905 [INFO] Comandos en InfoCommands: ['amigos', 'cafecito', 'discord', 'programacion', 'redes']
+2025-09-27 04:47:37,905 [INFO] Cargando cog: TriviaCommands
+2025-09-27 04:47:37,905 [INFO] Comandos en TriviaCommands: ['trivia']
+2025-09-27 04:47:37,906 [INFO] Cargando cog: InsultsCommands
+2025-09-27 04:47:37,906 [INFO] Comandos en InsultsCommands: ['insultos']
+2025-09-27 04:47:37,906 [INFO] Cargando cog: ExtraPointsCommands
+2025-09-27 04:47:37,906 [INFO] Comandos en ExtraPointsCommands: ['bienvenida', 'puntito', 'sorteo', 'top']
+2025-09-27 04:47:37,906 [INFO] Cargando cog: InteractionCommands
+2025-09-27 04:47:37,906 [INFO] Comandos en InteractionCommands: ['interactuar']
+2025-09-27 04:47:37,906 [INFO] Bot inicializado correctamente
+2025-09-27 04:47:39,983 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 04:50:51,366 [ERROR] Error en comando sorteo: the header row in the worksheet is not unique, try passing 'expected_headers' to get_all_records
+2025-09-27 04:51:29,604 [ERROR] Error en comando sorteo: the header row in the worksheet is not unique, try passing 'expected_headers' to get_all_records
+2025-09-27 04:52:46,613 [INFO] Conexión exitosa a rawg.io.
+2025-09-27 04:52:46,613 [INFO] conexión exitosa con Steam.
+2025-09-27 04:52:46,645 [INFO] Dólar oficial a: 1350
+2025-09-27 04:52:47,366 [INFO] Obtenida la lista con 50 videos.
+2025-09-27 04:52:52,134 [INFO] Cargando cog: BasicCommands
+2025-09-27 04:52:52,134 [INFO] Comandos en BasicCommands: ['guardar', 'hola', 'proteccion', 'spam']
+2025-09-27 04:52:52,134 [INFO] Cargando cog: GameCommands
+2025-09-27 04:52:52,134 [INFO] Comandos en GameCommands: ['info', 'lanzamientos']
+2025-09-27 04:52:52,134 [INFO] Cargando cog: PointsCommands
+2025-09-27 04:52:52,134 [INFO] Comandos en PointsCommands: ['consulta', 'historico']
+2025-09-27 04:52:52,134 [INFO] Cargando cog: DrinkCommands
+2025-09-27 04:52:52,135 [INFO] Comandos en DrinkCommands: ['agua', 'grog']
+2025-09-27 04:52:52,135 [INFO] Cargando cog: YoutubeCommands
+2025-09-27 04:52:52,135 [INFO] Comandos en YoutubeCommands: ['podcast', 'recomendame', 'ultimo']
+2025-09-27 04:52:52,135 [INFO] Cargando cog: UtilityCommands
+2025-09-27 04:52:52,135 [INFO] Comandos en UtilityCommands: ['consultatimer', 'decidir', 'dolar', 'iniciartimer']
+2025-09-27 04:52:52,135 [INFO] Cargando cog: MinigamesCommands
+2025-09-27 04:52:52,135 [INFO] Comandos en MinigamesCommands: ['dado', 'escupir', 'ganador', 'margarita', 'terminar']
+2025-09-27 04:52:52,135 [INFO] Cargando cog: InfoCommands
+2025-09-27 04:52:52,135 [INFO] Comandos en InfoCommands: ['amigos', 'cafecito', 'discord', 'programacion', 'redes']
+2025-09-27 04:52:52,136 [INFO] Cargando cog: TriviaCommands
+2025-09-27 04:52:52,136 [INFO] Comandos en TriviaCommands: ['trivia']
+2025-09-27 04:52:52,136 [INFO] Cargando cog: InsultsCommands
+2025-09-27 04:52:52,136 [INFO] Comandos en InsultsCommands: ['insultos']
+2025-09-27 04:52:52,136 [INFO] Cargando cog: ExtraPointsCommands
+2025-09-27 04:52:52,136 [INFO] Comandos en ExtraPointsCommands: ['bienvenida', 'puntito', 'sorteo', 'top']
+2025-09-27 04:52:52,136 [INFO] Cargando cog: InteractionCommands
+2025-09-27 04:52:52,137 [INFO] Comandos en InteractionCommands: ['interactuar']
+2025-09-27 04:52:52,137 [INFO] Bot inicializado correctamente
+2025-09-27 04:52:54,347 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 04:53:23,251 [INFO] Conexión exitosa a rawg.io.
+2025-09-27 04:53:23,252 [INFO] conexión exitosa con Steam.
+2025-09-27 04:53:23,284 [INFO] Dólar oficial a: 1350
+2025-09-27 04:53:24,055 [INFO] Obtenida la lista con 50 videos.
+2025-09-27 04:53:28,833 [INFO] Bot inicializado correctamente
+2025-09-27 04:53:30,901 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 04:54:00,286 [ERROR] Error en comando sorteo: the header row in the worksheet is not unique, try passing 'expected_headers' to get_all_records
+2025-09-27 04:57:18,474 [INFO] Lanzamientos API - Status: 200, Desde: 2025-08-28, Hasta: 2025-11-26
+2025-09-27 04:57:18,474 [INFO] Lanzamientos API - Resultados encontrados: 3
+2025-09-27 04:57:44,978 [ERROR] Error en comando programacion: 'Bot' object has no attribute 'lista_programacion'
+2025-09-27 04:59:40,798 [INFO] Conexión exitosa a rawg.io.
+2025-09-27 04:59:40,798 [INFO] conexión exitosa con Steam.
+2025-09-27 04:59:40,830 [INFO] Dólar oficial a: 1350
+2025-09-27 04:59:41,549 [INFO] Obtenida la lista con 50 videos.
+2025-09-27 04:59:46,472 [INFO] Bot inicializado correctamente
+2025-09-27 04:59:48,573 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 05:02:01,493 [ERROR] Error en comando insultos: 'BotConfig' object has no attribute 'get'
+2025-09-27 05:03:23,903 [INFO] Conexión exitosa a rawg.io.
+2025-09-27 05:03:24,292 [INFO] conexión exitosa con Steam.
+2025-09-27 05:03:24,317 [INFO] Dólar oficial a: 1350
+2025-09-27 05:03:25,095 [INFO] Obtenida la lista con 50 videos.
+2025-09-27 05:03:29,947 [INFO] Bot inicializado correctamente
+2025-09-27 05:03:32,063 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 05:05:34,803 [ERROR] Error en comando escupir: 'Bot' object has no attribute 'dia_semana'
+2025-09-27 05:08:20,473 [INFO] Conexión exitosa a rawg.io.
+2025-09-27 05:08:20,473 [INFO] conexión exitosa con Steam.
+2025-09-27 05:08:20,504 [INFO] Dólar oficial a: 1350
+2025-09-27 05:08:21,289 [INFO] Obtenida la lista con 50 videos.
+2025-09-27 05:08:26,131 [INFO] Bot inicializado correctamente
+2025-09-27 05:08:28,171 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 05:09:51,164 [ERROR] Error en comando trivia: 'BotConfig' object has no attribute 'get'
+2025-09-27 05:11:38,645 [ERROR] Task was destroyed but it is pending!
+task: <Task pending name='Task-1' coro=<Routine._routine() running at D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\twitchio\ext\routines\__init__.py:358> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2025-09-27 05:12:10,761 [INFO] Conexión exitosa a rawg.io.
+2025-09-27 05:12:10,762 [INFO] conexión exitosa con Steam.
+2025-09-27 05:12:10,810 [INFO] Dólar oficial a: 1350
+2025-09-27 05:12:11,591 [INFO] Obtenida la lista con 50 videos.
+2025-09-27 05:12:16,492 [INFO] Bot inicializado correctamente
+2025-09-27 05:12:18,581 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 05:15:30,665 [INFO] Conexión exitosa a rawg.io.
+2025-09-27 05:15:30,665 [INFO] conexión exitosa con Steam.
+2025-09-27 05:15:30,702 [INFO] Dólar oficial a: 1350
+2025-09-27 05:15:31,452 [INFO] Obtenida la lista con 50 videos.
+2025-09-27 05:15:36,155 [INFO] Bot inicializado correctamente
+2025-09-27 05:15:38,205 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 05:16:13,121 [INFO] TRIVIA INICIADA - Pregunta: ¿Qué hay tallado en un árbol de la playa de Monkey Island?
+2025-09-27 05:16:13,121 [INFO] RESPUESTA CORRECTA: L + E
+2025-09-27 05:16:25,248 [INFO] TRIVIA RESPONDIDA CORRECTAMENTE por demian762 - Respuesta: l + e
+2025-09-27 05:16:29,101 [INFO] TRIVIA INICIADA - Pregunta: El circo de la isla Melée era de:
+2025-09-27 05:16:29,101 [INFO] RESPUESTA CORRECTA: Los Hermanos Fettucini
+2025-09-27 05:16:51,597 [INFO] TRIVIA RESPUESTA INCORRECTA por demian762 - Respuesta: los amigos gazpacho | Correcta: Los Hermanos Fettucini
+2025-09-27 05:22:38,227 [INFO] Conexión exitosa a rawg.io.
+2025-09-27 05:22:38,227 [INFO] conexión exitosa con Steam.
+2025-09-27 05:22:38,257 [INFO] Dólar oficial a: 1350
+2025-09-27 05:22:39,007 [INFO] Obtenida la lista con 50 videos.
+2025-09-27 05:22:43,888 [INFO] Bot inicializado correctamente
+2025-09-27 05:22:46,007 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 05:32:36,757 [ERROR] Task was destroyed but it is pending!
+task: <Task pending name='Task-1' coro=<Routine._routine() running at C:\Users\joang\AppData\Local\Programs\Python\Python311\Lib\site-packages\twitchio\ext\routines\__init__.py:358> wait_for=<Future pending cb=[Task.task_wakeup()]>>

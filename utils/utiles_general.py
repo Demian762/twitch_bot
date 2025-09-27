@@ -2,15 +2,16 @@ import os
 import sys
 import requests
 import time
+from utils.logger import logger
 
 
 def precio_dolar():
     response = requests.get("https://dolarapi.com/v1/dolares/oficial")
     if response:
-        print("Dólar oficial a: " + str(response.json()['venta']))
+        logger.info("Dólar oficial a: " + str(response.json()['venta']))
         return response.json()['venta']
     else:
-        print("No se obtuvo el precio del dólar.")
+        logger.warning("No se obtuvo el precio del dólar.")
         return 0
 
 def get_args(args):

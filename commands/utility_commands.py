@@ -1,0 +1,53 @@
+from twitchio.ext import commands
+from random import choice, randint, uniform
+from utils.logger import logger
+from utils.mensaje import mensaje
+from utils.utiles_general import timer_iniciar, timer_consulta, format_time
+from .base_command import BaseCommand
+
+class UtilityCommands(BaseCommand):
+    @commands.command(aliases=("iniciotimer","reiniciartimer","timerinicio","timeriniciar","timerreiniciar",))
+    async def iniciartimer(self, ctx: commands.Context):
+        if await self.check_coma_etilico():
+            return
+            
+        autor = ctx.author.name
+        if autor not in self.bot.admins:
+            return
+        self.bot.tiempo_iniciar = timer_iniciar()
+        await mensaje("¡Iniciado el cronómetro!")
+
+    @commands.command(aliases=("timer","timerconsulta","horas","tiempo"))
+    async def consultatimer(self, ctx: commands.Context):
+        if await self.check_coma_etilico():
+            return
+            
+        tiempos = timer_consulta(self.bot.tiempo_iniciar)
+        mensajes = format_time(tiempos)
+        await mensaje(mensajes)
+
+    @commands.command()
+    async def dolar(self, ctx: commands.Context):
+        if await self.check_coma_etilico():
+            return
+        await mensaje([f'El dólar está a {self.bot.dolar} pesos.'])
+
+    @commands.command(aliases=("decision", "decisión", "desicion", "desición",))
+    async def decidir(self, ctx: commands.Context, *args):
+        if await self.check_coma_etilico():
+            return
+            
+        if len(args) == 0:
+            await mensaje("Para decidir, después del comando pasame un número, la palabra moneda o las opciones que haya separadas por un espacio.")
+        elif len(args) == 1 and args[0].isdigit():
+            eleccion = randint(1, int(args[0]))
+            await mensaje(f"Vamos por la opción {eleccion} !")
+        elif len(args) == 1 and args[0] == "moneda":
+            eleccion = ["CARA", "CRUZ"]
+            eleccion = choice(eleccion)
+            await mensaje(f"Tiraste una moneda y salió {eleccion}!")
+        elif len(args) == 1:
+            mensaje(f"Y bueno, elijo \"{args[0]}\", mucha opción no me diste.")
+        elif len(args) > 1:
+            eleccion = choice(list(args))
+            await mensaje(f"Me decidí por: {eleccion}")

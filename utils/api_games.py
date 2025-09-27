@@ -3,7 +3,8 @@ import requests
 import time
 from howlongtobeatpy import HowLongToBeat
 from steam_web_api  import Steam
-from utiles.secretos import steam_api_key
+from utils.secretos import steam_api_key
+from utils.logger import logger
 
 class rawg:
 
@@ -15,9 +16,9 @@ class rawg:
     def test_connection(self):
         response = requests.get(self.url, params=self.key)
         if response.status_code != 200:
-            print(f"Error al conectar con RAWG.io, status code = {response.status_code}")
+            logger.error(f"Error al conectar con RAWG.io, status code = {response.status_code}")
         else:
-            print("Conexión exitosa a rawg.io.")
+            logger.info("Conexión exitosa a rawg.io.")
     
     def info(self, juego: str):
         key_info = self.key
@@ -30,9 +31,8 @@ class rawg:
             if response.status_code == 200:
                 break
             time.sleep(2)
-        print(response)
         if response.status_code != 200:
-            print(response.status_code)
+            logger.error(f"Error en consulta RAWG, status code: {response.status_code}")
             return 200, False, False
         
         elif  len(response.json().get('results')) > 0:
@@ -45,28 +45,39 @@ class rawg:
             return None, False, False
         
     def lanzamientos(self, limite):
-        key_info = self.key
-        desde = str((date.today() - timedelta(days=7)).strftime("%Y-%m-%d"))
-        hasta = str((date.today() + timedelta(days=30)).strftime("%Y-%m-%d"))
+        key_info = self.key.copy()  # Crear una copia para evitar modificar el original
+        desde = str((date.today() - timedelta(days=30)).strftime("%Y-%m-%d"))  # Ampliado a 30 días atrás
+        hasta = str((date.today() + timedelta(days=60)).strftime("%Y-%m-%d"))   # Ampliado a 60 días adelante
         key_info["dates"] = desde + "," + hasta
         key_info["page_size"] = limite
         url_info = self.url + "games"
         response = requests.get(url_info, params=key_info)
-        if response.status_code == 200 and len(response.json().get('results')) > 0:
-            c = 0
-            output = []
-            for i in response.json().get('results'):
-                if c >= limite:
-                    break
-                temp = ""
-                temp = temp + i['name'] + " - Para: "
-                for e in i['platforms']:
-                    temp = temp + e['platform']['name'] + " "
-                temp = temp + " - Fecha: " + i['released']
-                output.append(temp)
-                c+=1
-            return output
+        
+        logger.info(f"Lanzamientos API - Status: {response.status_code}, Desde: {desde}, Hasta: {hasta}")
+        
+        if response.status_code == 200:
+            results = response.json().get('results', [])
+            logger.info(f"Lanzamientos API - Resultados encontrados: {len(results)}")
+            
+            if len(results) > 0:
+                c = 0
+                output = []
+                for i in results:
+                    if c >= limite:
+                        break
+                    temp = ""
+                    temp = temp + i['name'] + " - Para: "
+                    for e in i['platforms']:
+                        temp = temp + e['platform']['name'] + " "
+                    temp = temp + " - Fecha: " + i['released']
+                    output.append(temp)
+                    c+=1
+                return output
+            else:
+                logger.warning("Lanzamientos API - No se encontraron resultados en el rango de fechas")
+                return False
         else:
+            logger.error(f"Lanzamientos API - Error en respuesta: {response.status_code}")
             return False
 
 def howlong(game_name:str):
@@ -84,7 +95,7 @@ def howlong(game_name:str):
 def steam_api():
     try:
         steam = Steam(steam_api_key)
-        print("conexión exitosa con Steam.")
+        logger.info("conexión exitosa con Steam.")
         return steam
     except:
         raise "No se pudo conectar a Steam."

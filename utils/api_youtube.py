@@ -1,5 +1,6 @@
 from googleapiclient.discovery import build
-from utiles.secretos import youtube_api_key, hdp_channel_id
+from utils.secretos import youtube_api_key, hdp_channel_id
+from utils.logger import logger
 
 
 def build_yt_client():
@@ -19,7 +20,7 @@ def get_videos_list(yt_client):
     for i in response['items']:
         video = i['id']['videoId']
         videos.append(video)
-    print(f"Obtenida la lista con " + str(len(videos)) + " videos.")
+    logger.info(f"Obtenida la lista con " + str(len(videos)) + " videos.")
     return videos
 
 def get_latest_video(yt_client):
