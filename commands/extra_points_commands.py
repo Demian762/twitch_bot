@@ -1,3 +1,22 @@
+"""
+Comandos de administración de puntitos para admins del BotDelEstadio
+
+Este módulo contiene comandos especiales que solo pueden ser ejecutados por
+administradores para gestionar el sistema de puntitos, realizar sorteos,
+mostrar rankings y dar la bienvenida a nuevos usuarios.
+
+Commands:
+    !bienvenida/!bienvenido [usuario] - Otorga 5 puntitos de bienvenida
+    !puntito [usuario] - Otorga 1 puntito a un usuario específico  
+    !top [n] - Muestra el ranking de usuarios con más puntitos
+    !sorteo - Realiza sorteo ponderado y resetea ganador
+
+Permissions: Solo usuarios en la lista de admins pueden ejecutar estos comandos
+
+Author: Demian762
+Version: 250927
+"""
+
 import asyncio
 from twitchio.ext import commands
 from random import randint
@@ -8,8 +27,36 @@ from utils.configuracion import admins
 from .base_command import BaseCommand
 
 class ExtraPointsCommands(BaseCommand):
+    """
+    Cog que maneja comandos de administración del sistema de puntitos
+    
+    Estos comandos están restringidos únicamente a usuarios administradores
+    y permiten gestionar el sistema de puntitos de manera directa.
+    """
+    
     @commands.command(aliases="bienvenido")
     async def bienvenida(self, ctx: commands.Context, nombre: str):
+        """
+        Otorga puntitos de bienvenida a un usuario (solo admins)
+        
+        Comando especial para dar la bienvenida a nuevos usuarios del stream
+        otorgando 5 puntitos automáticamente. Si un usuario no autorizado
+        intenta usarlo, pierde 1 puntito como penalización.
+        
+        Args:
+            ctx (commands.Context): Contexto del comando
+            nombre (str): Nombre del usuario que recibirá los puntitos
+            
+        Permissions:
+            Solo usuarios en la lista de admins pueden ejecutar este comando
+            
+        Example:
+            Admin: !bienvenida NuevoUsuario
+            Bot: @NuevoUsuario acaba de sumar cinco puntitos de bienvenida!
+            
+            Usuario: !bienvenida OtroUsuario  
+            Bot: @Usuario acaba de perder un puntito por usar comandos de admin!
+        """
         if await self.check_coma_etilico():
             return
             

@@ -1,11 +1,36 @@
+"""
+Configuración centralizada del BotDelEstadio
+
+Este módulo contiene todas las configuraciones, listas de datos y constantes
+utilizadas por el bot. Centralizar toda la configuración aquí facilita
+el mantenimiento y permite modificaciones rápidas sin tocar el código fuente.
+
+Configuraciones incluidas:
+    - Parámetros básicos del bot (límites, timers, delays)
+    - Lista de administradores
+    - Contenido de redes sociales y amigos
+    - Mensajes de spam y sistema de grog
+    - Listas de insultos y respuestas
+    - Configuración de trivias
+    - Rutinas automáticas
+
+Author: Demian762  
+Version: 250927
+Last Update: Refactor completo con nueva estructura modular
+"""
+
+# Configuración básica del comportamiento del bot
 configuracion_basica = {
-    "limite": 15,
-    "dont_spam": 1,
-    "rutina_timer": 15, # 15 minutos default
+    "limite": 15,           # Límite de resultados por consulta
+    "dont_spam": 1,         # Delay en segundos entre mensajes múltiples
+    "rutina_timer": 15,     # Intervalo en minutos para rutinas automáticas
 }
 
+# Lista de usuarios con permisos de administrador
+# Estos usuarios pueden ejecutar comandos restringidos
 admins = ["hablemosdepavadaspod","demian762","everovius","juancatera","pointandclickstore","lulumy27","mat_max_hdp","wansaia"]
 
+# Mensajes de redes sociales para el comando !redes  
 lista_redes = [
     "¡Seguinos en Instagram! https://www.instagram.com/hablemosdepavadas/",
     "Acordate que resubimos CASI todo a YouTube https://www.youtube.com/@hablemosdepavadas",
@@ -14,6 +39,7 @@ lista_redes = [
     "¡Sumate a nuestro Discord! https://discord.gg/YDdPMDxFDd",
 ]
 
+# Lista de streamers amigos para el comando !amigos
 lista_amigos = [
     "La recomendación de la casa, seguilo a Sergio de Point and Click Store https://www.instagram.com/pointandclickstore/",
     "El mago de las impresoras 3D, mirá eso!! POPLAND customs https://www.instagram.com/poplandcustoms/",
@@ -23,9 +49,10 @@ lista_amigos = [
     "Te vas a volver loco con los pines de funkonauta! buscalos en su IG https://www.instagram.com/funkonauta/"
 ]
 
+# Mensajes para el comando !spam (solo admins)
 spam_messenges = [
     "HOLA",
-    "VENGO A SPAMEAR",
+    "VENGO A SPAMEAR", 
     "SEGURO QUE HAY ALGO QUE QUIEREN TAPAR",
     "ASI QUE NO SE LES OCURRA HACER SCROLL PARA ARRIBA",
     "BUENO",

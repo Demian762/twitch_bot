@@ -1,3 +1,13 @@
+"""
+Comandos de minijuegos interactivos
+
+Este módulo implementa varios minijuegos como escupitajos, dados, margaritas,
+y sorteos, cada uno con sus propias reglas y sistemas de puntuación.
+
+Author: Demian762
+Version: 250927
+"""
+
 from twitchio.ext import commands
 import winsound
 from random import triangular, randint
@@ -9,14 +19,50 @@ from utils.configuracion import admins
 from .base_command import BaseCommand
 
 class MinigamesCommands(BaseCommand):
+    """
+    Cog para minijuegos interactivos del chat
+    
+    Incluye juegos de escupitajos, dados, colección de margaritas,
+    sorteos y protección con diferentes mecánicas de juego.
+    
+    Attributes:
+        bot: Instancia del bot principal
+        margaritas: Contador actual de margaritas encontradas
+        cuantas_margaritas: Meta de margaritas para completar
+        ultima_margarita: Último usuario que encontró una margarita
+    """
     def __init__(self, bot):
+        """
+        Inicializa el cog de minijuegos
+        
+        Args:
+            bot: Instancia del bot principal
+        """
         super().__init__(bot)
         # Variables para el juego de margaritas
         self.margaritas = 0
         self.cuantas_margaritas = randint(1,10)
         self.ultima_margarita = None
+        
     @commands.command(aliases=("spit","ptooie","garzo","split","escupitajo","gallo","pollo","gargajo",))
     async def escupir(self, ctx: commands.Context):
+        """
+        Minijuego de competencia de escupitajos
+        
+        Los usuarios compiten por lograr la distancia más larga de escupitajo.
+        Tiene restricciones por día de la semana y límite de intentos.
+        
+        Args:
+            ctx: Contexto del comando de Twitch
+            
+        Returns:
+            None
+            
+        Note:
+            - No se puede escupir lunes y domingos (penaliza con -1 punto)
+            - Máximo 5 intentos por usuario
+            - El ganador actual no puede seguir escupiendo
+        """
         nombre = ctx.author.name.lower()
         escupida = int(triangular(2,500,1))
 
@@ -69,6 +115,12 @@ class MinigamesCommands(BaseCommand):
 
     @commands.command()
     async def ganador(self, ctx: commands.Context):
+        """
+        Muestra quién va ganando el torneo de escupitajos
+        
+        Args:
+            ctx: Contexto del comando de Twitch
+        """
         if await self.check_coma_etilico():
             return
             
@@ -79,6 +131,15 @@ class MinigamesCommands(BaseCommand):
 
     @commands.command(aliases=("termina",))
     async def terminar(self, ctx: commands.Context):
+        """
+        Termina el torneo de escupitajos y declara un ganador (solo admins)
+        
+        Args:
+            ctx: Contexto del comando de Twitch
+            
+        Note:
+            Solo disponible para administradores
+        """
         if await self.check_coma_etilico():
             return
             
@@ -93,6 +154,22 @@ class MinigamesCommands(BaseCommand):
 
     @commands.command(aliases=("dados",))
     async def dado(self, ctx: commands.Context, formato: str = None):
+        """
+        Lanza dados con formato personalizable
+        
+        Acepta formato estándar de dados (ej: 2d6) o modo porcentaje.
+        
+        Args:
+            ctx: Contexto del comando de Twitch
+            formato: Formato del dado (ej: "3d6", "porcentaje")
+            
+        Returns:
+            None
+            
+        Examples:
+            !dado 2d6 -> Lanza 2 dados de 6 caras
+            !dado porcentaje -> Lanza un porcentaje (1-100)
+        """
         if await self.check_coma_etilico():
             return
             
@@ -119,6 +196,23 @@ class MinigamesCommands(BaseCommand):
 
     @commands.command()
     async def margarita(self, ctx: commands.Context):
+        """
+        Minijuego de colección de margaritas
+        
+        Los usuarios preguntan por margaritas hasta completar la cantidad
+        objetivo, momento en el cual reciben puntos.
+        
+        Args:
+            ctx: Contexto del comando de Twitch
+            
+        Returns:
+            None
+            
+        Note:
+            - Los admins no pueden participar
+            - No se puede preguntar dos veces seguidas el mismo usuario
+            - Al completar la meta se ganan 2 puntitos
+        """
         if await self.check_coma_etilico():
             return
             

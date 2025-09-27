@@ -1,3 +1,13 @@
+"""
+Comandos de interacción con audios y efectos de sonido
+
+Este módulo maneja comandos que reproducen efectos de audio y ejecutan
+rutinas periódicas del bot, incluyendo sistema de regalías para audios exclusivos.
+
+Author: Demian762
+Version: 250927
+"""
+
 from twitchio.ext import commands, routines
 import winsound
 
@@ -11,12 +21,45 @@ from utils.audios import comandos_general, comandos_audios, comandos_mensajes, a
 from .base_command import BaseCommand
 
 class InteractionCommands(BaseCommand):
+    """
+    Cog para comandos de interacción con audios y rutinas
+    
+    Maneja la reproducción de efectos de sonido, mensajes asociados y
+    un sistema de regalías para comandos de audio exclusivos de ciertos usuarios.
+    
+    Attributes:
+        bot: Instancia del bot principal
+        rutinas: Rutina periódica del bot
+        comandos_audios: Mapeo de comandos a archivos de audio
+        autores_exclusivos: Sistema de regalías por uso de audios exclusivos
+    """
     def __init__(self, bot):
+        """
+        Inicializa el cog de comandos de interacción
+        
+        Args:
+            bot: Instancia del bot principal
+        """
         super().__init__(bot)
         self.rutinas.start()
         
     @commands.command(aliases=(comandos_general))
     async def interactuar(self, ctx: commands.Context):
+        """
+        Comando dinámico para reproducción de audios interactivos
+        
+        Detecta el comando usado, reproduce el audio asociado y maneja
+        el sistema de regalías para audios exclusivos.
+        
+        Args:
+            ctx: Contexto del comando de Twitch
+            
+        Returns:
+            None
+            
+        Note:
+            Este comando tiene alias dinámicos basados en comandos_general
+        """
         if await self.check_coma_etilico():
             return
             
@@ -49,6 +92,18 @@ class InteractionCommands(BaseCommand):
 
     @routines.routine(minutes=configuracion_basica["rutina_timer"], wait_first=True)
     async def rutinas(self):
+        """
+        Rutina periódica para mostrar mensajes automáticos
+        
+        Ejecuta mensajes programados según el cronograma configurado,
+        rotando entre diferentes mensajes informativos.
+        
+        Returns:
+            None
+            
+        Note:
+            Se ejecuta cada 'rutina_timer' minutos según configuración
+        """
         actual = self.bot.rutinas_counter["actual"]
         mensaje_actual = self.bot.rutina_lista[actual]
 

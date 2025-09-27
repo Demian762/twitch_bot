@@ -1,3 +1,14 @@
+"""
+Comandos de pelea de insultos interactiva
+
+Este módulo implementa un minijuego de pelea de insultos donde los usuarios
+pueden retar al bot a un duelo verbal usando algoritmos de distancia de Levenshtein
+para evaluar la precisión de las respuestas.
+
+Author: Demian762
+Version: 250927
+"""
+
 from twitchio.ext import commands
 from random import choice
 from Levenshtein import distance as lev
@@ -9,12 +20,48 @@ from utils.configuracion import insultos_dict, respuestas_dict
 from .base_command import BaseCommand
 
 class InsultsCommands(BaseCommand):
+    """
+    Cog para minijuego de pelea de insultos
+    
+    Implementa un sistema de duelo verbal donde los usuarios deben responder
+    correctamente a insultos del bot. Usa algoritmos de similitud de cadenas
+    para evaluar respuestas.
+    
+    Attributes:
+        bot: Instancia del bot principal
+        peleas: Diccionario que rastrea peleas activas por usuario
+        insultos_dict: Diccionario de insultos disponibles
+        respuestas_dict: Diccionario de respuestas correctas
+    """
     def __init__(self, bot):
+        """
+        Inicializa el cog de comandos de insultos
+        
+        Args:
+            bot: Instancia del bot principal
+        """
         super().__init__(bot)
         self.peleas = {}
 
     @commands.command(aliases=("insulto", "pelea", "peleainsultos", "peleadeinsulto", "peleainsulto", "peleadeinsultos",))
     async def insultos(self, ctx: commands.Context, *args):
+        """
+        Comando principal de pelea de insultos
+        
+        Inicia o continúa una pelea de insultos entre el usuario y el bot.
+        El objetivo es ganar 3 rondas respondiendo correctamente a los insultos.
+        
+        Args:
+            ctx: Contexto del comando de Twitch
+            *args: Respuesta del usuario al insulto
+            
+        Returns:
+            None
+            
+        Example:
+            !insultos -> Inicia nueva pelea
+            !insultos [respuesta] -> Responde al insulto actual
+        """
         if await self.check_coma_etilico():
             return
             

@@ -1,3 +1,13 @@
+"""
+Comandos de trivia interactiva
+
+Este módulo implementa un sistema de trivia donde los usuarios pueden
+iniciar preguntas aleatorias o específicas y competir por responder correctamente.
+
+Author: Demian762
+Version: 250927
+"""
+
 import asyncio
 from random import choice, shuffle
 from twitchio.ext import commands
@@ -11,11 +21,46 @@ from utils.configuracion import trivia, trivia_limite
 from .base_command import BaseCommand
 
 class TriviaCommands(BaseCommand):
+    """
+    Cog para sistema de trivia interactiva
+    
+    Maneja preguntas de trivia con múltiples opciones, incluyendo
+    inicialización de preguntas aleatorias o específicas por nombre.
+    
+    Attributes:
+        bot: Instancia del bot principal
+        trivia: Diccionario de preguntas y respuestas
+        trivia_limite: Límite de similitud para respuestas
+    """
     def __init__(self, bot):
+        """
+        Inicializa el cog de comandos de trivia
+        
+        Args:
+            bot: Instancia del bot principal
+        """
         super().__init__(bot)
 
     @commands.command(aliases=("trivial",))
     async def trivia(self, ctx: commands.Context, *args):
+        """
+        Comando principal de trivia
+        
+        Inicia una nueva pregunta de trivia (aleatoria o específica) o
+        continúa con una trivia existente evaluando respuestas.
+        
+        Args:
+            ctx: Contexto del comando de Twitch
+            *args: Respuesta del usuario o nombre específico de trivia
+            
+        Returns:
+            None
+            
+        Example:
+            !trivia -> Inicia trivia aleatoria
+            !trivia historia -> Busca trivia sobre historia
+            !trivia [respuesta] -> Responde a trivia activa
+        """
         if await self.check_coma_etilico():
             return
         

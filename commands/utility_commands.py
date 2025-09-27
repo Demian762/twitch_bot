@@ -1,3 +1,13 @@
+"""
+Comandos de utilidades generales
+
+Este módulo proporciona herramientas útiles como temporizadores,
+consulta de tipo de cambio, y ayuda para tomar decisiones.
+
+Author: Demian762
+Version: 250927
+"""
+
 from twitchio.ext import commands
 from random import choice, randint, uniform
 from utils.logger import logger
@@ -6,8 +16,23 @@ from utils.utiles_general import timer_iniciar, timer_consulta, format_time
 from .base_command import BaseCommand
 
 class UtilityCommands(BaseCommand):
+    """
+    Cog para comandos de utilidades generales
+    
+    Incluye funciones de temporizador, consulta de tipo de cambio,
+    y herramientas para ayudar en la toma de decisiones.
+    
+    Attributes:
+        bot: Instancia del bot principal
+    """
     @commands.command(aliases=("iniciotimer","reiniciartimer","timerinicio","timeriniciar","timerreiniciar",))
     async def iniciartimer(self, ctx: commands.Context):
+        """
+        Inicia o reinicia el temporizador del stream (solo admins)
+        
+        Args:
+            ctx: Contexto del comando de Twitch
+        """
         if await self.check_coma_etilico():
             return
             
@@ -19,6 +44,12 @@ class UtilityCommands(BaseCommand):
 
     @commands.command(aliases=("timer","timerconsulta","horas","tiempo"))
     async def consultatimer(self, ctx: commands.Context):
+        """
+        Consulta el tiempo transcurrido desde el inicio del temporizador
+        
+        Args:
+            ctx: Contexto del comando de Twitch
+        """
         if await self.check_coma_etilico():
             return
             
@@ -28,12 +59,32 @@ class UtilityCommands(BaseCommand):
 
     @commands.command()
     async def dolar(self, ctx: commands.Context):
+        """
+        Consulta el tipo de cambio actual del dólar
+        
+        Args:
+            ctx: Contexto del comando de Twitch
+        """
         if await self.check_coma_etilico():
             return
         await mensaje([f'El dólar está a {self.bot.dolar} pesos.'])
 
     @commands.command(aliases=("decision", "decisión", "desicion", "desición",))
     async def decidir(self, ctx: commands.Context, *args):
+        """
+        Ayuda a tomar decisiones aleatorias
+        
+        Puede elegir números, tirar moneda o seleccionar entre opciones.
+        
+        Args:
+            ctx: Contexto del comando de Twitch
+            *args: Parámetros para la decisión
+            
+        Examples:
+            !decidir 10 -> Elige número del 1 al 10
+            !decidir moneda -> Tira una moneda (CARA/CRUZ)
+            !decidir opcion1 opcion2 opcion3 -> Elige una opción
+        """
         if await self.check_coma_etilico():
             return
             

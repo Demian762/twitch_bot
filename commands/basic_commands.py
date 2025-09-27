@@ -1,18 +1,68 @@
+"""
+Comandos básicos y fundamentales del BotDelEstadio
+
+Este módulo contiene los comandos más simples y esenciales del bot,
+incluyendo saludos, recordatorios y funcionalidades de administración básica.
+
+Commands:
+    !hola/!buenas - Saludo con puntito diario
+    !guardar/!salvar - Recordatorio para guardar partida
+    !proteccion - Control de horario de protección al menor
+    !spam - Envío de mensajes predefinidos (solo admins)
+
+Author: Demian762
+Version: 250927
+"""
+
 from twitchio.ext import commands
-from utils.logger import logger
 from utils.mensaje import mensaje
 from utils.puntitos_manager import funcion_puntitos
 from utils.configuracion import admins, spam_messenges
 from .base_command import BaseCommand
 
 class BasicCommands(BaseCommand):
+    """
+    Cog que maneja comandos básicos y funcionalidades esenciales
+    
+    Attributes:
+        puntitos_dados (list): Lista de usuarios que ya recibieron su puntito diario
+        proteccion_activa (bool): Estado del horario de protección al menor
+    """
+    
     def __init__(self, bot):
+        """
+        Inicializa el cog de comandos básicos
+        
+        Args:
+            bot: Instancia del bot principal
+        """
         super().__init__(bot)
         self.puntitos_dados = []
         self.proteccion_activa = False
 
     @commands.command(aliases=("buenas",))
     async def hola(self, ctx: commands.Context):
+        """
+        Comando de saludo con sistema de puntito diario
+        
+        Saluda al usuario y otorga un puntito una vez por día por usuario.
+        Implementa un sistema simple de control de frecuencia para evitar
+        spam de puntitos del mismo usuario.
+        
+        Args:
+            ctx (commands.Context): Contexto del comando con información del usuario
+            
+        Aliases: !buenas
+        
+        Example:
+            Usuario: !hola
+            Bot: hola Usuario!
+            Bot: @Usuario acaba de sumar un puntito!
+            
+        Note:
+            - Solo otorga un puntito por usuario por sesión del bot
+            - Lista se resetea cuando se reinicia el bot
+        """
         if await self.check_coma_etilico():
             return
         nombre = ctx.author.name
@@ -26,6 +76,23 @@ class BasicCommands(BaseCommand):
 
     @commands.command(aliases=("salvar",))
     async def guardar(self, ctx: commands.Context):
+        """
+        Recordatorio para que el streamer guarde la partida
+        
+        Comando útil para que los viewers puedan recordar al streamer
+        que guarde el progreso del juego, especialmente importante
+        en juegos largos o con checkpoints poco frecuentes.
+        
+        Args:
+            ctx (commands.Context): Contexto del comando
+            
+        Aliases: !salvar
+        
+        Example:
+            Usuario: !guardar
+            Bot: Usuario quiere recordarles que....
+            Bot: ¡¡¡GUARDEN LA PARTIDA!!!
+        """
         if await self.check_coma_etilico():
             return
         nombre = ctx.author.name
@@ -35,6 +102,19 @@ class BasicCommands(BaseCommand):
 
     @commands.command()
     async def proteccion(self, ctx: commands.Context):
+        """
+        Toggle del horario de protección al menor
+        
+        Cambia el estado de protección al menor, usado para indicar
+        cuando el contenido del stream es apropiado para menores.
+        
+        Args:
+            ctx (commands.Context): Contexto del comando
+            
+        Example:
+            !proteccion -> "Aqui comienza el horario de proteccion al menor."
+            !proteccion -> "Aqui finaliza el horario de proteccion al menor."
+        """
         if await self.check_coma_etilico():
             return
         if self.proteccion_activa == False:
@@ -46,6 +126,20 @@ class BasicCommands(BaseCommand):
 
     @commands.command()
     async def spam(self, ctx: commands.Context):
+        """
+        Envía mensajes de spam predefinidos (solo administradores)
+        
+        Comando exclusivo para administradores que permite enviar
+        mensajes predefinidos múltiples veces seguidas.
+        
+        Args:
+            ctx (commands.Context): Contexto del comando
+            
+        Note:
+            - Solo disponible para usuarios en la lista de admins
+            - Envía el mismo mensaje 3 veces consecutivas
+            - Los mensajes están definidos en spam_messenges
+        """
         if await self.check_coma_etilico():
             return
         autor = ctx.author.name

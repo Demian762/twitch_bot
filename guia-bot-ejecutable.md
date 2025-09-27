@@ -2,7 +2,9 @@
 
 ## 📋 Requisitos Previos
 - **Python 3.11+** instalado en el sistema
-- **Git** para clonado del repositorio
+- **Git** p| Versión | Fecha | Tamaño | Notas |
+|---------|-------|-----------|-------|
+| 250927 | 27/09/2025 | ~113 MB | Refactor completo, nueva estructura | clonado del repositorio
 - **Windows** (para reproducción de audio y compilación)
 
 ---
@@ -139,7 +141,7 @@ El bot debería mostrar al iniciar:
 
 | Versión | Fecha | Tamaño | Notas |
 |---------|-------|--------|-------|
-| 270925 | 27/09/2025 | ~113 MB | Refactor completo, nueva estructura |
+| 250927 | 27/09/2025 | ~113 MB | Refactor completo, nueva estructura |
 | 250926 | 26/09/2025 | ~113 MB | Versión anterior |
 
 ### 🔗 Dependencias Principales:

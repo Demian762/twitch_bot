@@ -604,3 +604,15 @@ task: <Task pending name='Task-1' coro=<Routine._routine() running at D:\02 - pr
 2025-09-27 05:22:46,007 [INFO] Logueado a Twitch como botdelestadio
 2025-09-27 05:32:36,757 [ERROR] Task was destroyed but it is pending!
 task: <Task pending name='Task-1' coro=<Routine._routine() running at C:\Users\joang\AppData\Local\Programs\Python\Python311\Lib\site-packages\twitchio\ext\routines\__init__.py:358> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2025-09-27 06:07:33,299 [INFO] Conexión exitosa a rawg.io.
+2025-09-27 06:07:33,300 [INFO] conexión exitosa con Steam.
+2025-09-27 06:07:33,336 [INFO] Dólar oficial a: 1350
+2025-09-27 06:07:34,032 [INFO] Obtenida la lista con 50 videos.
+2025-09-27 06:07:38,688 [INFO] Bot inicializado correctamente
+2025-09-27 06:07:40,785 [INFO] Logueado a Twitch como botdelestadio
+2025-09-27 06:08:44,658 [INFO] Conexión exitosa a rawg.io.
+2025-09-27 06:08:44,659 [INFO] conexión exitosa con Steam.
+2025-09-27 06:08:44,683 [INFO] Dólar oficial a: 1350
+2025-09-27 06:08:45,452 [INFO] Obtenida la lista con 50 videos.
+2025-09-27 06:08:50,565 [INFO] Bot inicializado correctamente
+2025-09-27 06:08:52,647 [INFO] Logueado a Twitch como botdelestadio
