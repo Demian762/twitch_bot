@@ -5,4 +5,5 @@ backlog.txt
 bot-env
 build
 dist
-/ignored_files
+ffmpeg/
+ffmpeg-master-latest-win64-gpl/

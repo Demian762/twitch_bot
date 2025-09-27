@@ -1,23 +1,29 @@
-para instalar en local:
+## para instalar en local:
 pip install playsound
 pip install python-Levenshtein
 pip install -U twitchio
-pip install howlongtobeatpy (la 1.0.7 anda mal)
+pip install howlongtobeatpy (1.0.18 funciona)
 pip install python-steam-api
 pip install google-api-python-client
 pip install gspread
 pip install requests
 pip install pandas
 
-Para crear una dist:
+## Para correrlo sin la dist
 en la terminal de git bash
 source bot-env/Scripts/activate
 
-pyinstaller --onefile --add-data "storage/*:storage" --add-binary "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\fake_useragent\data\browsers.json;fake_useragent/data" --paths="D:/02 - practicas Python/00_twitch_bot/bot-env/Lib/site-packages" bot_del_estadio.py
+python bot_del_estadio.py
+
+## Para crear una dist:
+en la terminal de git bash
+source bot-env/Scripts/activate
+
+pyinstaller --onefile --add-data "storage/*:storage" --add-data "telegram_stuff:telegram_stuff" --add-binary "D:\02 - practicas Python\00_twitch_bot\ffmpeg\ffmpeg.exe;ffmpeg" --add-binary "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\fake_useragent\data\browsers.json;fake_useragent/data" --paths="D:/02 - practicas Python/00_twitch_bot/bot-env/Lib/site-packages" bot_del_estadio.py
 
 deactivate
 
-Para instalar en ambiente virtual:
+## Para instalar en ambiente virtual:
 en la terminal de git bash
 
 python -m venv bot-env

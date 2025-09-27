@@ -5,13 +5,14 @@ import winsound
 from random import choice, randint, uniform, triangular, shuffle
 from datetime import datetime
 
+from telegram_stuff.telegram_voice_bot import TelegramVoiceBot
 from utiles.api_games import *
 from utiles.utiles_general import *
 from utiles.puntitos_manager import *
 from utiles.mensaje import *
 from utiles.audios import *
 from utiles.api_youtube import *
-from utiles.secretos import (access_token, rawg_url, rawg_key)
+from utiles.secretos import (access_token, rawg_url, rawg_key, telegram_bot_token)
 from configuracion import *
 
 
@@ -48,10 +49,19 @@ class Bot(commands.Bot):
         self.tiempo_iniciar = timer_iniciar()
         audio_path = resource_path("storage\holis.wav")
         winsound.PlaySound(audio_path,winsound.SND_FILENAME)
+        self.telegram_bot = TelegramVoiceBot(telegram_bot_token)
         sendMessage(openSocket(), "Hace su entrada, EL BOT DEL ESTADIO!")
 
     async def event_ready(self):
         print(f'Logueado a Twitch como {self.nick}.')
+        asyncio.create_task(self._start_telegram_bot())
+
+    async def _start_telegram_bot(self):
+        """Inicia el bot de Telegram de forma asíncrona"""
+        try:
+            await self.telegram_bot.start_async()
+        except Exception as e:
+            print(f"Error con bot de Telegram: {e}")
 
     def coma_etilico(self):
         if self.grog_count >= len(grog_list):
@@ -178,7 +188,7 @@ class Bot(commands.Bot):
             return
         
         autor = ctx.author.name
-        comando = str(ctx.message.content).lstrip("!").split(' ')[0]
+        comando = (str(ctx.message.content).lstrip("!").split(' ')[0]).lower()
         comando_validado = None
 
         for llave, valores in comandos_audios.items():
@@ -268,7 +278,10 @@ class Bot(commands.Bot):
         if nombre is None:
             await mensaje("No se encontró nada en la base de datos!")
             return
-        tiempo = howlong(juego)
+        try:
+            tiempo = howlong(juego)
+        except:
+            tiempo = None
         nombre_steam, precio = steam_price(nombre, self.steam, self.dolar)
         sep = " // "
         output = nombre
@@ -279,7 +292,7 @@ class Bot(commands.Bot):
         if tiempo:
             output = output + sep + tiempo + " horas"
         if nombre_steam:
-            output = output + sep + str(precio) + " pesos en Steam (con dólar tarjeta)"
+            output = output + sep + str(precio) + " pesos en Steam."
         output = output + "."
         await mensaje(output)
 

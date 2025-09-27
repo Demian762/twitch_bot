@@ -8,7 +8,7 @@ comandos_audios = {
     'quiereme':['quiereme'],
     'sacrilegioso':['sacrilegioso','homero'],
     'sadsong':['sadsong','sad'],
-    'Boca':['boca','bostero','boque'],
+    'boca':['bostero','boque'],
     'yeahbaby':['yeahbaby','yeababy','baby','larry','marit','marit887'],
     'wansaia82':['wansaia82','ariel','wansaia'],
     'presta':['red','presta','redfallen','theredfallen'],
@@ -22,14 +22,13 @@ comandos_audios = {
 }
 
 comandos_mensajes = {
-    'Boca':["boooooca booooooca","boca boca booooooca","booooooca boca boca"],
+    'boca':["boooooca booooooca","boca boca booooooca","booooooca boca boca"],
     'presta':["🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈"],
     'horny':["yametekudasaaaaaaaai"],
 }
 
 autores_exclusivos = {
     'marit887':['yeahbaby'],
-    'wansaia':['wansaia82','wansaia'],
     'theredfallen':['presta'],
     'roque04_':['sega'],
 }
