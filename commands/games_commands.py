@@ -124,4 +124,4 @@ class GameCommands(BaseCommand):
         if output is not False:
             await mensaje(output)
         else:
-            await mensaje("No encontré lanzamientos.")
+            await mensaje("Hubo un problema con la base de datos de RAWG.io")

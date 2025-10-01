@@ -16,7 +16,7 @@ class rawg:
     def test_connection(self):
         response = requests.get(self.url, params=self.key)
         if response.status_code != 200:
-            logger.error(f"Error al conectar con RAWG.io, status code = {response.status_code}")
+            logger.error(f"Hubo un problema con la base de datos de RAWG.io, status code = {response.status_code}")
         else:
             logger.info("Conexión exitosa a rawg.io.")
     
@@ -26,13 +26,15 @@ class rawg:
         key_info["search_precise"] = False
         key_info["search_exact"] = False
         url_info = self.url + "games"
-        for _ in range(3):
+        for intento in range(3):
             response = requests.get(url_info, params=key_info)
             if response.status_code == 200:
                 break
-            time.sleep(2)
+            logger.warning(f"Info API - Intento {intento + 1}/3 falló con status code: {response.status_code}")
+            if intento < 2:  # No esperar después del último intento
+                time.sleep(2)
         if response.status_code != 200:
-            logger.error(f"Error en consulta RAWG, status code: {response.status_code}")
+            logger.error(f"Hubo un problema con la base de datos de RAWG.io, status code: {response.status_code}")
             return 200, False, False
         
         elif  len(response.json().get('results')) > 0:
@@ -51,7 +53,14 @@ class rawg:
         key_info["dates"] = desde + "," + hasta
         key_info["page_size"] = limite
         url_info = self.url + "games"
-        response = requests.get(url_info, params=key_info)
+        
+        for intento in range(3):
+            response = requests.get(url_info, params=key_info)
+            if response.status_code == 200:
+                break
+            logger.warning(f"Lanzamientos API - Intento {intento + 1}/3 falló con status code: {response.status_code}")
+            if intento < 2:  # No esperar después del último intento
+                time.sleep(2)
         
         logger.info(f"Lanzamientos API - Status: {response.status_code}, Desde: {desde}, Hasta: {hasta}")
         
@@ -77,20 +86,31 @@ class rawg:
                 logger.warning("Lanzamientos API - No se encontraron resultados en el rango de fechas")
                 return False
         else:
-            logger.error(f"Lanzamientos API - Error en respuesta: {response.status_code}")
+            logger.error(f"Hubo un problema con la base de datos de RAWG.io: {response.status_code}")
             return False
 
 def howlong(game_name:str):
-    results_list = HowLongToBeat().search(game_name)
-    if results_list is not None and len(results_list) > 0:
-        best_element = max(results_list, key=lambda element: element.similarity)
-        main_story = str(int(best_element.main_story))
-        main_extra = str(int(best_element.main_extra))
-        completionist = str(int(best_element.completionist))
-        tiempo = main_story + " - " + main_extra + " - " + completionist
-        return tiempo
-    else:
-        return False
+    for intento in range(3):
+        try:
+            results_list = HowLongToBeat().search(game_name)
+            if results_list is not None and len(results_list) > 0:
+                best_element = max(results_list, key=lambda element: element.similarity)
+                main_story = str(int(best_element.main_story))
+                main_extra = str(int(best_element.main_extra))
+                completionist = str(int(best_element.completionist))
+                tiempo = main_story + " - " + main_extra + " - " + completionist
+                logger.info(f"HowLongToBeat API - Tiempo obtenido exitosamente para {game_name}")
+                return tiempo
+            else:
+                logger.info(f"HowLongToBeat API - No se encontraron resultados para {game_name}")
+                return False
+        except Exception as e:
+            logger.warning(f"HowLongToBeat API - Intento {intento + 1}/3 falló: {str(e)}")
+            if intento < 2:  # No esperar después del último intento
+                time.sleep(2)
+    
+    logger.error(f"HowLongToBeat API - No se pudo obtener tiempo para {game_name} después de 3 intentos")
+    return False
     
 def steam_api():
     try:
@@ -101,11 +121,18 @@ def steam_api():
         raise "No se pudo conectar a Steam."
     
 def steam_price(nombre, steam, dolar):
-    try:
-        steam_data = steam.apps.search_games(nombre, "AR")['apps'][0]
-        precio = float(steam_data['price'].lstrip("$").rstrip(" USD"))
-        precio = str(round(precio * dolar, 2))
-        nombre_steam = steam_data['name']
-        return nombre_steam, precio
-    except:
-        return False, False
+    for intento in range(3):
+        try:
+            steam_data = steam.apps.search_games(nombre, "AR")['apps'][0]
+            precio = float(steam_data['price'].lstrip("$").rstrip(" USD"))
+            precio = str(round(precio * dolar, 2))
+            nombre_steam = steam_data['name']
+            logger.info(f"Steam API - Precio obtenido exitosamente para {nombre}")
+            return nombre_steam, precio
+        except Exception as e:
+            logger.warning(f"Steam API - Intento {intento + 1}/3 falló: {str(e)}")
+            if intento < 2:  # No esperar después del último intento
+                time.sleep(2)
+    
+    logger.error(f"Steam API - No se pudo obtener precio para {nombre} después de 3 intentos")
+    return False, False
