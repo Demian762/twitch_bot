@@ -245,3 +245,36 @@ class MinigamesCommands(BaseCommand):
                 winsound.PlaySound(audio_path,winsound.SND_FILENAME)
             self.margaritas += 1
             self.ultima_margarita = nombre
+
+    @commands.command()
+    async def medimela(self, ctx: commands.Context):
+        """
+        Comando para medir... algo
+        
+        Genera un valor aleatorio que representa cuánto le mide al usuario.
+        Los administradores siempre obtienen el valor máximo.
+        
+        Args:
+            ctx: Contexto del comando de Twitch
+            
+        Returns:
+            None
+            
+        Note:
+            - Valor aleatorio entre 1 y 24 para usuarios normales
+            - Valor fijo de 25 para administradores
+            - No funciona cuando el bot está en coma etílico
+        """
+        if await self.check_coma_etilico():
+            return
+            
+        nombre = ctx.author.name
+        
+        # Los admins siempre obtienen 25
+        if nombre in admins:
+            valor = 25
+        else:
+            # Usuarios normales obtienen un valor aleatorio entre 1 y 24
+            valor = randint(1, 24)
+        
+        await mensaje(f"A {nombre} le mide {valor}.")
