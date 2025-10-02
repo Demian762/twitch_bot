@@ -104,12 +104,12 @@ class InteractionCommands(BaseCommand):
         Note:
             Se ejecuta cada 'rutina_timer' minutos según configuración
         """
-        actual = self.bot.rutinas_counter["actual"]
+        actual = self.bot.state.rutinas_counter["actual"]
         mensaje_actual = self.bot.rutina_lista[actual]
 
         await mensaje([mensaje_actual])
 
-        if actual >= self.bot.rutinas_counter["total"]:
-            self.bot.rutinas_counter["actual"] = 0
+        if actual >= self.bot.state.rutinas_counter["total"]:
+            self.bot.state.rutinas_counter["actual"] = 0
         else:
-            self.bot.rutinas_counter["actual"] = actual + 1
+            self.bot.state.rutinas_counter["actual"] = actual + 1

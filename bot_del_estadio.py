@@ -108,6 +108,7 @@ class Bot(commands.Bot):
             
             # Asignar listas del config al bot para comandos
             self.lista_programacion = getattr(self.config, 'lista_programacion', [])
+            self.videos = getattr(self.api, 'videos', [])
             
             # Configurar rutinas con validación
             self.rutina_lista = getattr(self.config, 'rutina_lista', [])
