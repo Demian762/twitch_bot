@@ -13,6 +13,7 @@ from random import choice, randint, uniform
 from utils.logger import logger
 from utils.mensaje import mensaje
 from utils.utiles_general import timer_iniciar, timer_consulta, format_time
+from utils.configuracion import admins
 from .base_command import BaseCommand
 
 class UtilityCommands(BaseCommand):
@@ -37,9 +38,9 @@ class UtilityCommands(BaseCommand):
             return
             
         autor = ctx.author.name
-        if autor not in self.bot.admins:
+        if autor not in admins:
             return
-        self.bot.tiempo_iniciar = timer_iniciar()
+        self.bot.state.tiempo_iniciar = timer_iniciar()
         await mensaje("¡Iniciado el cronómetro!")
 
     @commands.command(aliases=("timer","timerconsulta","horas","tiempo"))
@@ -53,7 +54,7 @@ class UtilityCommands(BaseCommand):
         if await self.check_coma_etilico():
             return
             
-        tiempos = timer_consulta(self.bot.tiempo_iniciar)
+        tiempos = timer_consulta(self.bot.state.tiempo_iniciar)
         mensajes = format_time(tiempos)
         await mensaje(mensajes)
 
@@ -67,7 +68,7 @@ class UtilityCommands(BaseCommand):
         """
         if await self.check_coma_etilico():
             return
-        await mensaje([f'El dólar está a {self.bot.dolar} pesos.'])
+        await mensaje([f'El dólar está a {self.bot.api.dolar} pesos.'])
 
     @commands.command(aliases=("decision", "decisión", "desicion", "desición",))
     async def decidir(self, ctx: commands.Context, *args):

@@ -3,7 +3,7 @@
 ## 🎵 **Audios** | 🎮 **Gaming** | 💰 **Puntitos** | 🎪 **Minijuegos** | 📺 **Canal** | 🛠️ **Utilidades**
 
 ### 🎵 **Comandos de Audio**
-`!holis` `!helldiver` `!cuervo` `!zazaraza` `!piripipi` `!dark` `!quiereme` `!sacrilegioso` `!sadsong` `!boca` `!yeahbaby` `!wansaia82` `!presta` `!distinta` `!sega` `!play` `!mario` `!zelda` `!alert` `!ernesto`
+`!holis` `!helldiver` `!cuervo` `!zazaraza` `!piripipi` `!dark` `!quiereme` `!sacrilegioso` `!sadsong` `!boca` `!yeahbaby` `!wansaia82` `!presta` `!distinta` `!sega` `!play` `!mario` `!zelda` `!alert` `!ernesto` `!horny` `!yamete`
 
 ### 🎮 **Gaming**
 `!info [juego]` - Info de videojuegos | `!lanzamientos` - Próximos lanzamientos

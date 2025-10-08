@@ -73,7 +73,7 @@ class InteractionCommands(BaseCommand):
                 break
 
         if comando_validado:
-            audio_path = resource_path(f"storage\{comando_validado}.wav")
+            audio_path = resource_path(f"storage/{comando_validado}.wav")
             winsound.PlaySound(audio_path,winsound.SND_FILENAME)
             mensaje_string = comandos_mensajes.get(comando_validado, None)
         else:

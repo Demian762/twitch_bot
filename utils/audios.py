@@ -19,12 +19,13 @@ comandos_audios = {
     'zelda':['zelda','link','item'],
     'alert':['alerta','alert','snake','metalgear','kojima'],
     'ernesto':['ernesto','tenembaum'],
+    'yamete':['yamete','yametekudasai','kudasai','horny','hentai','anime'],
 }
 
 comandos_mensajes = {
     'boca':["boooooca booooooca","boca boca booooooca","booooooca boca boca"],
     'presta':["🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈"],
-    'horny':["yametekudasaaaaaaaai"],
+    'yamete':["yametekudasaaaaaaaai"],
 }
 
 autores_exclusivos = {

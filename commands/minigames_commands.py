@@ -219,7 +219,7 @@ class MinigamesCommands(BaseCommand):
         nombre = ctx.author.name
         if nombre in self.bot.admins:
             await mensaje("Los admins están sobrados de margaritas.")
-            audio_path = resource_path(f"storage\margarita_3.wav")
+            audio_path = resource_path(f"storage/margarita_3.wav")
             winsound.PlaySound(audio_path,winsound.SND_FILENAME)
             return
             
@@ -232,7 +232,7 @@ class MinigamesCommands(BaseCommand):
             return
             
         if self.margaritas >= self.cuantas_margaritas:
-            audio_path = resource_path(f"storage\margarita_2.wav")
+            audio_path = resource_path(f"storage/margarita_2.wav")
             winsound.PlaySound(audio_path,winsound.SND_FILENAME)
             await mensaje(f"¡¡LA RECALCADA CAJETA DE TU HERMANA {nombre.upper()}!! TOMÁ TUS PUNTITOS!!")
             funcion_puntitos(nombre, cant=2)
@@ -241,7 +241,7 @@ class MinigamesCommands(BaseCommand):
         else:
             await mensaje([f"{nombre} pregunta:","¿Me regalas una margarita?"])
             if self.margaritas == 0:
-                audio_path = resource_path(f"storage\margarita_1.wav")
+                audio_path = resource_path(f"storage/margarita_1.wav")
                 winsound.PlaySound(audio_path,winsound.SND_FILENAME)
             self.margaritas += 1
             self.ultima_margarita = nombre

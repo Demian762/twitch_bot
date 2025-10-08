@@ -36,7 +36,8 @@ from utils.secretos import (
     access_token, 
     rawg_url, 
     rawg_key, 
-    telegram_bot_token
+    telegram_bot_token,
+    channel_name
 )
 
 # Imports locales - otros
@@ -88,7 +89,7 @@ class Bot(commands.Bot):
         try:
             super().__init__(token=access_token,
                             prefix='!',
-                            initial_channels=['hablemosdepavadaspod', 'Demian762'],
+                            initial_channels=[channel_name, 'Demian762'],
                             case_insensitive = True)
             
             # Inicializar configuraciones y estados con manejo de errores
@@ -117,7 +118,7 @@ class Bot(commands.Bot):
             self.state.rutinas_counter["total"] = len(self.rutina_lista) - 1
             
             # Inicializar Telegram y sonido
-            audio_path = resource_path("storage\holis.wav")
+            audio_path = resource_path("storage/holis.wav")
             winsound.PlaySound(audio_path, winsound.SND_FILENAME)
             self.telegram_bot = TelegramVoiceBot(telegram_bot_token)
             sendMessage(openSocket(), "Hace su entrada, EL BOT DEL ESTADIO!")

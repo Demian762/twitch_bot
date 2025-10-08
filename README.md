@@ -116,7 +116,7 @@
 | `!zelda`, `!link` | ⚔️ Zelda item sound |
 | `!alert`, `!snake` | ❗ Metal Gear Alert |
 | `!ernesto` | 🎤 Ernesto Tenembaum |
-| `!horny` | 😳 Yameteeeee kudasai! |
+| `!horny`, `!yamete`, `!anime` | 😳 Yameteeeee kudasai! |
 
 ---
 
