@@ -148,3 +148,41 @@ class BasicCommands(BaseCommand):
         await mensaje(spam_messenges)
         await mensaje(spam_messenges)
         await mensaje(spam_messenges)
+
+    @commands.command()
+    async def quiensos(self, ctx: commands.Context):
+        """
+        Comando de broma que revela la "identidad" del bot
+        
+        Easter egg que rompe la cuarta pared y revela que el bot
+        es en realidad "Sergio". Comando puramente humorístico.
+        
+        Args:
+            ctx (commands.Context): Contexto del comando
+            
+        Example:
+            Usuario: !quiensos
+            Bot: En realidad soy Sergio... me descubrieron.
+        """
+        if await self.check_coma_etilico():
+            return
+        await mensaje(['En realidad soy Sergio... me descubrieron.'])
+
+    @commands.command()
+    async def chiste(self, ctx: commands.Context):
+        """
+        Comando de broma que hace un "anti-chiste"
+        
+        Responde con una broma sarcástica dirigida al usuario que pidió
+        el chiste. Es un comando puramente humorístico.
+        
+        Args:
+            ctx (commands.Context): Contexto del comando
+            
+        Example:
+            Usuario: !chiste
+            Bot: Vos sos un chiste Usuario.
+        """
+        if await self.check_coma_etilico():
+            return
+        await mensaje([f"Vos sos un chiste {ctx.author.name}."])
