@@ -125,65 +125,85 @@
 ### 📁 **Estructura del Proyecto**
 ```
 twitch_bot/
-├── 🤖 bot_del_estadio.py      # Bot principal
+├── 🤖 bot_del_estadio.py      # Bot principal refactorizado
 ├── 📦 commands/               # Sistema de comandos modular
-│   ├── basic_commands.py      # Comandos básicos
-│   ├── games_commands.py      # Gaming y APIs
-│   ├── points_commands.py     # Sistema de puntitos
-│   ├── minigames_commands.py  # Minijuegos
+│   ├── __init__.py           # Registro automático de cogs
+│   ├── base_command.py       # Clase base para comandos
+│   ├── basic_commands.py     # Comandos básicos
+│   ├── games_commands.py     # Gaming y APIs (RAWG/Steam)
+│   ├── points_commands.py    # Sistema de puntitos
+│   ├── minigames_commands.py # Minijuegos y competencias
+│   ├── info_commands.py      # Información del canal
+│   ├── youtube_commands.py   # Integración YouTube
+│   ├── drink_commands.py     # Sistema de bebidas
+│   ├── trivia_commands.py    # Sistema de trivia
+│   ├── utility_commands.py   # Utilidades varias
 │   └── ... más módulos
 ├── 🛠️  utils/                 # Utilidades y configuración
-│   ├── configuracion.py       # Configuración centralizada
-│   ├── logger.py             # Sistema de logging
+│   ├── bot_config.py         # Configuración centralizada
+│   ├── logger.py             # Sistema de logging mejorado
 │   ├── api_games.py          # Manager de APIs gaming
+│   ├── api_youtube.py        # Manager API YouTube
+│   ├── puntitos_manager.py   # Gestor de puntitos
+│   ├── secretos.py           # Configuración de secrets
 │   └── ... más utilidades
 ├── 🎵 storage/               # Archivos de audio
-└── 📊 telegram_bot/          # Integración Telegram
+├── 📊 telegram_bot/          # Integración Telegram completa
+│   ├── telegram_voice_bot.py # Bot principal Telegram
+│   ├── audio_converter.py    # Conversor de audio
+│   └── ffmpeg_manager.py     # Gestor FFmpeg
+├── 📋 guia-bot-ejecutable.md # Guía de instalación
+└── 📄 requirements.txt       # Dependencias actualizadas
 ```
 
 ### 🔌 **APIs Integradas**
-- **🎮 RAWG.io**: Base de datos de videojuegos
-- **🎮 Steam Web API**: Precios y información de Steam  
-- **📺 YouTube Data API v3**: Videos y podcasts del canal
+- **🎮 RAWG.io**: Base de datos completa de videojuegos
+- **🎮 Steam Web API**: Precios y información detallada de Steam  
+- **📺 YouTube Data API v3**: Videos y podcasts del canal (fix aplicado)
 - **💰 DolarAPI**: Precio del dólar en tiempo real
-- **🤖 Telegram Bot API**: Funcionalidades especiales
-- **📊 Google Sheets API**: Gestión de datos
+- **🤖 Telegram Bot API**: Bot integrado con funcionalidades de voz
+- **📊 Google Sheets API**: Gestión de datos y puntitos
+- **🔍 HowLongToBeat**: Tiempo de juego de videojuegos
 
 ### ⚙️ **Características Técnicas**
 - **🐍 Python 3.11+** con entorno virtual
-- **🔄 TwitchIO** para integración con Twitch
+- **🔄 TwitchIO 2.10.0** para integración con Twitch
 - **📝 Logging centralizado** con niveles configurables
-- **🗂️ Arquitectura modular** de comandos
-- **⚡ Sistema de caching** para APIs
-- **🛡️ Manejo robusto de errores**
+- **🗂️ Arquitectura modular** de comandos refactorizada
+- **⚡ Sistema de caching** para APIs optimizado
+- **🛡️ Manejo robusto de errores** mejorado
 - **🎵 Reproducción de audio** nativa en Windows
+- **🤖 Bot de Telegram integrado** con Python Telegram Bot 20.7
+- **📊 Gestión de datos** con Google Sheets API y gspread
 
 ---
 
-## 🚀 **Instalación y Uso**
+## 🆕 **Últimos Cambios y Fixes**
 
-### 📋 **Requisitos**
-- Python 3.11+
-- Windows (para reproducción de audio)
-- Claves de API configuradas
+### � **Versión 250927 - Refactor Completo**
+- ✅ **Refactorización completa** de la arquitectura del bot
+- ✅ **Nueva estructura modular** de comandos más organizada
+- ✅ **Sistema de logging mejorado** con niveles configurables
+- ✅ **Integración con Telegram Bot** para funcionalidades adicionales
+- ✅ **Fix de API YouTube** - Corregidos problemas de conexión
+- ✅ **Comandos recuperados** - Restaurados comandos perdidos en el refactor
+- ✅ **Comando !medimela** - Vuelto a agregar tras el refactor
+- ✅ **Fix de rutinas automáticas** - Corregido el sistema de rutinas
+- ✅ **Actualización de seguridad** - Requests actualizado por vulnerabilidad
+- ✅ **Logs optimizados** - Removidos logs innecesarios y mejoradas respuestas
+- ✅ **Documentación actualizada** - Nueva documentación completa
+- ✅ **Sistema de dados mejorado** - Nuevas funcionalidades de dados
+- ✅ **Fix comando !info y !lanzamientos** - Corregidos problemas de API
 
-### ⚡ **Inicio Rápido**
-```bash
-# Clonar repositorio
-git clone https://github.com/usuario/twitch_bot.git
-cd twitch_bot
+### 🔧 **Mejoras Técnicas**
+- **🏗️ Arquitectura modular**: Comandos organizados por categorías
+- **📊 Gestión centralizada**: Configuración y estado del bot unificados
+- **🛡️ Manejo de errores robusto**: Mejor gestión de excepciones
+- **⚡ Performance optimizado**: Reducido uso de recursos
+- **🔐 Seguridad mejorada**: Dependencias actualizadas
 
-# Crear entorno virtual
-python -m venv bot-env
-bot-env\Scripts\activate
-
-# Instalar dependencias
-pip install -r requirements.txt
-
-# Configurar secretos (ver utils/secretos.py)
-# Ejecutar bot
-python bot_del_estadio.py
-```
+### 📋 **Instalación y Configuración**
+Para instrucciones detalladas de instalación, configuración y uso, consulta la **[Guía de Instalación](guia-bot-ejecutable.md)**.
 
 ---
 
@@ -196,6 +216,8 @@ python bot_del_estadio.py
 | **Steam API** | Conexión con Steam | [🔗 python-steam-api](https://pypi.org/project/python-steam-api/) |
 | **YouTube API** | YouTube Data API v3 | [🔗 Getting Started](https://developers.google.com/youtube/v3/getting-started?hl=es-419) |
 | **DolarAPI** | Precio del dólar argentino | [🔗 DolarAPI](https://dolarapi.com) |
+| **Python Telegram Bot** | Framework para bots de Telegram | [🔗 python-telegram-bot](https://python-telegram-bot.org/) |
+| **gspread** | Cliente Python para Google Sheets | [🔗 gspread Docs](https://docs.gspread.org/) |
 
 ---
 
