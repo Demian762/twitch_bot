@@ -217,7 +217,7 @@ class MinigamesCommands(BaseCommand):
             return
             
         nombre = ctx.author.name
-        if nombre in self.bot.admins:
+        if nombre in admins:
             await mensaje("Los admins están sobrados de margaritas.")
             audio_path = resource_path(f"storage/margarita_3.wav")
             winsound.PlaySound(audio_path,winsound.SND_FILENAME)
