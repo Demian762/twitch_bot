@@ -48,8 +48,8 @@ class rawg:
         
     def lanzamientos(self, limite):
         key_info = self.key.copy()  # Crear una copia para evitar modificar el original
-        desde = str((date.today() - timedelta(days=30)).strftime("%Y-%m-%d"))  # Ampliado a 30 días atrás
-        hasta = str((date.today() + timedelta(days=60)).strftime("%Y-%m-%d"))   # Ampliado a 60 días adelante
+        desde = str((date.today() - timedelta(days=15)).strftime("%Y-%m-%d"))  # 15 días atrás
+        hasta = str((date.today() + timedelta(days=30)).strftime("%Y-%m-%d"))  # 30 días adelante
         key_info["dates"] = desde + "," + hasta
         key_info["page_size"] = limite
         url_info = self.url + "games"

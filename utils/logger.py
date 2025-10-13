@@ -68,6 +68,7 @@ def setup_logger():
     logging.getLogger('oauth2client').setLevel(logging.ERROR)
     logging.getLogger('urllib3').setLevel(logging.WARNING)
     logging.getLogger('twitchio').setLevel(logging.WARNING)
+    logging.getLogger('steam_web_api').setLevel(logging.WARNING)
     
     return bot_logger
 

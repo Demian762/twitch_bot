@@ -8,7 +8,7 @@ comandos_audios = {
     'quiereme':['quiereme'],
     'sacrilegioso':['sacrilegioso','homero'],
     'sadsong':['sadsong','sad'],
-    'boca':['bostero','boque'],
+    'boca':['boca','bostero','boque'],
     'yeahbaby':['yeahbaby','yeababy','baby','larry','marit','marit887'],
     'wansaia82':['wansaia82','ariel','wansaia'],
     'presta':['red','presta','redfallen','theredfallen'],

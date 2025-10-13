@@ -105,7 +105,7 @@ class GameCommands(BaseCommand):
         if tiempo:
             output = output + sep + tiempo + " horas"
         if nombre_steam:
-            output = output + sep + str(precio) + " pesos en Steam."
+            output = output + sep + str(precio) + " pesos en Steam"
         output = output + "."
         await mensaje(output)
 

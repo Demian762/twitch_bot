@@ -54,10 +54,16 @@ python bot_del_estadio.py
 
 ### ⚠️ IMPORTANTE: Usar PyInstaller desde el entorno virtual
 
-#### Comando actualizado (2025):
+#### Comando para PowerShell (Windows):
 ```powershell
 cd "D:\02 - practicas Python\00_twitch_bot"
-.\bot-env\Scripts\pyinstaller.exe --onefile --add-data "storage/*;storage" --add-data "telegram_bot;telegram_bot" --add-binary "D:\02 - practicas Python\00_twitch_bot\ffmpeg\ffmpeg.exe;ffmpeg" --add-binary "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\fake_useragent\data\browsers.json;fake_useragent/data" bot_del_estadio.py
+.\bot-env\Scripts\pyinstaller.exe --onefile --add-data "storage/*;storage" --add-data "telegram_bot;telegram_bot" --add-binary "D:\02 - practicas Python\00_twitch_bot\ffmpeg\ffmpeg.exe;ffmpeg" --add-data "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\fake_useragent\data;fake_useragent/data" bot_del_estadio.py
+```
+
+#### Comando para Git Bash (alternativo):
+```bash
+cd "/d/02 - practicas Python/00_twitch_bot"
+./bot-env/Scripts/pyinstaller.exe --onefile --add-data "storage/*:storage" --add-data "telegram_bot:telegram_bot" --add-binary "./ffmpeg/ffmpeg.exe:ffmpeg" --add-data "./bot-env/Lib/site-packages/fake_useragent/data:fake_useragent/data" bot_del_estadio.py
 ```
 
 #### Parámetros explicados:
@@ -65,7 +71,7 @@ cd "D:\02 - practicas Python\00_twitch_bot"
 - `--add-data "storage/*;storage"`: Incluye archivos de audio
 - `--add-data "telegram_bot;telegram_bot"`: Incluye módulo de Telegram
 - `--add-binary ffmpeg.exe`: Incluye FFmpeg para conversión de audio
-- `--add-binary browsers.json`: Fix para fake_useragent
+- `--add-data fake_useragent/data`: Incluye directorio completo de datos para HowLongToBeat
 
 ### 📍 El ejecutable se genera en: `dist/bot_del_estadio.exe`
 
@@ -104,15 +110,22 @@ deactivate
 ## 🩹 Correcciones Conocidas (si es necesario)
 
 ### Steam Web API Version Fix:
+**⚠️ IMPORTANTE:** Aplicar este fix ANTES de compilar con PyInstaller
+
 **Archivo:** `bot-env/Lib/site-packages/steam_web_api/_version.py`
 ```python
-# Cambiar:
-# __version__ = "Unknown"
+# Cambiar la línea:
+except Exception:
+    pass
+
 # Por:
-try:
-    from ._version import __version__
-except ImportError:
+except Exception:
     __version__ = "2.0.4"
+```
+
+**Razón:** PyInstaller no puede importar `__version__` dinámicamente, causando:
+```
+ImportError: cannot import name '__version__' from 'steam_web_api._version'
 ```
 
 ### Fake UserAgent Fix:
@@ -141,6 +154,7 @@ El bot debería mostrar al iniciar:
 
 | Versión | Fecha | Tamaño | Notas |
 |---------|-------|--------|-------|
+| 251013 | 13/10/2025 | ~110.5 MB | Bug fixes (margarita, paths, steam_web_api), nuevo audio yamete |
 | 250927 | 27/09/2025 | ~113 MB | Refactor completo, nueva estructura |
 | 250926 | 26/09/2025 | ~113 MB | Versión anterior |
 
@@ -153,26 +167,7 @@ El bot debería mostrar al iniciar:
 
 ---
 
-## 🆘 Troubleshooting
-
-### Problema: "Execution of scripts is disabled"
-**Solución:** Usar `.bat` en lugar de `.ps1`
-```powershell
-.\bot-env\Scripts\activate.bat
-```
-
-### Problema: PyInstaller no encuentra módulos
-**Solución:** Ejecutar desde el entorno virtual correcto
-```powershell
-.\bot-env\Scripts\pyinstaller.exe [parámetros]
-```
-
-### Problema: Audio no reproduce
-**Solución:** Verificar que `storage/*.wav` esté incluido y Windows tenga códecs
-
----
-
-## 🎯 Notas de Desarrollo
+##  Notas de Desarrollo
 
 - ✅ **Estructura refactorizada** (Sep 2025)
 - ✅ **15 → 12 archivos** de comandos consolidados
