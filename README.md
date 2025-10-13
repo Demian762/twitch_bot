@@ -1,112 +1,108 @@
-## El/La BotDelEstadio es el bot OFICIAL de Hablemos de Pavadas, el pináculo de la ingeniería puesta al servicio de.... pavadas.
+```
+ ____        _   ____       _ _____     _            _ _       
+| __ )  ___ | |_|  _ \  ___| | ____|___| |_ __ _  __| (_) ___  
+|  _ \ / _ \| __| | | |/ _ \ |  _| / __| __/ _` |/ _` | |/ _ \ 
+| |_) | (_) | |_| |_| |  __/ | |___\__ \ || (_| | (_| | | (_) |
+|____/ \___/ \__|____/ \___|_|_____|___/\__\__,_|\__,_|_|\___/ 
+```
+
+# 🏆 BotDelEstadio - Hablemos de Pavadas 🎮
+
+> *El pináculo de la ingeniería puesta al servicio de.... **pavadas***
+
+¡El bot OFICIAL que hace que el stream sea más divertido! 🚀
+
+> 📋 **Para ver la lista completa de comandos disponibles, consulta [comandos-stream.md](comandos-stream.md)**
 
 ---
 
-### Acá dejo los comandos disponibles para que use LA VOZ DEL ESTADIO:
+## 🏗️ **Arquitectura Técnica**
 
-**!hola**  
-Devuelve el saludo al autor del comando.  
+### 📁 **Estructura del Proyecto**
+```
+twitch_bot/
+├── 🤖 bot_del_estadio.py      # Bot principal refactorizado
+├── 📦 commands/               # Sistema de comandos modular
+│   ├── __init__.py           # Registro automático de cogs
+│   ├── base_command.py       # Clase base para comandos
+│   ├── basic_commands.py     # Comandos básicos
+│   ├── games_commands.py     # Gaming y APIs (RAWG/Steam)
+│   ├── points_commands.py    # Sistema de puntitos
+│   ├── minigames_commands.py # Minijuegos y competencias
+│   ├── info_commands.py      # Información del canal
+│   ├── youtube_commands.py   # Integración YouTube
+│   ├── drink_commands.py     # Sistema de bebidas
+│   ├── trivia_commands.py    # Sistema de trivia
+│   ├── utility_commands.py   # Utilidades varias
+│   └── ... más módulos
+├── 🛠️  utils/                 # Utilidades y configuración
+│   ├── bot_config.py         # Configuración centralizada
+│   ├── logger.py             # Sistema de logging mejorado
+│   ├── api_games.py          # Manager de APIs gaming
+│   ├── api_youtube.py        # Manager API YouTube
+│   ├── wikipedia_api.py      # Manager API Wikipedia
+│   ├── puntitos_manager.py   # Gestor de puntitos
+│   ├── secretos.py           # Configuración de secrets
+│   └── ... más utilidades
+├── 🎵 storage/               # Archivos de audio
+├── 📊 telegram_bot/          # Integración Telegram completa
+│   ├── telegram_voice_bot.py # Bot principal Telegram
+│   ├── audio_converter.py    # Conversor de audio
+│   └── ffmpeg_manager.py     # Gestor FFmpeg
+├── 📋 guia-bot-ejecutable.md # Guía de instalación
+└── 📄 requirements.txt       # Dependencias actualizadas
+```
 
-**!medimela**  
-Devuelve un número al azar entre 1 y 24 con el nombre del autor del comando.  
-Está configurado para que devuelva un valor fijo para ciertos autores.  
+### 🔌 **APIs Integradas**
+- **🎮 RAWG.io**: Base de datos completa de videojuegos
+- **🎮 Steam Web API**: Precios y información detallada de Steam  
+- **📺 YouTube Data API v3**: Videos y podcasts del canal (fix aplicado)
+- **💰 DolarAPI**: Precio del dólar en tiempo real
+- **🤖 Telegram Bot API**: Bot integrado con funcionalidades de voz
+- **📊 Google Sheets API**: Gestión de datos y puntitos
+- **🔍 HowLongToBeat**: Tiempo de juego de videojuegos
+- **📚 Wikipedia API**: Datos curiosos del "¿Sabías que...?" en español
 
-**!quiensos**  
-Chiste interno  
+### ⚙️ **Características Técnicas**
+- **🐍 Python 3.11+** con entorno virtual
+- **🔄 TwitchIO 2.10.0** para integración con Twitch
+- **📝 Logging centralizado** con niveles configurables
+- **🗂️ Arquitectura modular** de comandos refactorizada
+- **⚡ Sistema de caching** para APIs optimizado
+- **🛡️ Manejo robusto de errores** mejorado
+- **🎵 Reproducción de audio** nativa en Windows
+- **🤖 Bot de Telegram integrado** con Python Telegram Bot 20.7
+- **📊 Gestión de datos** con Google Sheets API y gspread
 
-**!redes**  
-Muestra en el chat el link para instagram y youtube.  
-
-**!programación**  
-Muestra en el chat la programación semanal de HDP.  
-
-**!cafecito**  
-Muestra en el chat el link al cafecito.  
-
-**!info nombre de juego**  
-Donde "nombre de juego" se reemplaza por cualquier videojuego que será buscado en la base RAWG.IO  
-devolviendo su nombre y puntuación de metacritic. Además, el nombre correctamente escrito será buscado  
-en steam para mostrar su precio.  
-
-**!puntito nombre del viewer**  
-Se le suma un puntito que se guarda localmente en un dataframe (excel con esteroides).  
-
-**!consulta**  
-El que ejecuta el comando consulta en el dataframe cuantos puntitos tiene.  
-
-**!recomendame**  
-Devuelve el nombre y el link de un video de youtube al azar.  
-
-**!ultimo**  
-Devuelve el nombre y el link del último video de youtube.  
-
-**!podcast**  
-Devuelve el nombre y el link del último podcast en youtube.  
-
-**!decidir**  
-Permite elejir al azar entre diferentes opciones.  
-
-**!lanzamientos**  
-Consulta los lanzamientos más cercanos.  
-
-**!grog**  
-Le da de tomar grog al bot.  
-
-**!agua**  
-Le da de tomar agua al bot y lo recupera de la borrachera.  
-
-**!peleadeinsultos**  
-También pueden usarse los comandos insulto, pelea, peleainsulto, peleainsulto o peleadeinsultos.  
-Entabla una pelea de insultos con el BOT.  
-ejemplo de una pelea  
-Usuario: !pelea  
-BotDelEstadio: ¿Has dejado ya de usar pañales?  
-Usuario: !pelea ¿Por qué? ¿Acaso querías pedir uno prestado?
-BotDelEstadio: Ouch!  
-
-El BOT suma un punto cuando gana el usuario y resta uno cuando pierde.  
-En caso que el contador llegue a -3 se termina la pelea y gana el BOT.  
-En caso que el contador llegue a 3 se termina la pelea, gana el usuario y suma un puntito.  
-
-**!escupir**  
-Competencia de escupitajos!  
-Cada usuario puede escupir hasta 5 veces, se cuenta solo el último escupitajo.  
-Cada vez que un usuario escupe, se muestra quien es el que va ganando.  
-
-**!ganador**  
-Muestra quien va ganando el torneo de escupitajos.  
-
-**!terminar**  
-Finaliza el torneo de escupitajos, le otorga un puntito al ganador e inicia un nuevo torneo.  
-
-**!VOT112**  
-Suma un voto para que el Sugar Daddy se saque la camisa.  
-
-**!trivia**  
-Desafiar al bot o pedirle ayuda sobre las trivias del Return to Monkey Island.  
-
-**!gg**  
-Reproduce un audio de victoria.  
-
-**!margarita**  
-¿Me regalas una margarita?  
-
-**!top**  
-Muestra los 3 usuarios con mas puntitos, solo lo pueden usar admins.  
-
-**!horny**  
-yameteeeeeee.  
-
-**!proteccion**  
-Inicia o finaliza el horario de protección al menor.  
-
-**!guardar**  
-Recuerda al streamer que guarde la partida.  
 ---
 
-### FUENTES EXTERNAS:  
-Conexión a Steam: https://pypi.org/project/python-steam-api/  
-Wraper de la API de Twitch: https://twitchio.dev/en/stable/index.html  
-Base de datos de videojuegos: https://api.rawg.io/docs/  
-Precio del dólar: https://dolarapi.com  
-YouTube Data API: https://developers.google.com/youtube/v3/getting-started?hl=es-419  
+## 📋 **Instalación y Configuración**
+Para instrucciones detalladas de instalación, configuración y uso, consulta la **[Guía de Instalación](guia-bot-ejecutable.md)**.
+
+---
+
+## 🔗 **Fuentes Externas y Créditos**
+
+| Tecnología | Descripción | Link |
+|------------|-------------|------|
+| **TwitchIO** | Wrapper de la API de Twitch | [🔗 Documentación](https://twitchio.dev/en/stable/index.html) |
+| **RAWG.io** | Base de datos de videojuegos | [🔗 API Docs](https://api.rawg.io/docs/) |
+| **Steam API** | Conexión con Steam | [🔗 python-steam-api](https://pypi.org/project/python-steam-api/) |
+| **YouTube API** | YouTube Data API v3 | [🔗 Getting Started](https://developers.google.com/youtube/v3/getting-started?hl=es-419) |
+| **DolarAPI** | Precio del dólar argentino | [🔗 DolarAPI](https://dolarapi.com) |
+| **Python Telegram Bot** | Framework para bots de Telegram | [🔗 python-telegram-bot](https://python-telegram-bot.org/) |
+| **gspread** | Cliente Python para Google Sheets | [🔗 gspread Docs](https://docs.gspread.org/) |
+
+---
+
+<div align="center">
+
+**🎮 Desarrollado con ❤️ para la comunidad de Hablemos de Pavadas 🎮**
+
+*¿Encontraste un bug? ¿Tenés una idea genial? ¡Abrí un issue!* 
+
+[![Twitch](https://img.shields.io/badge/Twitch-9146FF?style=for-the-badge&logo=twitch&logoColor=white)](https://www.twitch.tv/hablemosdepavadaspod)
+[![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com)
+
+</div>

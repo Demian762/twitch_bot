@@ -5,8 +5,8 @@ import warnings
 from telegram import Update
 from telegram.ext import Application, MessageHandler, filters, ContextTypes
 
-from telegram_stuff.ffmpeg_manager import FFmpegManager
-from telegram_stuff.audio_converter import AudioConverter
+from telegram_bot.ffmpeg_manager import FFmpegManager
+from telegram_bot.audio_converter import AudioConverter
 
 warnings.filterwarnings("ignore", category=UserWarning, module="telegram")
 
