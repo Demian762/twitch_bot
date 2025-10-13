@@ -12,111 +12,7 @@
 
 ¡El bot OFICIAL que hace que el stream sea más divertido! 🚀
 
----
-
-## 📋 Comandos Disponibles
-
-### 🎪 **Comandos Básicos**
-| Comando | Alias | Descripción |
-|---------|--------|-------------|
-| `!hola` | `!buenas` | 👋 Devuelve el saludo al autor del comando |
-| `!guardar` | `!salvar` | 💾 Recuerda al streamer que guarde la partida |
-| `!proteccion` | - | 🛡️ Inicia o finaliza el horario de protección al menor |
-| `!spam` | - | 🗣️ Para que los admins puedan enviar spam |
-
-### 📺 **Información del Canal**
-| Comando | Alias | Descripción |
-|---------|--------|-------------|
-| `!redes` | - | 🌐 Muestra los links de Instagram y YouTube |
-| `!discord` | - | 💬 Información del servidor de Discord |
-| `!programacion` | `!programación` | 📅 Programación semanal de HDP |
-| `!amigos` | `!amigo` | 👥 Lista de streamers amigos |
-| `!cafecito` | `!cafe` | ☕ Link para apoyar el canal |
-
-### 🎮 **Comandos de Gaming**
-| Comando | Alias | Descripción |
-|---------|--------|-------------|
-| `!info [juego]` | - | 🎯 Busca información de videojuegos (RAWG + Steam) |
-| `!lanzamientos` | - | 🚀 Próximos lanzamientos de videojuegos |
-
-### 📺 **YouTube**
-| Comando | Alias | Descripción |
-|---------|--------|-------------|
-| `!recomendame` | - | 🎲 Video random del canal |
-| `!ultimo` | `!último` | ▶️ Último video subido |
-| `!podcast` | - | 🎧 Último episodio de podcast |
-
-### 🎯 **Sistema de Puntitos**
-| Comando | Alias | Descripción |
-|---------|--------|-------------|
-| `!consulta` | `!puntos`, `!puntitos`, `!score` | 📊 Consulta tus puntitos actuales |
-| `!historico` | - | 📈 Historial total de puntitos |
-| `!puntito [usuario]` | - | ➕ Dale un puntito a alguien (solo admins) |
-| `!bienvenida [usuario]` | `!bienvenido` | 🎉 Da la bienvenida y otorga puntitos |
-| `!top [n]` | - | 🏆 Top usuarios con más puntitos (solo admins) |
-| `!sorteo` | - | 🎰 Sorteo aleatorio entre usuarios con puntitos |
-
-### 🎪 **Minijuegos**
-| Comando | Alias | Descripción |
-|---------|--------|-------------|
-| `!escupir` | `!spit`, `!gargajo`, `!escupitajo` | 💦 Competencia de escupitajos |
-| `!ganador` | - | 🏆 Quién va ganando los escupitajos |
-| `!terminar` | `!termina` | 🔚 Finaliza torneo y otorga premio |
-| `!dado` | `!dados` | 🎲 Lanza dados con diferentes formatos |
-| `!margarita` | - | 🍹 ¿Me regalas una margarita? |
-
-### ⚔️ **Pelea de Insultos**
-| Comando | Alias | Descripción |
-|---------|--------|-------------|
-| `!insultos` | `!insulto`, `!pelea`, `!peleainsultos` | 🤺 Batalla épica de insultos con el bot |
-
-*Sistema de puntos: +1 cuando ganas, -1 cuando pierdes. Ganas con +3 puntos, pierdes con -3.*
-
-### 🍺 **Sistema de Bebidas**
-| Comando | Alias | Descripción |
-|---------|--------|-------------|
-| `!grog` | - | 🍻 Dale grog al bot (se emborracha) |
-| `!agua` | `!agüita`, `!aguita` | 💧 Dale agua al bot (lo sobria) |
-
-### 🧠 **Trivia**
-| Comando | Alias | Descripción |
-|---------|--------|-------------|
-| `!trivia` | `!trivial` | 🧩 Desafía al bot con Return to Monkey Island |
-
-### 🛠️ **Utilidades**
-| Comando | Alias | Descripción |
-|---------|--------|-------------|
-| `!decidir [opciones]` | `!decision`, `!decisión` | 🎯 Elige al azar entre opciones |
-| `!dolar` | - | 💵 Precio actual del dólar |
-| `!iniciartimer` | `!iniciotimer`, `!reiniciartimer` | ⏱️ Inicia cronómetro (solo admins) |
-| `!consultatimer` | `!timer`, `!tiempo`, `!horas` | ⏰ Consulta tiempo transcurrido |
-
-### 🔊 **Comandos de Audio**
-*Reproducen sonidos y algunos tienen mensajes especiales:*
-
-| Comando | Descripción |
-|---------|-------------|
-| `!holis` | 👋 Saludo especial |
-| `!helldiver`, `!forsuperearth` | 🚀 For Super Earth! |
-| `!cuervo` | 🐦 Audio del cuervo |
-| `!zazaraza`, `!indy` | 🎬 Indy forever |
-| `!piripipi`, `!gg` | 🎉 Sonido de victoria |
-| `!dark` | 🌑 Modo oscuro |
-| `!quiereme` | ❤️ Amor y cariño |
-| `!sacrilegioso`, `!homero` | 😱 ¡Sacrilegio! |
-| `!sadsong`, `!sad` | 😢 Música triste |
-| `!boca`, `!bostero` | ⚽ BOOOOOCA! |
-| `!yeahbaby`, `!marit887` | 😎 Yeah baby! |
-| `!wansaia82`, `!ariel` | 🎵 Wansaia! |
-| `!presta`, `!red` | 🏳️‍🌈 Audio especial |
-| `!distinta` | 💃 Ella es distinta |
-| `!sega` | 🎮 SEGAAAA! |
-| `!play`, `!sony` | 🎮 PlayStation |
-| `!mario`, `!nintendo` | 🍄 Game Over Mario |
-| `!zelda`, `!link` | ⚔️ Zelda item sound |
-| `!alert`, `!snake` | ❗ Metal Gear Alert |
-| `!ernesto` | 🎤 Ernesto Tenembaum |
-| `!horny`, `!yamete`, `!anime` | 😳 Yameteeeee kudasai! |
+> 📋 **Para ver la lista completa de comandos disponibles, consulta [comandos-stream.md](comandos-stream.md)**
 
 ---
 
@@ -144,6 +40,7 @@ twitch_bot/
 │   ├── logger.py             # Sistema de logging mejorado
 │   ├── api_games.py          # Manager de APIs gaming
 │   ├── api_youtube.py        # Manager API YouTube
+│   ├── wikipedia_api.py      # Manager API Wikipedia
 │   ├── puntitos_manager.py   # Gestor de puntitos
 │   ├── secretos.py           # Configuración de secrets
 │   └── ... más utilidades
@@ -164,6 +61,7 @@ twitch_bot/
 - **🤖 Telegram Bot API**: Bot integrado con funcionalidades de voz
 - **📊 Google Sheets API**: Gestión de datos y puntitos
 - **🔍 HowLongToBeat**: Tiempo de juego de videojuegos
+- **📚 Wikipedia API**: Datos curiosos del "¿Sabías que...?" en español
 
 ### ⚙️ **Características Técnicas**
 - **🐍 Python 3.11+** con entorno virtual
@@ -178,31 +76,7 @@ twitch_bot/
 
 ---
 
-## 🆕 **Últimos Cambios y Fixes**
-
-### � **Versión 250927 - Refactor Completo**
-- ✅ **Refactorización completa** de la arquitectura del bot
-- ✅ **Nueva estructura modular** de comandos más organizada
-- ✅ **Sistema de logging mejorado** con niveles configurables
-- ✅ **Integración con Telegram Bot** para funcionalidades adicionales
-- ✅ **Fix de API YouTube** - Corregidos problemas de conexión
-- ✅ **Comandos recuperados** - Restaurados comandos perdidos en el refactor
-- ✅ **Comando !medimela** - Vuelto a agregar tras el refactor
-- ✅ **Fix de rutinas automáticas** - Corregido el sistema de rutinas
-- ✅ **Actualización de seguridad** - Requests actualizado por vulnerabilidad
-- ✅ **Logs optimizados** - Removidos logs innecesarios y mejoradas respuestas
-- ✅ **Documentación actualizada** - Nueva documentación completa
-- ✅ **Sistema de dados mejorado** - Nuevas funcionalidades de dados
-- ✅ **Fix comando !info y !lanzamientos** - Corregidos problemas de API
-
-### 🔧 **Mejoras Técnicas**
-- **🏗️ Arquitectura modular**: Comandos organizados por categorías
-- **📊 Gestión centralizada**: Configuración y estado del bot unificados
-- **🛡️ Manejo de errores robusto**: Mejor gestión de excepciones
-- **⚡ Performance optimizado**: Reducido uso de recursos
-- **🔐 Seguridad mejorada**: Dependencias actualizadas
-
-### 📋 **Instalación y Configuración**
+## 📋 **Instalación y Configuración**
 Para instrucciones detalladas de instalación, configuración y uso, consulta la **[Guía de Instalación](guia-bot-ejecutable.md)**.
 
 ---

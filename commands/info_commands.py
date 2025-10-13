@@ -13,6 +13,7 @@ from utils.logger import logger
 from utils.mensaje import mensaje
 from .base_command import BaseCommand
 from utils.configuracion import lista_redes, lista_amigos, cafecito_texto
+from utils.wikipedia_api import obtener_dato_aleatorio
 
 class InfoCommands(BaseCommand):
     """
@@ -86,3 +87,31 @@ class InfoCommands(BaseCommand):
         if await self.check_coma_etilico():
             return
         await mensaje(cafecito_texto)
+
+    @commands.command(aliases=("datos", "tip", "tips"))
+    async def dato(self, ctx: commands.Context):
+        """
+        Muestra un dato curioso aleatorio de Wikipedia
+        
+        Obtiene un dato del sistema "¿Sabías que...?" de Wikipedia en español.
+        Cada vez que se usa el comando, se obtiene un dato diferente de forma
+        completamente aleatoria de las 250+ plantillas disponibles.
+        
+        Args:
+            ctx: Contexto del comando de Twitch
+        
+        Note:
+            Este comando hace una petición a la API de Wikipedia cada vez que
+            se ejecuta. No usa cache para mantener la compatibilidad con el
+            sistema de distribución del bot.
+        """
+        if await self.check_coma_etilico():
+            return
+        
+        try:
+            # Obtener dato aleatorio de Wikipedia
+            dato = obtener_dato_aleatorio()
+            await mensaje(dato)
+        except Exception as e:
+            logger.error(f"Error en comando !dato: {e}")
+            await mensaje("Hubo un error al obtener el dato curioso. ¡Intenta de nuevo!")

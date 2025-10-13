@@ -18,7 +18,7 @@
 `!redes` - Links redes sociales | `!discord` - Info Discord | `!programacion` - Horarios HDP | `!amigos` - Streamers amigos | `!cafecito` - Apoyo | `!recomendame` - Video random | `!ultimo` - Último video | `!podcast` - Último podcast
 
 ### 🛠️ **Utilidades**
-`!decidir [opciones]` - Elige al azar | `!dolar` - Precio dólar | `!timer` - Cronómetro | `!guardar` - Recordar guardar | `!grog` - Emborrachar bot | `!agua` - Sobriedad bot
+`!decidir [opciones]` - Elige al azar | `!dato` `!tip` - Datos curiosos Wikipedia | `!dolar` - Precio dólar | `!timer` - Cronómetro | `!guardar` - Recordar guardar | `!grog` - Emborrachar bot | `!agua` - Sobriedad bot
 
 ---
-*💡 **Tip**: Algunos comandos tienen alias. Ej: `!puntos` = `!puntitos` = `!consulta` | Para admins: `!puntito [usuario]` `!bienvenida [usuario]`*
+*💡 **Tip**: Algunos comandos tienen alias. Ej: `!puntos` = `!puntitos` = `!consulta` | `!dato` = `!datos` = `!tip` = `!tips` | Para admins: `!puntito [usuario]` `!bienvenida [usuario]`*
