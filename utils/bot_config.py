@@ -9,7 +9,7 @@ from utils.api_youtube import (
     get_latest_video,
     get_video_details
 )
-from utils.utiles_general import timer_iniciar, resource_path, precio_dolar
+from utils.utiles_general import timer_iniciar, precio_dolar
 from utils.puntitos_manager import get_programacion
 from utils.logger import logger
 from utils.configuracion import configuracion_basica, rutina_lista
