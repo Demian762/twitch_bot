@@ -118,7 +118,7 @@ def steam_api():
         logger.info("conexión exitosa con Steam.")
         return steam
     except:
-        raise "No se pudo conectar a Steam."
+        raise Exception("No se pudo conectar a Steam.")
     
 def steam_price(nombre, steam, dolar):
     for intento in range(3):

@@ -7,11 +7,13 @@ from utils.logger import logger
 
 def precio_dolar():
     response = requests.get("https://dolarapi.com/v1/dolares/oficial")
-    if response:
-        logger.info("Dólar oficial a: " + str(response.json()['venta']))
-        return response.json()['venta']
+    if response.status_code == 200:
+        data = response.json()
+        venta = data.get('venta', 0)
+        logger.info("Dólar oficial a: " + str(venta))
+        return venta
     else:
-        logger.warning("No se obtuvo el precio del dólar.")
+        logger.warning(f"Error al obtener el precio del dólar. Status code: {response.status_code}")
         return 0
 
 def get_args(args):

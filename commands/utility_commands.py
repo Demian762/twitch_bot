@@ -99,7 +99,7 @@ class UtilityCommands(BaseCommand):
             eleccion = choice(eleccion)
             await mensaje(f"Tiraste una moneda y salió {eleccion}!")
         elif len(args) == 1:
-            mensaje(f"Y bueno, elijo \"{args[0]}\", mucha opción no me diste.")
+            await mensaje(f"Y bueno, elijo \"{args[0]}\", mucha opción no me diste.")
         elif len(args) > 1:
             eleccion = choice(list(args))
             await mensaje(f"Me decidí por: {eleccion}")
