@@ -12,7 +12,7 @@ from twitchio.ext import commands
 
 # Imports locales
 from utils.mensaje import mensaje
-from utils.puntitos_manager import consulta_puntitos, consulta_historica
+from utils.puntitos_manager import consulta_puntitos, consulta_historica, consulta_victorias
 from .base_command import BaseCommand
 
 class PointsCommands(BaseCommand):
@@ -28,10 +28,10 @@ class PointsCommands(BaseCommand):
     @commands.command(aliases=("puntos","punto","puntitos","score"))
     async def consulta(self, ctx: commands.Context):
         """
-        Consulta los puntos actuales del usuario
+        Consulta los puntos actuales del usuario y sus victorias
         
         Muestra la puntuación actual del usuario que ejecuta el comando,
-        con manejo gramatical correcto para singular/plural.
+        junto con la cantidad de sorteos y torneos ganados.
         
         Args:
             ctx: Contexto del comando de Twitch
@@ -40,19 +40,41 @@ class PointsCommands(BaseCommand):
             None
             
         Example:
-            !puntos -> "@usuario tiene 5 puntitos!"
+            !puntos -> "@usuario tiene 5 puntitos, 2 sorteos ganados y 3 torneos ganados!"
         """
         if await self.check_coma_etilico():
             return
             
         nombre = ctx.author.name
         puntitos = consulta_puntitos(nombre)
+        victorias = consulta_victorias(nombre)
+        
+        sorteos = victorias['sorteos_ganados']
+        torneos = victorias['torneos_ganados']
+        
+        # Construir el mensaje con manejo gramatical
         if puntitos == 0:
-            await ctx.send(f'@{nombre} todavía no tiene puntitos!')
+            mensaje_puntitos = f'@{nombre} todavía no tiene puntitos'
         elif puntitos == 1 or puntitos == -1:
-            await mensaje(f'@{nombre} tiene {puntitos} puntito!')
+            mensaje_puntitos = f'@{nombre} tiene {puntitos} puntito'
         else:
-            await mensaje(f'@{nombre} tiene {puntitos} puntitos!')
+            mensaje_puntitos = f'@{nombre} tiene {puntitos} puntitos'
+        
+        # Agregar información de sorteos
+        if sorteos == 1:
+            mensaje_sorteos = f'{sorteos} sorteo ganado'
+        else:
+            mensaje_sorteos = f'{sorteos} sorteos ganados'
+        
+        # Agregar información de torneos
+        if torneos == 1:
+            mensaje_torneos = f'{torneos} torneo'
+        else:
+            mensaje_torneos = f'{torneos} torneos'
+        
+        # Mensaje completo: puntitos, torneos, sorteos
+        mensaje_completo = f'{mensaje_puntitos}, {mensaje_torneos} y {mensaje_sorteos}!'
+        await mensaje(mensaje_completo)
 
     @commands.command(aliases=())
     async def historico(self, ctx: commands.Context):

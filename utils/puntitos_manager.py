@@ -23,6 +23,7 @@ Version: 250927
 import gspread
 from random import choices
 from collections import defaultdict
+from datetime import datetime
 from utils.secretos import credenciales_gspread, file_puntitos_url
 from utils.logger import logger
 
@@ -274,3 +275,301 @@ def get_programacion():
     except Exception as e:
         logger.error(f"Error en get_programacion: {e}")
         return ["Error: No se pudo acceder a la programación"]
+
+def get_restricciones_escupir():
+    """
+    Obtiene las restricciones configurables para el comando !escupir desde Google Sheets
+    
+    Lee las restricciones desde la cuarta hoja del documento de Google Sheets.
+    Las restricciones incluyen días de la semana, rangos horarios, y penalizaciones.
+    
+    Returns:
+        list: Lista de diccionarios con las restricciones configuradas.
+              Cada restricción tiene: 'dia', 'hora_inicio', 'hora_fin', 'penalizacion', 'mensaje'
+              Retorna lista vacía si no hay restricciones o si hay error
+              
+    Structure:
+        [
+            {
+                'dia': 'Monday',  # Día de la semana en inglés (Monday, Tuesday, etc.) o 'All' para todos
+                'hora_inicio': '00:00',  # Hora de inicio en formato HH:MM (24h), vacío si no aplica
+                'hora_fin': '23:59',  # Hora de fin en formato HH:MM (24h), vacío si no aplica
+                'penalizacion': -1,  # Cantidad de puntitos a descontar (negativo o 0, NUNCA positivo)
+                'mensaje': 'Los Lunes no se escupe'  # Mensaje personalizado para mostrar
+            }
+        ]
+        
+    Note:
+        Las penalizaciones SIEMPRE deben ser negativas o cero. Si se proporciona un número
+        positivo, el sistema lo convertirá automáticamente a negativo y registrará un warning.
+        
+    Example:
+        >>> get_restricciones_escupir()
+        [
+            {'dia': 'Monday', 'hora_inicio': '', 'hora_fin': '', 'penalizacion': -1, 'mensaje': 'Los Lunes no se escupe'},
+            {'dia': 'Sunday', 'hora_inicio': '14:00', 'hora_fin': '18:00', 'penalizacion': -2, 'mensaje': 'Siesta dominical!'}
+        ]
+        
+    Error Handling:
+        - Maneja errores de conexión con Google Sheets
+        - Retorna lista vacía si falla la lectura
+        - Valida que las restricciones tengan estructura correcta
+    """
+    try:
+        hoja = sh.get_worksheet(3)
+        # Intentar leer las restricciones con headers esperados
+        try:
+            restricciones_dict = hoja.get_all_records(
+                expected_headers=['dia', 'hora_inicio', 'hora_fin', 'penalizacion', 'mensaje']
+            )
+        except Exception as e:
+            logger.warning(f"Error con expected_headers en restricciones_escupir, usando método alternativo: {e}")
+            restricciones_dict = hoja.get_all_records()
+        
+        restricciones = []
+        for row in restricciones_dict:
+            # Validar que la fila tenga los campos requeridos
+            if all(key in row for key in ['dia', 'penalizacion', 'mensaje']):
+                # Convertir penalización a int si viene como string
+                try:
+                    penalizacion = int(row['penalizacion']) if row['penalizacion'] else 0
+                except (ValueError, TypeError):
+                    penalizacion = 0
+                
+                # IMPORTANTE: Las restricciones NUNCA suman puntos, solo restan o son neutras
+                # Asegurar que la penalización sea <= 0
+                if penalizacion > 0:
+                    logger.warning(f"Restricción con penalización positiva detectada ({penalizacion}), se convertirá a negativa: -{penalizacion}")
+                    penalizacion = -penalizacion
+                    
+                restriccion = {
+                    'dia': str(row['dia']).strip() if row['dia'] else '',
+                    'hora_inicio': str(row.get('hora_inicio', '')).strip(),
+                    'hora_fin': str(row.get('hora_fin', '')).strip(),
+                    'penalizacion': penalizacion,
+                    'mensaje': str(row['mensaje']).strip() if row['mensaje'] else ''
+                }
+                
+                # Solo agregar si tiene día y mensaje
+                if restriccion['dia'] and restriccion['mensaje']:
+                    restricciones.append(restriccion)
+        
+        logger.info(f"Restricciones de escupir cargadas: {len(restricciones)} reglas")
+        return restricciones
+        
+    except Exception as e:
+        logger.error(f"Error en get_restricciones_escupir: {e}")
+        return []
+
+def validar_restriccion_escupir(restricciones: list, dia_semana: str):
+    """
+    Valida si el comando !escupir puede ejecutarse basándose en las restricciones configuradas
+    
+    Comprueba si la fecha/hora actual coincide con alguna restricción activa.
+    Si encuentra una restricción que aplica, retorna la información de penalización.
+    
+    Args:
+        restricciones (list): Lista de restricciones obtenida de get_restricciones_escupir()
+        dia_semana (str): Día actual de la semana en inglés (Monday, Tuesday, etc.)
+        
+    Returns:
+        dict or None: Si hay una restricción activa, retorna:
+                     {
+                         'penalizacion': int,  # Cantidad a penalizar (negativo)
+                         'mensaje': str  # Mensaje a mostrar al usuario
+                     }
+                     Si no hay restricción, retorna None
+                     
+    Logic:
+        - Comprueba si el día actual coincide con alguna restricción
+        - Si la restricción tiene horas definidas, valida que la hora actual esté en el rango
+        - Si la restricción tiene dia='All', aplica a todos los días
+        - Las restricciones se evalúan en orden, retorna la primera que coincida
+        
+    Example:
+        >>> restricciones = [{'dia': 'Monday', 'hora_inicio': '', 'hora_fin': '', 'penalizacion': -1, 'mensaje': 'No se escupe los lunes'}]
+        >>> validar_restriccion_escupir(restricciones, 'Monday')
+        {'penalizacion': -1, 'mensaje': 'No se escupe los lunes'}
+        >>> validar_restriccion_escupir(restricciones, 'Tuesday')
+        None
+    """
+    if not restricciones:
+        return None
+    
+    hora_actual = datetime.now().time()
+    
+    for restriccion in restricciones:
+        # Verificar si el día coincide (o si es 'All' que aplica a todos los días)
+        if restriccion['dia'] != 'All' and restriccion['dia'] != dia_semana:
+            continue
+            
+        # Si no tiene restricción horaria, la restricción aplica todo el día
+        if not restriccion['hora_inicio'] or not restriccion['hora_fin']:
+            return {
+                'penalizacion': restriccion['penalizacion'],
+                'mensaje': restriccion['mensaje']
+            }
+        
+        # Validar rango horario
+        try:
+            hora_inicio = datetime.strptime(restriccion['hora_inicio'], '%H:%M').time()
+            hora_fin = datetime.strptime(restriccion['hora_fin'], '%H:%M').time()
+            
+            # Verificar si la hora actual está en el rango
+            if hora_inicio <= hora_actual <= hora_fin:
+                return {
+                    'penalizacion': restriccion['penalizacion'],
+                    'mensaje': restriccion['mensaje']
+                }
+        except ValueError as e:
+            logger.warning(f"Error al parsear horas en restricción: {restriccion}. Error: {e}")
+            continue
+    
+    # No hay restricciones activas
+    return None
+
+def registrar_victoria_sorteo(nombre: str):
+    """
+    Registra una victoria en sorteo para un usuario en el spreadsheet
+    
+    Incrementa en 1 el contador de sorteos ganados por el usuario.
+    Si el usuario no existe en la hoja de registros, lo crea con valores iniciales.
+    Utiliza la quinta hoja (worksheet 4) del documento de Google Sheets.
+    
+    Args:
+        nombre (str): Nombre del usuario ganador (se normaliza automáticamente)
+        
+    Returns:
+        None
+        
+    Structure de la hoja:
+        - Columna 1: nombre
+        - Columna 2: sorteos_ganados
+        - Columna 3: torneos_ganados
+        
+    Example:
+        >>> registrar_victoria_sorteo("usuario1")  # Primera victoria en sorteo
+        >>> registrar_victoria_sorteo("usuario1")  # Segunda victoria en sorteo
+        
+    Note:
+        - Si el usuario no existe, se crea con: sorteos_ganados=1, torneos_ganados=0
+        - Si el usuario existe, solo incrementa sorteos_ganados en 1
+        - La hoja debe existir previamente (worksheet 4)
+    """
+    nombre = nombre.lower().lstrip("@")
+    
+    try:
+        hoja = sh.get_worksheet(4)
+        df = hoja.get_all_records()
+        
+        # Buscar si el usuario ya existe
+        for idx, row in enumerate(df):
+            if row.get('nombre') == nombre:
+                # Usuario existe, incrementar sorteos ganados
+                sorteos_actuales = row.get('sorteos_ganados', 0)
+                hoja.update_cell(idx + 2, 2, sorteos_actuales + 1)
+                logger.info(f"Victoria en sorteo registrada para {nombre}: {sorteos_actuales + 1} sorteos ganados")
+                return
+        
+        # Usuario no existe, crear nuevo registro
+        nuevo_registro = [nombre, 1, 0]  # sorteos=1, torneos=0
+        hoja.append_row(nuevo_registro)
+        logger.info(f"Nuevo usuario en registros de victorias: {nombre} con 1 sorteo ganado")
+        
+    except Exception as e:
+        logger.error(f"Error al registrar victoria en sorteo para {nombre}: {e}")
+
+def registrar_victoria_torneo(nombre: str, cant: int = 1):
+    """
+    Registra una victoria en torneo de escupitajos para un usuario en el spreadsheet
+    
+    Incrementa o decrementa el contador de torneos ganados por el usuario.
+    Si el usuario no existe en la hoja de registros, lo crea con valores iniciales.
+    Utiliza la quinta hoja (worksheet 4) del documento de Google Sheets.
+    
+    Args:
+        nombre (str): Nombre del usuario ganador (se normaliza automáticamente)
+        cant (int): Cantidad a modificar (default: 1). Puede ser negativo para restar
+        
+    Returns:
+        None
+        
+    Structure de la hoja:
+        - Columna 1: nombre
+        - Columna 2: sorteos_ganados
+        - Columna 3: torneos_ganados
+        
+    Example:
+        >>> registrar_victoria_torneo("usuario1")  # Suma 1 torneo ganado
+        >>> registrar_victoria_torneo("usuario1", cant=-1)  # Resta 1 torneo ganado
+        >>> registrar_victoria_torneo("usuario2", cant=1)  # Suma 1 torneo ganado
+        
+    Note:
+        - Si el usuario no existe, se crea con: sorteos_ganados=0, torneos_ganados=cant
+        - Si el usuario existe, incrementa/decrementa torneos_ganados en cant
+        - Funciona igual que funcion_puntitos() pero para el contador de torneos
+        - La hoja debe existir previamente (worksheet 4)
+    """
+    nombre = nombre.lower().lstrip("@")
+    
+    try:
+        hoja = sh.get_worksheet(4)
+        df = hoja.get_all_records()
+        
+        # Buscar si el usuario ya existe
+        for idx, row in enumerate(df):
+            if row.get('nombre') == nombre:
+                # Usuario existe, modificar torneos ganados
+                torneos_actuales = row.get('torneos_ganados', 0)
+                nuevos_torneos = torneos_actuales + cant
+                hoja.update_cell(idx + 2, 3, nuevos_torneos)
+                logger.info(f"Victoria en torneo {'sumada' if cant > 0 else 'restada'} para {nombre}: {nuevos_torneos} torneos ganados")
+                return
+        
+        # Usuario no existe, crear nuevo registro
+        nuevo_registro = [nombre, 0, cant]  # sorteos=0, torneos=cant
+        hoja.append_row(nuevo_registro)
+        logger.info(f"Nuevo usuario en registros de victorias: {nombre} con {cant} torneo(s) ganado(s)")
+        
+    except Exception as e:
+        logger.error(f"Error al registrar victoria en torneo para {nombre}: {e}")
+
+def consulta_victorias(nombre: str):
+    """
+    Consulta las victorias (sorteos y torneos) de un usuario
+    
+    Retorna un diccionario con la cantidad de sorteos y torneos ganados
+    por el usuario desde la hoja de registros de victorias.
+    
+    Args:
+        nombre (str): Nombre del usuario (se normaliza automáticamente)
+        
+    Returns:
+        dict: Diccionario con 'sorteos_ganados' y 'torneos_ganados'
+              Retorna {'sorteos_ganados': 0, 'torneos_ganados': 0} si no existe
+        
+    Example:
+        >>> consulta_victorias("usuario1")
+        {'sorteos_ganados': 3, 'torneos_ganados': 5}
+        >>> consulta_victorias("usuario_nuevo")
+        {'sorteos_ganados': 0, 'torneos_ganados': 0}
+    """
+    nombre = nombre.lower().lstrip("@")
+    
+    try:
+        hoja = sh.get_worksheet(4)
+        df = hoja.get_all_records()
+        
+        for row in df:
+            if row.get('nombre') == nombre:
+                return {
+                    'sorteos_ganados': row.get('sorteos_ganados', 0),
+                    'torneos_ganados': row.get('torneos_ganados', 0)
+                }
+        
+        # Usuario no existe, retornar ceros
+        return {'sorteos_ganados': 0, 'torneos_ganados': 0}
+        
+    except Exception as e:
+        logger.error(f"Error al consultar victorias para {nombre}: {e}")
+        return {'sorteos_ganados': 0, 'torneos_ganados': 0}

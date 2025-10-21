@@ -10,7 +10,7 @@ from utils.api_youtube import (
     get_video_details
 )
 from utils.utiles_general import timer_iniciar, precio_dolar
-from utils.puntitos_manager import get_programacion
+from utils.puntitos_manager import get_programacion, get_restricciones_escupir
 from utils.logger import logger
 from utils.configuracion import configuracion_basica, rutina_lista
 
@@ -21,6 +21,7 @@ class BotConfig:
             self.dia_semana = datetime.now().strftime('%A')
             self.lista_programacion = get_programacion()
             self.rutina_lista = rutina_lista
+            self.restricciones_escupir = get_restricciones_escupir()
         except Exception as e:
             logger.error(f"Error en BotConfig: {e}")
             raise

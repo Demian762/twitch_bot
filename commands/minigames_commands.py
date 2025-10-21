@@ -13,7 +13,7 @@ import winsound
 from random import triangular, randint
 from utils.logger import logger
 from utils.mensaje import mensaje
-from utils.puntitos_manager import funcion_puntitos
+from utils.puntitos_manager import funcion_puntitos, validar_restriccion_escupir, registrar_victoria_torneo
 from utils.utiles_general import validate_dice_format, resource_path
 from utils.configuracion import admins
 from .base_command import BaseCommand
@@ -50,7 +50,7 @@ class MinigamesCommands(BaseCommand):
         Minijuego de competencia de escupitajos
         
         Los usuarios compiten por lograr la distancia más larga de escupitajo.
-        Tiene restricciones por día de la semana y límite de intentos.
+        Tiene restricciones configurables por día de la semana y horario.
         
         Args:
             ctx: Contexto del comando de Twitch
@@ -59,23 +59,28 @@ class MinigamesCommands(BaseCommand):
             None
             
         Note:
-            - No se puede escupir lunes y domingos (penaliza con -1 punto)
+            - Las restricciones se configuran desde el spreadsheet (worksheet 3)
+            - Puede tener restricciones por día de semana y/o rango horario
             - Máximo 5 intentos por usuario
             - El ganador actual no puede seguir escupiendo
+            - Las restricciones aplican penalizaciones configurables
         """
         nombre = ctx.author.name.lower()
         escupida = int(triangular(2,500,1))
 
-        if self.bot.config.dia_semana == "Monday":
-            await mensaje(f"Los Lunes no se escupe {nombre}!!")
-            funcion_puntitos(nombre, cant=-1)
-            await mensaje(f"{nombre} acaba de perder un puntito...")
-            return
-
-        if self.bot.config.dia_semana == "Sunday":
-            await mensaje(f"Los Domingos no se escupe {nombre}!!")
-            funcion_puntitos(nombre, cant=-1)
-            await mensaje(f"{nombre} acaba de perder un puntito...")
+        # Validar restricciones configurables desde el spreadsheet
+        restriccion_activa = validar_restriccion_escupir(
+            self.bot.config.restricciones_escupir,
+            self.bot.config.dia_semana
+        )
+        
+        if restriccion_activa:
+            await mensaje(f"{restriccion_activa['mensaje']} {nombre}!!")
+            # Las restricciones solo pueden restar puntos (o ser neutras con 0)
+            if restriccion_activa['penalizacion'] < 0:
+                funcion_puntitos(nombre, cant=restriccion_activa['penalizacion'])
+                puntos_texto = "puntito" if abs(restriccion_activa['penalizacion']) == 1 else "puntitos"
+                await mensaje(f"{nombre} acaba de perder {abs(restriccion_activa['penalizacion'])} {puntos_texto}...")
             return
 
         if self.bot.state.ganador is not None and nombre == self.bot.state.ganador[0]:
@@ -98,13 +103,17 @@ class MinigamesCommands(BaseCommand):
             return
         
         if self.bot.state.ganador is None:
+            # Primer escupitajo del torneo - iniciar torneo
             self.bot.state.ganador = [nombre, escupida]
             await mensaje(f"{nombre} inició el torneo de escupitajos con {escupida} cm!")
             funcion_puntitos(nombre, cant=2)
             await mensaje(f"{nombre} acaba de ganar dos puntitos!")
+            # Registrar victoria de torneo (ya que es el ganador actual)
+            registrar_victoria_torneo(nombre)
             return
         
         if escupida > self.bot.state.ganador[1]:
+            # Nuevo ganador - quitar victoria al anterior y dársela al nuevo
             ganador_previo = self.bot.state.ganador[0]
             self.bot.state.ganador = [nombre, escupida]
             await mensaje(f"{nombre} va ganando el torneo!")
@@ -112,6 +121,9 @@ class MinigamesCommands(BaseCommand):
             await mensaje(f"{nombre} acaba de ganar dos puntitos!")
             funcion_puntitos(ganador_previo, cant=-2)
             await mensaje(f"{ganador_previo} acaba de perder dos puntitos!")
+            # Restar victoria al ganador previo y sumar al nuevo ganador
+            registrar_victoria_torneo(ganador_previo, cant=-1)
+            registrar_victoria_torneo(nombre, cant=1)
 
     @commands.command()
     async def ganador(self, ctx: commands.Context):
@@ -139,6 +151,7 @@ class MinigamesCommands(BaseCommand):
             
         Note:
             Solo disponible para administradores
+            La victoria ya está registrada desde el comando !escupir
         """
         if await self.check_coma_etilico():
             return
@@ -147,6 +160,7 @@ class MinigamesCommands(BaseCommand):
             nombre = self.bot.state.ganador[0]
             await mensaje(f"{nombre} ganó el torneo de escupitajos, con un escupitajo de {self.bot.state.ganador[1]} centímetros!")
             await mensaje(f"Se reinicia el torneo!")
+            # La victoria ya está registrada desde !escupir, solo limpiamos el estado
             self.bot.state.escupitajos = {}
             self.bot.state.ganador = None
         else:

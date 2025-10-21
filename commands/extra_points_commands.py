@@ -22,7 +22,7 @@ from twitchio.ext import commands
 from random import randint
 from utils.logger import logger
 from utils.mensaje import mensaje
-from utils.puntitos_manager import funcion_puntitos, top_puntitos, sorteo_puntitos
+from utils.puntitos_manager import funcion_puntitos, top_puntitos, sorteo_puntitos, registrar_victoria_sorteo
 from utils.configuracion import admins
 from .base_command import BaseCommand
 
@@ -104,3 +104,5 @@ class ExtraPointsCommands(BaseCommand):
             await asyncio.sleep(randint(1,30))
             texto = ["AND THE WINNER IS:", ganador]
             await mensaje(texto)
+            # Registrar la victoria del sorteo en el spreadsheet
+            registrar_victoria_sorteo(ganador)
