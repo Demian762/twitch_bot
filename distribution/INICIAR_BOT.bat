@@ -66,7 +66,7 @@ if errorlevel 1 (
     start https://git-scm.com/download/win
     exit /b 1
 )
-::    ✓ Git instalado correctamente
+echo    ✓ Git instalado correctamente
 echo.
 
 :: ============================================================================
