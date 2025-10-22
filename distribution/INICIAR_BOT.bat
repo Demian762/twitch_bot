@@ -196,6 +196,15 @@ echo.
 :: ============================================================================
 echo [5/6] Verificando configuración...
 
+:: Crear secretos.py si no existe (desde template)
+if not exist "%BOT_DIR%\utils\secretos.py" (
+    if exist "%BOT_DIR%\utils\secretos_template.py" (
+        echo    Creando secretos.py desde template...
+        copy "%BOT_DIR%\utils\secretos_template.py" "%BOT_DIR%\utils\secretos.py" >nul
+        echo    ✓ secretos.py creado
+    )
+)
+
 if not exist "%BOT_DIR%\config\config.ini" (
     color 0E
     echo.
