@@ -24,7 +24,7 @@ echo.
 
 :: Variables de configuración
 set "REPO_URL=https://github.com/Demian762/twitch_bot.git"
-set "REPO_BRANCH=develop"
+set "REPO_BRANCH=master"
 set "BOT_DIR=bot"
 set "VENV_DIR=bot-env"
 set "PYTHON_DIR=python-embedded"
@@ -62,7 +62,6 @@ echo.
 :: 2. CLONAR O ACTUALIZAR REPOSITORIO
 :: ============================================================================
 echo [2/5] Actualizando código desde GitHub...
-echo    [TESTING] Usando rama develop temporalmente
 echo.
 
 if not exist "%BOT_DIR%\" (
