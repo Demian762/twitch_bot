@@ -19,6 +19,8 @@ config/config.ini
 # Archivos de distribución
 BotDelEstadio_*.zip
 distribution/package/
+distribution/bot/
+distribution/bot-env/
 .requirements_hash
 
 # Python embebido (si se usa para distribución)

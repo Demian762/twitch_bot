@@ -1,6 +1,19 @@
 @echo off
-chcp 65001 >nul
+chcp 65001 >nul 2>&1
 setlocal EnableDelayedExpansion
+
+echo Iniciando script...
+echo.
+
+:: NO cerrar la ventana automáticamente si hay error
+if not "%1"=="am_child" (
+    echo [DEBUG] Relanzando en modo persistente...
+    cmd /k "%~f0" am_child
+    exit
+)
+
+echo [DEBUG] Script ejecutandose en modo child
+echo.
 
 :: ============================================================================
 :: BOT DEL ESTADIO - Launcher Script
