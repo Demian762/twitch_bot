@@ -81,19 +81,16 @@ if not exist "%BOT_DIR%\" (
 ) else (
     echo    Actualizando a la última versión...
     cd %BOT_DIR%
-    
-    :: Descartar cambios locales y actualizar
     git fetch origin %REPO_BRANCH% >nul 2>&1
     git reset --hard origin/%REPO_BRANCH% >nul 2>&1
     git pull origin %REPO_BRANCH%
-    
     if errorlevel 1 (
-        echo    ! Advertencia: No se pudo actualizar (continuando con versión actual)
+        echo    ! Advertencia: No se pudo actualizar ^(continuando con versión actual^)
+        cd ..
     ) else (
         echo    ✓ Código actualizado a la última versión
+        cd ..
     )
-    
-    cd ..
 )
 echo.
 
@@ -162,22 +159,17 @@ echo [4/5] Verificando dependencias...
 :: Calcular hash del requirements.txt
 set "REQUIREMENTS_FILE=%BOT_DIR%\requirements.txt"
 if exist "%REQUIREMENTS_FILE%" (
-    :: Generar hash simple del archivo
-    for /f "delims=" %%a in ('certutil -hashfile "%REQUIREMENTS_FILE%" MD5 ^| findstr /v "hash"') do (
-        set "CURRENT_HASH=%%a"
-        goto :hash_done
-    )
-    :hash_done
-    
-    :: Comparar con hash guardado
+    :: Verificar si necesitamos instalar (primera vez o requirements modificado)
     set "NEEDS_INSTALL=0"
-    if exist "%REQUIREMENTS_HASH_FILE%" (
-        set /p SAVED_HASH=<"%REQUIREMENTS_HASH_FILE%"
-        if not "!SAVED_HASH!"=="!CURRENT_HASH!" (
+    if not exist "%REQUIREMENTS_HASH_FILE%" (
+        set "NEEDS_INSTALL=1"
+    ) else (
+        :: Comparar fecha de modificación
+        for %%R in ("%REQUIREMENTS_FILE%") do set "REQ_DATE=%%~tR"
+        for %%H in ("%REQUIREMENTS_HASH_FILE%") do set "HASH_DATE=%%~tH"
+        if "!REQ_DATE!" GTR "!HASH_DATE!" (
             set "NEEDS_INSTALL=1"
         )
-    ) else (
-        set "NEEDS_INSTALL=1"
     )
     
     :: Instalar si es necesario
@@ -185,12 +177,11 @@ if exist "%REQUIREMENTS_FILE%" (
         echo    Instalando/actualizando paquetes Python...
         %PYTHON_CMD% -m pip install --upgrade pip --quiet
         %PYTHON_CMD% -m pip install -r "%REQUIREMENTS_FILE%" --quiet
-        
         if errorlevel 1 (
             echo    ! Advertencia: Algunos paquetes pueden no haberse instalado correctamente
         ) else (
             echo    ✓ Dependencias instaladas/actualizadas
-            echo !CURRENT_HASH!>"%REQUIREMENTS_HASH_FILE%"
+            echo instalado>"%REQUIREMENTS_HASH_FILE%"
         )
     ) else (
         echo    ✓ Dependencias ya actualizadas
@@ -201,9 +192,44 @@ if exist "%REQUIREMENTS_FILE%" (
 echo.
 
 :: ============================================================================
-:: 5. EJECUTAR EL BOT
+:: 5. VERIFICAR CONFIGURACIÓN
 :: ============================================================================
-echo [5/5] Iniciando Bot del Estadio...
+echo [5/6] Verificando configuración...
+
+if not exist "%BOT_DIR%\config\config.ini" (
+    color 0E
+    echo.
+    echo ╔═══════════════════════════════════════════════════════════╗
+    echo ║  PRIMERA VEZ: Configuración necesaria                     ║
+    echo ╚═══════════════════════════════════════════════════════════╝
+    echo.
+    echo Se detectó que es la primera vez que ejecutás el bot.
+    echo Es necesario configurar tus credenciales de Twitch.
+    echo.
+    echo Se abrirá la carpeta de configuración...
+    echo.
+    echo PASOS A SEGUIR:
+    echo   1. Copiá el archivo 'config_template.ini'
+    echo   2. Renombralo a 'config.ini'
+    echo   3. Editalo con tus credenciales de Twitch
+    echo   4. Guardá los cambios
+    echo   5. Volvé a ejecutar este launcher
+    echo.
+    echo Para más información, consultá el archivo README.md
+    echo en la carpeta config/
+    echo.
+    pause
+    start explorer "%BOT_DIR%\config"
+    exit /b 1
+)
+
+echo    ✓ Configuración encontrada
+echo.
+
+:: ============================================================================
+:: 6. EJECUTAR EL BOT
+:: ============================================================================
+echo [6/6] Iniciando Bot del Estadio...
 echo.
 echo ═══════════════════════════════════════════════════════════
 echo.
