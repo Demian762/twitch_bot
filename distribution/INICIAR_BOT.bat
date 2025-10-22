@@ -2,19 +2,6 @@
 chcp 65001 >nul 2>&1
 setlocal EnableDelayedExpansion
 
-echo Iniciando script...
-echo.
-
-:: NO cerrar la ventana automáticamente si hay error
-if not "%1"=="am_child" (
-    echo [DEBUG] Relanzando en modo persistente...
-    cmd /k "%~f0" am_child
-    exit
-)
-
-echo [DEBUG] Script ejecutandose en modo child
-echo.
-
 :: ============================================================================
 :: BOT DEL ESTADIO - Launcher Script
 :: ============================================================================
@@ -30,9 +17,9 @@ color 0A
 title Bot del Estadio - Launcher
 
 echo.
-echo ╔═══════════════════════════════════════════════════════════╗
-echo ║           BOT DEL ESTADIO - INICIANDO                     ║
-echo ╚═══════════════════════════════════════════════════════════╝
+echo ================================================================
+echo            BOT DEL ESTADIO - INICIANDO
+echo ================================================================
 echo.
 
 :: Variables de configuración
@@ -51,17 +38,19 @@ git --version >nul 2>&1
 if errorlevel 1 (
     color 0C
     echo.
-    echo ╔═══════════════════════════════════════════════════════════╗
-    echo ║  ERROR: Git no está instalado                             ║
-    echo ║                                                           ║
-    echo ║  Por favor instalá Git desde:                             ║
-    echo ║  https://git-scm.com/download/win                         ║
-    echo ║                                                           ║
-    echo ║  Es gratis y toma solo 2 minutos.                         ║
-    echo ║  Después de instalarlo, ejecutá este script nuevamente.   ║
-    echo ╚═══════════════════════════════════════════════════════════╝
+    echo ================================================================
+    echo   ERROR: Git no esta instalado
+    echo ================================================================
     echo.
-    echo Presiona cualquier tecla para abrir la página de descarga...
+    echo   Por favor instala Git desde:
+    echo   https://git-scm.com/download/win
+    echo.
+    echo   Es gratis y toma solo 2 minutos.
+    echo   Despues de instalarlo, ejecuta este script nuevamente.
+    echo.
+    echo ================================================================
+    echo.
+    echo Presiona cualquier tecla para abrir la pagina de descarga...
     pause >nul
     start https://git-scm.com/download/win
     exit /b 1
