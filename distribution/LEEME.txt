@@ -1,0 +1,157 @@
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                                                                           ║
+║                    BOT DEL ESTADIO - GUÍA DE USO                          ║
+║                                                                           ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+¡Bienvenido! Este archivo te guiará en la configuración y uso del Bot del 
+Estadio para tu stream de Twitch.
+
+═══════════════════════════════════════════════════════════════════════════
+  REQUISITOS PREVIOS (SOLO PRIMERA VEZ)
+═══════════════════════════════════════════════════════════════════════════
+
+Antes de usar el bot, necesitás tener instalado:
+
+1. Git para Windows
+   └─ Descarga: https://git-scm.com/download/win
+   └─ Instalación: Siguiente → Siguiente → Finalizar (opciones por defecto)
+   └─ Tiempo: ~2 minutos
+
+2. Python 3.11 o superior (SOLO si no viene Python embebido)
+   └─ Descarga: https://www.python.org/downloads/
+   └─ ⚠️ IMPORTANTE: Marcar "Add Python to PATH" durante instalación
+   └─ Tiempo: ~3 minutos
+
+═══════════════════════════════════════════════════════════════════════════
+  PRIMERA CONFIGURACIÓN (SOLO UNA VEZ)
+═══════════════════════════════════════════════════════════════════════════
+
+Paso 1: Configurar tus credenciales
+────────────────────────────────────
+
+1. Abrí la carpeta "config"
+2. Copiá el archivo "config_template.ini"
+3. Renombralo a "config.ini"
+4. Abrilo con el Bloc de notas (o tu editor favorito)
+5. Completá TODOS los valores que dicen "tu_*_aqui" con tus datos reales:
+
+   • Tokens de Twitch
+   • API keys de YouTube, RAWG, Steam
+   • Credenciales de Google Sheets
+   • Token de Telegram (opcional)
+
+6. Guardá y cerrá el archivo
+
+⚠️ IMPORTANTE: El archivo "config.ini" contiene información sensible.
+              NO lo compartas con nadie.
+
+Paso 2: Verificar FFmpeg
+─────────────────────────
+
+El bot necesita FFmpeg para procesar audio. Ya está incluido en la carpeta
+"ffmpeg/bin/". No necesitás hacer nada, solo verificar que exista.
+
+═══════════════════════════════════════════════════════════════════════════
+  USO DIARIO (MUY SIMPLE)
+═══════════════════════════════════════════════════════════════════════════
+
+Una vez configurado, usar el bot es MUY fácil:
+
+1. Hacer doble clic en "INICIAR_BOT.bat"
+2. ¡Listo! El bot se actualizará automáticamente y arrancará
+
+El script hace AUTOMÁTICAMENTE:
+✓ Verifica que Git esté instalado
+✓ Descarga la última versión del código desde GitHub
+✓ Actualiza las dependencias si hay cambios
+✓ Inicia el bot
+
+Mientras el bot esté ejecutándose, verás la consola con todos los mensajes
+del chat y las acciones del bot. Esta consola debe permanecer abierta.
+
+Para DETENER el bot:
+• Presioná Ctrl+C en la consola
+• O simplemente cerrá la ventana
+
+═══════════════════════════════════════════════════════════════════════════
+  ESTRUCTURA DE CARPETAS
+═══════════════════════════════════════════════════════════════════════════
+
+Tu carpeta debería verse así:
+
+BotDelEstadio/
+├─ INICIAR_BOT.bat         ← ESTE es el que ejecutás
+├─ LEEME.txt               ← Este archivo
+├─ config/
+│  ├─ config_template.ini  ← Plantilla (NO modificar)
+│  └─ config.ini           ← Tu configuración (crear desde template)
+├─ ffmpeg/
+│  └─ bin/
+│     └─ ffmpeg.exe        ← Procesador de audio (ya incluido)
+├─ bot/                    ← Se crea automáticamente la primera vez
+│  └─ (código del bot descargado desde GitHub)
+├─ bot-env/                ← Se crea automáticamente (entorno virtual)
+└─ logs/                   ← Aquí se guardan los logs si hay errores
+
+═══════════════════════════════════════════════════════════════════════════
+  ACTUALIZACIÓN AUTOMÁTICA
+═══════════════════════════════════════════════════════════════════════════
+
+Cada vez que ejecutás INICIAR_BOT.bat, el script:
+• Descarga los últimos cambios del repositorio master
+• Actualiza las dependencias si es necesario
+• Ejecuta la versión más reciente
+
+NO necesitás hacer nada manual para actualizar. Todo es automático.
+
+Si por alguna razón querés volver a una versión anterior o hay un problema,
+simplemente borrá la carpeta "bot/" y volvé a ejecutar INICIAR_BOT.bat.
+Se descargará todo de nuevo.
+
+═══════════════════════════════════════════════════════════════════════════
+  SOLUCIÓN DE PROBLEMAS
+═══════════════════════════════════════════════════════════════════════════
+
+Problema: "Git no está instalado"
+Solución: Instalá Git desde https://git-scm.com/download/win
+
+Problema: "Python no está instalado"
+Solución: Instalá Python desde https://www.python.org/downloads/
+          (Marcá "Add Python to PATH" durante la instalación)
+
+Problema: "Error al conectar con Twitch"
+Solución: Verificá que tu config.ini tenga los tokens correctos
+          Los tokens se obtienen desde: https://twitchtokengenerator.com/
+
+Problema: El bot se cierra inmediatamente
+Solución: Revisá los logs en la carpeta bot/logs/ para ver el error específico
+
+Problema: "No se pudo actualizar el repositorio"
+Solución: • Verificá tu conexión a internet
+          • Borrá la carpeta "bot/" y volvé a ejecutar INICIAR_BOT.bat
+
+═══════════════════════════════════════════════════════════════════════════
+  SOPORTE
+═══════════════════════════════════════════════════════════════════════════
+
+Si tenés problemas o dudas:
+
+1. Revisá los logs en bot/logs/
+2. Verificá que config.ini esté completo y correcto
+3. Asegurate de tener Git y Python instalados
+4. Contactá al administrador del bot
+
+═══════════════════════════════════════════════════════════════════════════
+  COMANDOS DISPONIBLES EN EL CHAT
+═══════════════════════════════════════════════════════════════════════════
+
+Para ver todos los comandos disponibles, escribí en el chat:
+!comandos
+
+O consultá el archivo "comandos-stream.md" en la carpeta bot/
+
+═══════════════════════════════════════════════════════════════════════════
+
+¡Disfrutá del bot! 🎮🤖
+

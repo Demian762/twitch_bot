@@ -9,3 +9,17 @@ ffmpeg/
 ffmpeg-master-latest-win64-gpl/
 logs/
 docs/
+
+# Configuración externa (contiene credenciales sensibles)
+config/config.ini
+
+# Mantener solo el template
+!config/config_template.ini
+
+# Archivos de distribución
+BotDelEstadio_*.zip
+distribution/package/
+.requirements_hash
+
+# Python embebido (si se usa para distribución)
+python-embedded/

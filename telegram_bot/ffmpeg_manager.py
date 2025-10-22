@@ -2,6 +2,7 @@ import os
 import sys
 import requests
 import zipfile
+from pathlib import Path
 
 class FFmpegManager:
     def __init__(self, base_dir=None):
@@ -9,18 +10,43 @@ class FFmpegManager:
         self.ffmpeg_dir = os.path.join(self.base_dir, "ffmpeg")
         self.ffmpeg_exe = os.path.join(self.ffmpeg_dir, "ffmpeg.exe")
     
-    def get_ffmpeg_path(self):
-        # Buscar FFmpeg incluido con PyInstaller
+    def _get_base_path(self):
+        """Determina la ruta base dependiendo de si es ejecutable o script"""
         if getattr(sys, 'frozen', False):
-            # Ejecutándose como .exe
-            base_path = sys._MEIPASS
-            ffmpeg_exe = os.path.join(base_path, "ffmpeg", "ffmpeg.exe")
+            # Ejecutándose como .exe (PyInstaller)
+            # FFmpeg debe estar en ../ffmpeg/ relativo al ejecutable
+            return Path(sys.executable).parent
+        else:
+            # Ejecutándose como script
+            # FFmpeg está en ../ffmpeg/ relativo a la carpeta bot/
+            return Path(__file__).parent.parent.parent
+    
+    def get_ffmpeg_path(self):
+        """
+        Obtiene la ruta de FFmpeg con búsqueda en múltiples ubicaciones:
+        1. ../ffmpeg/bin/ffmpeg.exe (para distribución)
+        2. ./ffmpeg/ffmpeg.exe (actual)
+        3. Descarga automática si no se encuentra
+        """
+        base_path = self._get_base_path()
+        
+        # Opción 1: FFmpeg en carpeta de distribución (../ffmpeg/bin/)
+        ffmpeg_dist = base_path / 'ffmpeg' / 'bin' / 'ffmpeg.exe'
+        if ffmpeg_dist.exists():
+            return str(ffmpeg_dist)
+        
+        # Opción 2: FFmpeg en carpeta local (para desarrollo)
+        if os.path.exists(self.ffmpeg_exe):
+            return self.ffmpeg_exe
+        
+        # Opción 3: Buscar FFmpeg incluido con PyInstaller (legacy)
+        if getattr(sys, 'frozen', False):
+            base_pyinstaller = sys._MEIPASS
+            ffmpeg_exe = os.path.join(base_pyinstaller, "ffmpeg", "ffmpeg.exe")
             if os.path.exists(ffmpeg_exe):
                 return ffmpeg_exe
         
-        # Fallback: método actual
-        if os.path.exists(self.ffmpeg_exe):
-            return self.ffmpeg_exe
+        # Opción 4: Descargar automáticamente
         return self._download_ffmpeg()
     
     def _download_ffmpeg(self):
