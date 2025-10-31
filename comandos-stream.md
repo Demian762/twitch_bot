@@ -12,7 +12,7 @@
 `!consulta` `!puntos` `!puntitos` - Ver mis puntos | `!historico` - Historial total | `!top` - Ranking | `!sorteo` - Sorteo aleatorio | `!hola` - Saludo
 
 ### 🎪 **Minijuegos**
-`!escupir` `!spit` - Competencia escupitajos | `!ganador` - Quién va ganando | `!dado` `!dados` - Lanzar dados | `!insultos` `!pelea` - Batalla de insultos | `!trivia` - Trivia Monkey Island | `!margarita` - Pedir margarita | `!medimela` - Medir... algo
+`!escupir` `!spit` - Competencia escupitajos | `!ganador` - Quién va ganando | `!dado` `!dados` - Lanzar dados | `!insultos` `!pelea` - Batalla de insultos | `!trivia` - Trivia Monkey Island | `!margarita` - Pedir margarita | `!medimela` - Medir... algo | `!timba @usuario` - Reto de adivinanza (1-100) | `!timba [número]` - Adivinar en timba
 
 ### 📺 **Canal**
 `!redes` - Links redes sociales | `!discord` - Info Discord | `!programacion` - Horarios HDP | `!amigos` - Streamers amigos | `!cafecito` - Apoyo | `!recomendame` - Video random | `!ultimo` - Último video | `!podcast` - Último podcast

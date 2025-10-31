@@ -29,6 +29,7 @@ twitch_bot/
 │   ├── games_commands.py     # Gaming y APIs (RAWG/Steam)
 │   ├── points_commands.py    # Sistema de puntitos
 │   ├── minigames_commands.py # Minijuegos y competencias
+│   ├── timba_commands.py     # Reto de adivinanza de números
 │   ├── info_commands.py      # Información del canal
 │   ├── youtube_commands.py   # Integración YouTube
 │   ├── drink_commands.py     # Sistema de bebidas

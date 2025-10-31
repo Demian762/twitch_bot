@@ -229,6 +229,9 @@ class TimbaCommand(BaseCommand):
             'con_apuesta': con_apuesta
         }
         
+        # Log del número secreto para debugging
+        logger.info(f"Timba iniciada: {retador} vs {retado} | Número secreto: {numero_secreto}")
+        
         # Limpiar reto pendiente
         self.reto_pendiente = None
         
