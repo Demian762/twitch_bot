@@ -33,7 +33,7 @@ from random import randint
 from utils.mensaje import mensaje
 from utils.logger import logger
 from utils.configuracion import admins
-from utils.puntitos_manager import consulta_puntitos, funcion_puntitos
+from utils.puntitos_manager import consulta_puntitos, funcion_puntitos, registrar_victoria_timba
 from .base_command import BaseCommand
 
 
@@ -317,6 +317,9 @@ class TimbaCommand(BaseCommand):
             perdedor = self.juego_activo['jugador1']
         
         numero_secreto = self.juego_activo['numero_secreto']
+        
+        # Registrar victoria en timba para el ganador
+        registrar_victoria_timba(ganador)
         
         # Otorgar puntos si fue con apuesta
         if self.juego_activo['con_apuesta']:
