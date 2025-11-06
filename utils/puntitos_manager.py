@@ -691,7 +691,7 @@ def registrar_victoria_margarita(nombre: str):
         for idx, row in enumerate(df):
             if row.get('nombre') == nombre:
                 # Usuario existe, incrementar margaritas ganadas
-                margaritas_actuales = row.get('margaritas_ganadas', 0)
+                margaritas_actuales = int(row.get('margaritas_ganadas', 0) or 0)
                 hoja.update_cell(idx + 2, 5, margaritas_actuales + 1)
                 logger.info(f"Victoria en margarita registrada para {nombre}: {margaritas_actuales + 1} margaritas ganadas")
                 return
