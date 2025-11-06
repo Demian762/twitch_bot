@@ -637,7 +637,7 @@ def registrar_victoria_timba(nombre: str):
         for idx, row in enumerate(df):
             if row.get('nombre') == nombre:
                 # Usuario existe, incrementar timbas ganadas
-                timbas_actuales = row.get('timbas_ganadas', 0)
+                timbas_actuales = int(row.get('timbas_ganadas', 0) or 0)
                 hoja.update_cell(idx + 2, 4, timbas_actuales + 1)
                 logger.info(f"Victoria en timba registrada para {nombre}: {timbas_actuales + 1} timbas ganadas")
                 return
