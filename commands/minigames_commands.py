@@ -13,7 +13,7 @@ import winsound
 from random import triangular, randint
 from utils.logger import logger
 from utils.mensaje import mensaje
-from utils.puntitos_manager import funcion_puntitos, validar_restriccion_escupir, registrar_victoria_torneo
+from utils.puntitos_manager import funcion_puntitos, validar_restriccion_escupir, registrar_victoria_torneo, registrar_victoria_margarita, registrar_record_escupitajo, top_records_escupitajo
 from utils.utiles_general import validate_dice_format, resource_path
 from utils.configuracion import admins
 from .base_command import BaseCommand
@@ -98,6 +98,11 @@ class MinigamesCommands(BaseCommand):
         count = self.bot.state.escupitajos[nombre].get("count")
         self.bot.state.escupitajos[nombre]["count"] = count + 1
         await mensaje(f"El escupitajo de {nombre} llegó a los {escupida} centímetros!")
+
+        # Registrar el récord de escupitajo del usuario (todos los usuarios, incluyendo admins)
+        es_nuevo_record = registrar_record_escupitajo(nombre, escupida)
+        if es_nuevo_record:
+            logger.info(f"Nuevo récord personal de escupitajo para {nombre}: {escupida} cm")
 
         if nombre in admins:
             return
@@ -251,6 +256,8 @@ class MinigamesCommands(BaseCommand):
             await mensaje(f"¡¡LA RECALCADA CAJETA DE TU HERMANA {nombre.upper()}!! TOMÁ TUS PUNTITOS!!")
             funcion_puntitos(nombre, cant=2)
             await mensaje(f'{nombre} acaba de sumar 2 puntitos...')
+            # Registrar victoria en margarita
+            registrar_victoria_margarita(nombre)
             self.cuantas_margaritas = None
         else:
             await mensaje([f"{nombre} pregunta:","¿Me regalas una margarita?"])
@@ -292,3 +299,38 @@ class MinigamesCommands(BaseCommand):
             valor = randint(1, 24)
         
         await mensaje(f"A {nombre} le mide {valor}.")
+
+    @commands.command(aliases=("records", "toprecords"))
+    async def record(self, ctx: commands.Context):
+        """
+        Muestra el top 3 de récords de escupitajos (solo admins)
+        
+        Lista los tres mejores récords de escupitajo registrados,
+        mostrando el nombre del usuario y la distancia alcanzada.
+        
+        Args:
+            ctx: Contexto del comando de Twitch
+            
+        Returns:
+            None
+            
+        Note:
+            - Solo disponible para administradores
+            - Muestra un mensaje por cada récord (3 mensajes en total)
+            - No muestra mensaje de error si lo usa un no-admin
+            - Solo incluye usuarios con récords > 0
+        """
+        # Verificar que sea admin (sin mensaje de error para no-admins)
+        if ctx.author.name.lower() not in admins:
+            return
+        
+        # Obtener top 3 récords
+        top_records = top_records_escupitajo(3)
+        
+        if not top_records:
+            await mensaje("No hay récords de escupitajos registrados todavía.")
+            return
+        
+        # Enviar un mensaje por cada récord
+        for idx, (nombre, distancia) in enumerate(top_records, 1):
+            await mensaje(f"{idx}. {nombre}: {distancia} cm")
