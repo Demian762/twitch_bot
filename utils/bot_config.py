@@ -64,3 +64,5 @@ class BotState:
         self.trivia_actual = None
         self.tiempo_iniciar = timer_iniciar()
         self.rutinas_counter = {"actual":0, "total":0}
+        self.usuarios_activos = set()  # Registro de usuarios que usaron comandos
+        self.random_usado = False  # Flag para controlar uso único del comando !random
