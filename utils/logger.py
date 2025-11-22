@@ -18,6 +18,7 @@ Version: 250927
 
 import logging
 import os
+import sys
 from datetime import datetime
 
 def setup_logger():
@@ -41,13 +42,21 @@ def setup_logger():
         >>> logger = setup_logger()
         >>> logger.info("Bot iniciado correctamente")
     """
+    # Determinar el directorio base del ejecutable o script
+    if getattr(sys, 'frozen', False):
+        # Si es ejecutable compilado con PyInstaller
+        base_dir = os.path.dirname(sys.executable)
+    else:
+        # Si es script Python
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    
     # Crear directorio de logs si no existe
-    log_dir = "logs"
+    log_dir = os.path.join(base_dir, "logs")
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
         
     # Generar nombre de archivo con fecha actual
-    log_file = f"logs/bot_{datetime.now().strftime('%Y%m%d')}.log"
+    log_file = os.path.join(log_dir, f"bot_{datetime.now().strftime('%Y%m%d')}.log")
     
     # Configurar el root logger para librerías externas con nivel WARNING
     logging.basicConfig(
