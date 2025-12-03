@@ -253,7 +253,7 @@ def get_programacion():
               
     Example:
         >>> get_programacion()
-        ['Lunes 20:00 - Juego A', 'Miercoles 19:00 - Juego B']
+        ['Lunes 20:00 - Juego A', 'Miércoles 19:00 - Juego B']
         
     Error Handling:
         - Realiza hasta 3 intentos con delays de 2 segundos entre cada uno
@@ -274,14 +274,14 @@ def get_programacion():
                 logger.warning(f"Error con expected_headers en programacion, usando método alternativo: {e}")
                 programacion_dict = hoja.get_all_records()
             
-            lista = []
+            programacion_lista = []
             for i in programacion_dict:
                 if 'programacion' in i:
-                    lista.append(i['programacion'])
+                    programacion_lista.append(i['programacion'])
             
-            if lista:
-                logger.info(f"Programación cargada exitosamente: {len(lista)} elementos")
-                return lista
+            if programacion_lista:
+                logger.info(f"Programación cargada exitosamente: {len(programacion_lista)} elementos")
+                return programacion_lista
             else:
                 logger.warning(f"Intento {intento}: La hoja está vacía o sin datos válidos")
                 if intento < max_intentos:
