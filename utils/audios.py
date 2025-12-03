@@ -20,6 +20,8 @@ comandos_audios = {
     'alert':['alerta','alert','snake','metalgear','kojima'],
     'ernesto':['ernesto','tenembaum'],
     'yamete':['yamete','yametekudasai','kudasai','horny','hentai','anime'],
+    'bija':['bija','capusotto'],
+    'fumojuego':['fumo','lulu','fumojuego','fumoyjuego'],
 }
 
 comandos_mensajes = {

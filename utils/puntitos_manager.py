@@ -21,6 +21,7 @@ Version: 250927
 """
 
 import gspread
+import time
 from random import choices
 from collections import defaultdict
 from datetime import datetime
@@ -240,41 +241,66 @@ def daddy_point():
 
 def get_programacion():
     """
-    Obtiene la programación semanal desde Google Sheets
+    Obtiene la programación semanal desde Google Sheets con reintentos
     
     Lee la programación del stream desde la tercera hoja del documento
     de Google Sheets y retorna una lista de strings con los horarios.
+    Implementa sistema de reintentos en caso de fallo de conexión.
     
     Returns:
         list: Lista de strings con la programación semanal,
-              o lista con mensaje de error si falla la conexión
+              o lista con mensaje de error si falla después de todos los reintentos
               
     Example:
         >>> get_programacion()
-        ['Lunes 20:00 - Juego A', 'Miercoles 19:00 - Juego B']
+        ['Lunes 20:00 - Juego A', 'Miércoles 19:00 - Juego B']
         
     Error Handling:
-        - Maneja errores de conexión con Google Sheets
-        - Intenta múltiples métodos de lectura de headers
+        - Realiza hasta 3 intentos con delays de 2 segundos entre cada uno
+        - Intenta múltiples métodos de lectura de headers en cada intento
         - Retorna mensaje de error descriptivo si falla completamente
     """
-    try:
-        hoja = sh.get_worksheet(2)
-        # Intentar con headers esperados
+    max_intentos = 3
+    delay_entre_intentos = 2  # segundos
+    
+    for intento in range(1, max_intentos + 1):
         try:
-            programacion_dict = hoja.get_all_records(expected_headers=['programacion'])
+            hoja = sh.get_worksheet(2)
+            
+            # Intentar con headers esperados
+            try:
+                programacion_dict = hoja.get_all_records(expected_headers=['programacion'])
+            except Exception as e:
+                logger.warning(f"Error con expected_headers en programacion, usando método alternativo: {e}")
+                programacion_dict = hoja.get_all_records()
+            
+            programacion_lista = []
+            for i in programacion_dict:
+                if 'programacion' in i:
+                    programacion_lista.append(i['programacion'])
+            
+            if programacion_lista:
+                logger.info(f"Programación cargada exitosamente: {len(programacion_lista)} elementos")
+                return programacion_lista
+            else:
+                logger.warning(f"Intento {intento}: La hoja está vacía o sin datos válidos")
+                if intento < max_intentos:
+                    logger.info(f"Reintentando en {delay_entre_intentos} segundos...")
+                    time.sleep(delay_entre_intentos)
+                else:
+                    return ["Error: No se pudo cargar la programación - hoja vacía"]
+                    
         except Exception as e:
-            logger.warning(f"Error con expected_headers en programacion, usando método alternativo: {e}")
-            programacion_dict = hoja.get_all_records()
-        
-        lista = []
-        for i in programacion_dict:
-            if 'programacion' in i:
-                lista.append(i['programacion'])
-        return lista if lista else ["Error: No se pudo cargar la programación"]
-    except Exception as e:
-        logger.error(f"Error en get_programacion: {e}")
-        return ["Error: No se pudo acceder a la programación"]
+            logger.error(f"Intento {intento}/{max_intentos} - Error en get_programacion: {e}")
+            if intento < max_intentos:
+                logger.info(f"Reintentando en {delay_entre_intentos} segundos...")
+                time.sleep(delay_entre_intentos)
+            else:
+                logger.error("Se agotaron los reintentos para cargar la programación")
+                return ["Error: No se pudo acceder a la programación después de 3 intentos"]
+    
+    # Este return nunca debería alcanzarse, pero por seguridad
+    return ["Error: No se pudo acceder a la programación"]
 
 def get_restricciones_escupir():
     """

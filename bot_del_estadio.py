@@ -143,6 +143,30 @@ class Bot(commands.Bot):
         logger.info(f'Logueado a Twitch como {self.nick}')
         asyncio.create_task(self._start_telegram_bot())
 
+    async def event_message(self, message):
+        """
+        Evento que se ejecuta cuando se recibe un mensaje en el chat
+        
+        Intercepta todos los mensajes para:
+        1. Registrar usuarios que ejecutan comandos
+        2. Procesar comandos normalmente
+        
+        Args:
+            message: Mensaje recibido del chat de Twitch
+        """
+        # Evitar procesar mensajes del propio bot
+        if message.echo:
+            return
+        
+        # Si el mensaje es un comando (empieza con !), registrar al usuario
+        if message.content.startswith('!'):
+            username = message.author.name
+            self.state.usuarios_activos.add(username)
+            logger.debug(f"Usuario registrado: {username} - Total activos: {len(self.state.usuarios_activos)}")
+        
+        # Procesar comandos normalmente
+        await self.handle_commands(message)
+
     async def _start_telegram_bot(self):
         """
         Inicia el bot de Telegram de forma asíncrona
@@ -219,6 +243,28 @@ class Bot(commands.Bot):
         if self.state.grog_count >= len(grog_list):
             return choice(coma_etilico_list)
         return False
+
+    def get_usuarios_activos(self):
+        """
+        Obtiene el conjunto de usuarios que han usado comandos en esta sesión
+        
+        Returns:
+            set: Conjunto con los nombres de usuarios que ejecutaron comandos
+        
+        Example:
+            >>> usuarios = bot.get_usuarios_activos()
+            >>> print(f"Usuarios activos: {len(usuarios)}")
+        """
+        return self.state.usuarios_activos
+    
+    def limpiar_usuarios_activos(self):
+        """
+        Limpia el registro de usuarios activos
+        
+        Útil si se quiere reiniciar el contador sin reiniciar el bot.
+        """
+        self.state.usuarios_activos.clear()
+        logger.info("Registro de usuarios activos limpiado")
 
 bot = Bot()
 bot.run()

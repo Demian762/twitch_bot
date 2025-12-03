@@ -9,7 +9,7 @@
 `!info [juego]` - Info de videojuegos | `!lanzamientos` - Próximos lanzamientos
 
 ### 💰 **Sistema Puntitos**
-`!consulta` `!puntos` `!puntitos` - Ver mis puntos | `!historico` - Historial total | `!top` - Ranking | `!sorteo` - Sorteo aleatorio | `!hola` - Saludo
+`!consulta` `!puntos` `!puntitos` - Ver mis puntos | `!historico` - Historial total | `!top` - Ranking | `!sorteo` - Sorteo aleatorio | `!random` - Sorteo 3 puntitos (3+ usuarios, 1 vez/sesión) | `!hola` - Saludo
 
 ### 🎪 **Minijuegos**
 `!escupir` `!spit` - Competencia escupitajos | `!ganador` - Quién va ganando | `!record` - Top 3 récords (admin) | `!dado` `!dados` - Lanzar dados | `!insultos` `!pelea` - Batalla de insultos | `!trivia` - Trivia Monkey Island | `!margarita` - Pedir margarita | `!medimela` - Medir... algo | `!timba @usuario` - Reto de adivinanza (1-100) | `!timba [número]` - Adivinar en timba
