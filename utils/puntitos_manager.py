@@ -196,7 +196,10 @@ def sorteo_puntitos():
     puntitos tienen mayor probabilidad de ganar. El ganador tiene sus
     puntitos actuales reseteados a 0.
     
-    IMPORTANTE: Solo participan usuarios con puntitos > 0 y que NO sean admins
+    IMPORTANTE: 
+        - Solo participan usuarios con puntitos > 0 (excluye usuarios sin puntitos)
+        - Los administradores NO participan
+        - Para sorteos que incluyan usuarios con 0 puntitos, usar sorteo_puntitos_presentes()
     
     Returns:
         str: Nombre del usuario ganador, o mensaje de error si algo falla
@@ -250,8 +253,7 @@ def sorteo_puntitos():
         logger.warning("No se encontraron usuarios elegibles (con puntitos > 0 y no admins) para el sorteo")
         return "No hay participantes elegibles"
     
-    # Usar directamente los puntitos como pesos (sin modificación)
-    ganador = choices(nombres, weights=puntos, k=1)[0]
+    ganador = _realizar_sorteo_ponderado(nombres, puntos)
     _reiniciar_puntitos(ganador)
     logger.info(f"Sorteo general: {ganador} ganó entre {len(nombres)} participantes")
     return ganador
