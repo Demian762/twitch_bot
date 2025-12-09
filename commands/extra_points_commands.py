@@ -9,7 +9,8 @@ Commands:
     !bienvenida/!bienvenido [usuario] - Otorga 5 puntitos de bienvenida
     !puntito [usuario] - Otorga 1 puntito a un usuario específico  
     !top [n] - Muestra el ranking de usuarios con más puntitos
-    !sorteo - Realiza sorteo ponderado y resetea ganador
+    !sorteo - Realiza sorteo ponderado entre todos los usuarios y resetea ganador
+    !sorteopresentes - Realiza sorteo ponderado solo entre usuarios activos (excluyendo admins)
 
 Permissions: Solo usuarios en la lista de admins pueden ejecutar estos comandos
 
@@ -22,7 +23,7 @@ from twitchio.ext import commands
 from random import randint
 from utils.logger import logger
 from utils.mensaje import mensaje
-from utils.puntitos_manager import funcion_puntitos, top_puntitos, sorteo_puntitos, registrar_victoria_sorteo
+from utils.puntitos_manager import funcion_puntitos, top_puntitos, sorteo_puntitos, sorteo_puntitos_presentes, registrar_victoria_sorteo
 from utils.configuracion import admins
 from .base_command import BaseCommand
 
@@ -93,16 +94,53 @@ class ExtraPointsCommands(BaseCommand):
 
     @commands.command()
     async def sorteo(self, ctx: commands.Context):
+        """Sorteo ponderado entre todos los usuarios del spreadsheet"""
         if await self.check_coma_etilico():
             return
             
         autor = ctx.author.name
         if autor in admins:
             ganador = sorteo_puntitos()
+            
+            # Verificar si hubo error o no hay participantes elegibles
+            if ganador in ["Error en sorteo", "No hay participantes", "No hay participantes elegibles"]:
+                await mensaje(ganador)
+                return
+            
             texto = ["¡SORTEO INICIADO!","sorteando...."]
             await mensaje(texto)
             await asyncio.sleep(randint(1,30))
             texto = ["AND THE WINNER IS:", ganador]
             await mensaje(texto)
             # Registrar la victoria del sorteo en el spreadsheet
+            registrar_victoria_sorteo(ganador)
+
+    @commands.command()
+    async def sorteopresentes(self, ctx: commands.Context):
+        """Sorteo ponderado solo entre usuarios activos (presentes en el chat, excluyendo admins)"""
+        if await self.check_coma_etilico():
+            return
+            
+        autor = ctx.author.name
+        if autor in admins:
+            # Obtener usuarios activos del bot
+            usuarios_activos = self.bot.state.usuarios_activos
+            
+            if not usuarios_activos:
+                await mensaje("No hay usuarios activos para el sorteo")
+                return
+            
+            ganador = sorteo_puntitos_presentes(usuarios_activos, admins)
+            
+            # Verificar si hubo error o no hay participantes elegibles
+            if ganador in ["Error en sorteo", "No hay participantes", "No hay participantes elegibles"]:
+                await mensaje(ganador)
+                return
+            
+            texto = ["¡SORTEO DE PRESENTES INICIADO!","sorteando...."]
+            await mensaje(texto)
+            await asyncio.sleep(randint(1,30))
+            texto = ["AND THE WINNER IS:", ganador]
+            await mensaje(texto)
+            # Registrar la victoria del sorteo en el spreadsheet (misma columna que !sorteo)
             registrar_victoria_sorteo(ganador)
