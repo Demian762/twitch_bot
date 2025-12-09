@@ -26,6 +26,7 @@ from random import choices
 from collections import defaultdict
 from datetime import datetime
 from utils.secretos import credenciales_gspread, file_puntitos_url
+from utils.configuracion import admins
 from utils.logger import logger
 
 # Inicializar cliente de Google Sheets
@@ -166,19 +167,43 @@ def _reiniciar_puntitos(nombre):
         if row['nombre'] == nombre:
             hoja.update_cell(idx + 2, 2, 0)
 
+def _realizar_sorteo_ponderado(nombres, puntos):
+    """
+    Realiza un sorteo ponderado entre una lista de usuarios (función interna)
+    
+    Args:
+        nombres (list): Lista de nombres de usuarios
+        puntos (list): Lista de puntitos correspondientes a cada usuario
+        
+    Returns:
+        str: Nombre del usuario ganador
+        
+    Note:
+        - Si un usuario tiene 0 puntitos, se le asigna peso 1
+        - Usuarios con más puntitos tienen mayor probabilidad de ganar
+        - Esta es una función auxiliar compartida por sorteo_puntitos y sorteo_puntitos_presentes
+    """
+    # Ajustar pesos: si tiene 0 puntitos, ponderar por 1
+    pesos = [max(1, p) for p in puntos]
+    ganador = choices(nombres, weights=pesos, k=1)[0]
+    return ganador
+
 def sorteo_puntitos():
     """
-    Realiza un sorteo ponderado basado en los puntitos de los usuarios
+    Realiza un sorteo ponderado basado en los puntitos de todos los usuarios
     
     Utiliza un algoritmo de selección ponderada donde usuarios con más
     puntitos tienen mayor probabilidad de ganar. El ganador tiene sus
     puntitos actuales reseteados a 0.
+    
+    IMPORTANTE: Solo participan usuarios con puntitos > 0 y que NO sean admins
     
     Returns:
         str: Nombre del usuario ganador, o mensaje de error si algo falla
         
     Algorithm:
         - Obtiene todos los usuarios y sus puntitos
+        - Filtra solo usuarios con puntitos > 0 y que no sean admins
         - Usa random.choices() con pesos basados en puntitos
         - Resetea los puntitos del ganador a 0
         
@@ -208,15 +233,97 @@ def sorteo_puntitos():
         logger.warning("No hay datos para el sorteo")
         return "No hay participantes"
     
-    nombres = [row['nombre'] for row in df if 'nombre' in row and 'puntos' in row]
-    puntos = [row['puntos'] for row in df if 'nombre' in row and 'puntos' in row]
+    # Normalizar nombres de admins para comparación
+    admins_lower = [admin.lower() for admin in admins]
+    
+    # Filtrar usuarios: deben tener puntitos > 0 y NO ser admins
+    nombres = []
+    puntos = []
+    for row in df:
+        if 'nombre' in row and 'puntos' in row and row['puntos'] > 0:
+            nombre = row['nombre'].lower()
+            if nombre not in admins_lower:
+                nombres.append(row['nombre'])  # Usar nombre original del spreadsheet
+                puntos.append(row['puntos'])
     
     if not nombres or not puntos:
-        logger.warning("No se encontraron datos válidos para el sorteo")
-        return "Datos inválidos para sorteo"
+        logger.warning("No se encontraron usuarios elegibles (con puntitos > 0 y no admins) para el sorteo")
+        return "No hay participantes elegibles"
     
+    # Usar directamente los puntitos como pesos (sin modificación)
     ganador = choices(nombres, weights=puntos, k=1)[0]
     _reiniciar_puntitos(ganador)
+    logger.info(f"Sorteo general: {ganador} ganó entre {len(nombres)} participantes")
+    return ganador
+
+def sorteo_puntitos_presentes(usuarios_activos, admins_list):
+    """
+    Realiza un sorteo ponderado solo entre usuarios activos (presentes en el chat)
+    
+    Similar a sorteo_puntitos(), pero solo incluye usuarios que han usado comandos
+    durante la sesión actual. Excluye a los administradores del sorteo.
+    
+    Args:
+        usuarios_activos (set): Conjunto de nombres de usuarios activos
+        admins_list (list): Lista de nombres de administradores a excluir
+        
+    Returns:
+        str: Nombre del usuario ganador, o mensaje de error si algo falla
+        
+    Algorithm:
+        - Obtiene todos los usuarios y sus puntitos del spreadsheet
+        - Filtra solo usuarios activos (excluyendo admins)
+        - Usa sorteo ponderado con pesos basados en puntitos (mínimo 1)
+        - Resetea los puntitos del ganador a 0
+        
+    Example:
+        >>> sorteo_puntitos_presentes({'user1', 'user2', 'admin'}, ['admin'])
+        'user1' o 'user2'
+        
+    Error Handling:
+        - Maneja errores de conexión con Google Sheets
+        - Retorna mensajes descriptivos de error si no hay participantes válidos
+    """
+    try:
+        # Intentar con headers esperados
+        df = sh.sheet1.get_all_records(expected_headers=['nombre', 'puntos'])
+    except Exception as e:
+        logger.warning(f"Error con expected_headers, usando método alternativo: {e}")
+        try:
+            df = sh.sheet1.get_all_records()
+        except Exception as e2:
+            logger.error(f"Error en sorteo_puntitos_presentes: {e2}")
+            return "Error en sorteo"
+    
+    if not df:
+        logger.warning("No hay datos para el sorteo de presentes")
+        return "No hay participantes"
+    
+    # Normalizar nombres de admins para comparación
+    admins_lower = [admin.lower() for admin in admins_list]
+    
+    # Normalizar nombres de usuarios activos
+    usuarios_activos_lower = {usuario.lower() for usuario in usuarios_activos}
+    
+    # Filtrar usuarios: deben estar activos, no ser admins, y tener datos válidos
+    nombres_filtrados = []
+    puntos_filtrados = []
+    
+    for row in df:
+        if 'nombre' in row and 'puntos' in row:
+            nombre = row['nombre'].lower()
+            # Incluir solo si está activo y no es admin
+            if nombre in usuarios_activos_lower and nombre not in admins_lower:
+                nombres_filtrados.append(row['nombre'])  # Usar nombre original del spreadsheet
+                puntos_filtrados.append(row['puntos'])
+    
+    if not nombres_filtrados:
+        logger.warning("No hay usuarios activos elegibles para el sorteo")
+        return "No hay participantes elegibles"
+    
+    ganador = _realizar_sorteo_ponderado(nombres_filtrados, puntos_filtrados)
+    _reiniciar_puntitos(ganador)
+    logger.info(f"Sorteo de presentes: {ganador} ganó entre {len(nombres_filtrados)} participantes")
     return ganador
 
 def daddy_point():
