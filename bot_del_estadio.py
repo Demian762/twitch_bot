@@ -39,6 +39,7 @@ from utils.secretos import (
     telegram_bot_token,
     channel_name
 )
+from utils.configuracion import BUILD_DATE
 
 # Imports locales - otros
 from telegram_bot.telegram_voice_bot import TelegramVoiceBot
@@ -141,6 +142,7 @@ class Bot(commands.Bot):
         comandos y eventos. Inicia el bot de Telegram en paralelo.
         """
         logger.info(f'Logueado a Twitch como {self.nick}')
+        logger.info(f'Versión del bot: {BUILD_DATE}')
         asyncio.create_task(self._start_telegram_bot())
 
     async def event_message(self, message):

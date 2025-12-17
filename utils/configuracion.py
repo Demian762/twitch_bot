@@ -19,6 +19,9 @@ Version: 250927
 Last Update: Refactor completo con nueva estructura modular
 """
 
+# Variable de versión - Se actualiza automáticamente con compile_bot.py
+BUILD_DATE = "2025-12-17"  # Formato: YYYY-MM-DD
+
 # Configuración básica del comportamiento del bot
 configuracion_basica = {
     "limite": 15,           # Límite de resultados por consulta

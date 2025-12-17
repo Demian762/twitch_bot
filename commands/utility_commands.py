@@ -13,7 +13,7 @@ from random import choice, randint, uniform
 from utils.logger import logger
 from utils.mensaje import mensaje
 from utils.utiles_general import timer_iniciar, timer_consulta, format_time
-from utils.configuracion import admins
+from utils.configuracion import admins, BUILD_DATE
 from .base_command import BaseCommand
 
 class UtilityCommands(BaseCommand):
@@ -103,3 +103,24 @@ class UtilityCommands(BaseCommand):
         elif len(args) > 1:
             eleccion = choice(list(args))
             await mensaje(f"Me decidí por: {eleccion}")
+
+    @commands.command()
+    async def version(self, ctx: commands.Context):
+        """
+        Muestra la versión del bot (compilación)
+        
+        Solo pueden ejecutar este comando los administradores.
+        Reporta la fecha en la que se compiló la versión actual del bot.
+        
+        Args:
+            ctx: Contexto del comando de Twitch
+        """
+        if await self.check_coma_etilico():
+            return
+        
+        autor = ctx.author.name
+        if autor not in admins:
+            return
+        
+        await mensaje(BUILD_DATE)
+

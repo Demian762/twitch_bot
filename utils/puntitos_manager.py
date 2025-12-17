@@ -244,9 +244,13 @@ def sorteo_puntitos():
     puntos = []
     for row in df:
         if 'nombre' in row and 'puntos' in row and row['puntos'] > 0:
-            nombre = row['nombre'].lower()
+            nombre_raw = row['nombre']
+            # Validar que nombre sea string, no int
+            if not isinstance(nombre_raw, str):
+                continue
+            nombre = nombre_raw.lower()
             if nombre not in admins_lower:
-                nombres.append(row['nombre'])  # Usar nombre original del spreadsheet
+                nombres.append(nombre_raw)  # Usar nombre original del spreadsheet
                 puntos.append(row['puntos'])
     
     if not nombres or not puntos:
@@ -313,10 +317,14 @@ def sorteo_puntitos_presentes(usuarios_activos, admins_list):
     
     for row in df:
         if 'nombre' in row and 'puntos' in row:
-            nombre = row['nombre'].lower()
+            nombre_raw = row['nombre']
+            # Validar que nombre sea string, no int
+            if not isinstance(nombre_raw, str):
+                continue
+            nombre = nombre_raw.lower()
             # Incluir solo si está activo y no es admin
             if nombre in usuarios_activos_lower and nombre not in admins_lower:
-                nombres_filtrados.append(row['nombre'])  # Usar nombre original del spreadsheet
+                nombres_filtrados.append(nombre_raw)  # Usar nombre original del spreadsheet
                 puntos_filtrados.append(row['puntos'])
     
     if not nombres_filtrados:
