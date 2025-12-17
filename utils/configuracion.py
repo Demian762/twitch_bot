@@ -67,8 +67,12 @@ spam_messenges = [
 
 cafecito_texto = "Si les gusta nuestro contenido pueden ayudarnos con un cafecito a https://cafecito.app/hablemosdepavadas"
 
+# Cantidad de videos recientes a obtener para las rutinas
+ultimos_n_videos = 5
+
 rutina_lista = lista_redes.copy()
 rutina_lista.extend([cafecito_texto])
+rutina_lista.append(None)  # Placeholder para video aleatorio
 
 grog_list = [
     "Una pinta de grog para el Bot!",

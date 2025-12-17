@@ -80,14 +80,3 @@ pip install pyinstaller
 # Desactivar entorno
 deactivate
 ```
-
----
-
-## 📊 Historial de Versiones
-
-| Versión | Fecha | Tamaño | Notas |
-|---------|-------|--------|-------|
-| 251106 | 06/11/2025 | ~110 MB | Fix steam_web_api con hiddenimports en .spec |
-| 251013 | 13/10/2025 | ~110.5 MB | Bug fixes (margarita, paths, steam_web_api), nuevo audio yamete |
-| 250927 | 27/09/2025 | ~113 MB | Refactor completo, nueva estructura |
-

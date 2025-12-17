@@ -89,35 +89,45 @@ def get_latest_video(yt_client):
         logger.error(f"Error inesperado en get_latest_video: {e}")
         raise
 
-def get_latest_podcast(yt_client):
+def get_latest_videos_list(yt_client, n=5):
     """
-    Obtiene el podcast más reciente de la playlist de podcasts
+    Obtiene los últimos n videos del canal ordenados por fecha
     
     Args:
         yt_client: Cliente de la API de YouTube
+        n (int): Cantidad de videos a obtener (default: 5)
         
     Returns:
-        str: ID del video del podcast más reciente
+        list: Lista de strings con formato "nombre link"
         
     Raises:
-        Exception: Si falla la consulta a la API o no hay podcasts
+        Exception: Si falla la consulta a la API o no hay videos
     """
     try:
-        request = yt_client.playlistItems().list(
-            part="snippet",
-            playlistId = "PL14j4uHK-mdTO04RCRiFHg1NKPDv3b-sT",
-            maxResults=50,
+        request = yt_client.search().list(
+            part="id",
+            channelId=hdp_channel_id,
+            maxResults=n,
+            order="date",
+            type="video"
         )
         response = request.execute()
         if not response['items']:
-            raise Exception("No se encontraron podcasts en la playlist")
-        video_id = response['items'][0]['snippet']['resourceId']['videoId']
-        return video_id
+            raise Exception("No se encontraron videos en el canal")
+        
+        videos_formateados = []
+        for item in response['items']:
+            video_id = item['id']['videoId']
+            nombre, link = get_video_details(video_id, yt_client)
+            videos_formateados.append(f"{nombre} {link}")
+        
+        logger.info(f"Obtenidos {len(videos_formateados)} videos recientes para rutinas")
+        return videos_formateados
     except HttpError as e:
-        logger.error(f"Error HTTP en get_latest_podcast: {e}")
+        logger.error(f"Error HTTP en get_latest_videos_list: {e}")
         raise
     except Exception as e:
-        logger.error(f"Error inesperado en get_latest_podcast: {e}")
+        logger.error(f"Error inesperado en get_latest_videos_list: {e}")
         raise
 
 def get_video_details(video_id, yt_client):

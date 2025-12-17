@@ -115,7 +115,8 @@ class Bot(commands.Bot):
             # Configurar rutinas con validación
             self.rutina_lista = getattr(self.config, 'rutina_lista', [])
             if hasattr(self.api, 'ultimo_video'):
-                self.rutina_lista.extend([self.api.ultimo_video, self.api.ultimo_podcast])
+                # Reemplazar el None (placeholder) con ultimo_video
+                self.rutina_lista[-1] = self.api.ultimo_video
             self.state.rutinas_counter["total"] = len(self.rutina_lista) - 1
             
             # Inicializar Telegram y sonido
