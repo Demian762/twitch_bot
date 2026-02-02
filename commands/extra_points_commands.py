@@ -23,7 +23,7 @@ from twitchio.ext import commands
 from random import randint
 from utils.logger import logger
 from utils.mensaje import mensaje
-from utils.puntitos_manager import funcion_puntitos, top_puntitos, sorteo_puntitos, sorteo_puntitos_presentes, registrar_victoria_sorteo
+from utils.puntitos_manager import funcion_puntitos, top_puntitos, sorteo_puntitos, sorteo_puntitos_presentes, registrar_victoria_sorteo, consulta_puntitos
 from utils.configuracion import admins
 from .base_command import BaseCommand
 
@@ -44,6 +44,8 @@ class ExtraPointsCommands(BaseCommand):
         otorgando 5 puntitos automáticamente. Si un usuario no autorizado
         intenta usarlo, pierde 1 puntito como penalización.
         
+        RESTRICCIÓN: Los admins solo pueden recibir puntitos de usuarios NO-admins.
+        
         Args:
             ctx (commands.Context): Contexto del comando
             nombre (str): Nombre del usuario que recibirá los puntitos
@@ -62,20 +64,35 @@ class ExtraPointsCommands(BaseCommand):
             return
             
         if ctx.author.name in admins:
-            funcion_puntitos(nombre, 5)
-            await mensaje(f'@{nombre.lstrip("@")} acaba de sumar cinco puntitos de bienvenida!')
+            exito, error = funcion_puntitos(nombre, 5, donante=ctx.author.name)
+            if exito:
+                await mensaje(f'@{nombre.lstrip("@")} acaba de sumar cinco puntitos de bienvenida!')
+            else:
+                await mensaje(f'@{ctx.author.name}, {error}')
         else:
             funcion_puntitos(nombre, -1)
             await mensaje(f'@{nombre.lstrip("@")} acaba de perder un puntito por hacerse el vivo!')
 
     @commands.command()
     async def puntito(self, ctx: commands.Context, nombre: str):
+        """
+        Otorga 1 puntito a un usuario (solo admins)
+        
+        RESTRICCIÓN: Los admins solo pueden recibir puntitos de usuarios NO-admins.
+        
+        Args:
+            ctx (commands.Context): Contexto del comando
+            nombre (str): Nombre del usuario que recibirá el puntito
+        """
         if await self.check_coma_etilico():
             return
             
         if ctx.author.name in admins:
-            funcion_puntitos(nombre)
-            await mensaje(f'@{nombre.lstrip("@")} acaba de sumar un puntito!')
+            exito, error = funcion_puntitos(nombre, 1, donante=ctx.author.name)
+            if exito:
+                await mensaje(f'@{nombre.lstrip("@")} acaba de sumar un puntito!')
+            else:
+                await mensaje(f'@{ctx.author.name}, {error}')
         else:
             funcion_puntitos(nombre, -1)
             await mensaje(f'@{nombre.lstrip("@")} acaba de perder un puntito por hacerse el vivo!')
@@ -144,3 +161,46 @@ class ExtraPointsCommands(BaseCommand):
             await mensaje(texto)
             # Registrar la victoria del sorteo en el spreadsheet (misma columna que !sorteo)
             registrar_victoria_sorteo(ganador)
+
+    @commands.command()
+    async def admins(self, ctx: commands.Context):
+        """
+        Lista todos los admins con sus puntitos (solo para no-admins)
+        
+        Muestra un ranking de los administradores con su cantidad actual de puntitos.
+        Los admins se muestran en mensajes individuales ordenados de mayor a menor cantidad de puntitos.
+        
+        Solo pueden usar este comando usuarios que NO sean administradores.
+        
+        Args:
+            ctx (commands.Context): Contexto del comando de Twitch
+            
+        Example:
+            Usuario: !admins
+            Bot: @admin1 - 150 puntitos
+            Bot: @admin2 - 120 puntitos
+            Bot: @admin3 - 90 puntitos
+        """
+        if await self.check_coma_etilico():
+            return
+        
+        # Solo usuarios NO-admins pueden usar este comando
+        if ctx.author.name in admins:
+            await mensaje("Solo los no-admins pueden usar este comando!")
+            return
+        
+        # Obtener puntitos de cada admin y crear lista de tuplas (nombre, puntitos)
+        admins_puntitos = []
+        for admin in admins:
+            puntitos = consulta_puntitos(admin)
+            admins_puntitos.append((admin, puntitos))
+        
+        # Ordenar de mayor a menor puntitos
+        admins_puntitos.sort(key=lambda x: x[1], reverse=True)
+        
+        # Enviar un mensaje por cada admin
+        for admin, puntitos in admins_puntitos:
+            if puntitos == 1 or puntitos == -1:
+                await mensaje(f'@{admin} - {puntitos} puntito')
+            else:
+                await mensaje(f'@{admin} - {puntitos} puntitos')
