@@ -85,10 +85,14 @@ class GameCommands(BaseCommand):
         """
         juego = get_args(args)
         nombre, puntaje, fecha = self.bot.api.rawg.info(juego)
-        if nombre == 200:
+        
+        # Manejo explícito de errores
+        if nombre is False:
+            # Error en la API
             await mensaje("La base de datos no está funcionando bien, intentá en un toque!")
             return
         if nombre is None:
+            # Sin resultados
             await mensaje("No se encontró nada en la base de datos!")
             return
         try:
@@ -142,7 +146,7 @@ class GameCommands(BaseCommand):
         
         # Obtener nombre del juego primero para búsqueda más precisa
         nombre, _, _ = self.bot.api.rawg.info(juego)
-        if nombre == 200:
+        if nombre is False:
             await mensaje("La base de datos no está funcionando bien, intentá en un toque!")
             return
         if nombre is None:

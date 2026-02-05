@@ -88,7 +88,7 @@ class InteractionCommands(BaseCommand):
         for llave, valores in autores_exclusivos.items():
             if comando_validado in valores and autor != llave:
                 # Validar si se puede dar el puntito al autor exclusivo (llave)
-                # Solo aplicar la transferencia si llave no es admin O si autor no es admin
+                # La validación de puntitos impide transferencias entre admins (autor y llave siendo ambos admins)
                 exito, _ = funcion_puntitos(llave, 1, donante=autor)
                 if exito:
                     funcion_puntitos(autor, -1)

@@ -140,7 +140,7 @@ def validar_puntitos_admin(receptor: str, donante: str = None) -> tuple[bool, st
     es_receptor_admin = receptor_lower in admins_lower
     es_donante_admin = donante_lower in admins_lower
     
-    # Un admin no puede darse puntitos a sí mismo
+    # Ningún usuario puede darse puntitos a sí mismo
     if receptor_lower == donante_lower:
         return (False, "No podés darte puntitos a vos mismo")
     
@@ -162,8 +162,12 @@ def funcion_puntitos(nombre: str, cant: int = 1, donante: str = None):
     los puntitos actuales como el histórico del usuario. Si el usuario no
     existe, crea un nuevo registro.
     
-    IMPORTANTE: Los admins solo pueden recibir puntitos de usuarios NO-admins.
-    Si un admin intenta dar puntitos a otro admin, la acción se bloquea.
+    IMPORTANTE - Reglas de validación de admins:
+    - Ningún usuario puede darse puntitos a sí mismo
+    - El admin "hablemosdepavadaspod" NO puede dar puntitos a otros admins
+    - Los demás admins SÍ pueden dar puntitos a otros admins
+    - Un no-admin puede dar puntitos a admins, pero NO a otros no-admins
+    - Los admins pueden dar puntitos a no-admins sin restricciones
     
     Args:
         nombre (str): Nombre del usuario (se normaliza automáticamente)
@@ -180,8 +184,8 @@ def funcion_puntitos(nombre: str, cant: int = 1, donante: str = None):
     Example:
         >>> funcion_puntitos("usuario1", 5)   # Suma 5 puntitos
         >>> funcion_puntitos("usuario2", -2)  # Resta 2 puntitos
-        >>> funcion_puntitos("admin1", 5, "admin2")  # Bloqueado: admin a admin
-        (False, "Los admins solo pueden recibir puntitos de usuarios no-admins")
+        >>> funcion_puntitos("admin1", 5, "admin2")  # Permitido: admin2 SÍ puede dar a admin1
+        >>> funcion_puntitos("admin1", 5, "hablemosdepavadaspod")  # Bloqueado: hablemosdepavadaspod no puede
         
     Note:
         - Los puntitos históricos siempre se incrementan (nunca disminuyen)

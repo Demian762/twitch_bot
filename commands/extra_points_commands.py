@@ -70,21 +70,35 @@ class ExtraPointsCommands(BaseCommand):
             else:
                 await mensaje(f'@{ctx.author.name}, {error}')
         else:
-            funcion_puntitos(nombre, -1)
-            await mensaje(f'@{nombre.lstrip("@")} acaba de perder un puntito por hacerse el vivo!')
+            exito, error = funcion_puntitos(nombre, -1)
+            if exito:
+                await mensaje(f'@{nombre.lstrip("@")} acaba de perder un puntito por hacerse el vivo!')
+            else:
+                # No debería ocurrir sin donante, pero se captura por consistencia
+                logger.warning(f"Error al penalizar a {nombre}: {error}")
 
     @commands.command()
     async def puntito(self, ctx: commands.Context, nombre: str):
         """
         Otorga 1 puntito a un usuario (solo admins)
         
+        Comando restringido únicamente para administradores. Los usuarios
+        no autorizados recibirán un mensaje de error.
+        
         RESTRICCIÓN: Los admins solo pueden recibir puntitos de usuarios NO-admins.
         
         Args:
             ctx (commands.Context): Contexto del comando
             nombre (str): Nombre del usuario que recibirá el puntito
+            
+        Permissions:
+            Solo usuarios en la lista de admins pueden ejecutar este comando
         """
         if await self.check_coma_etilico():
+            return
+        
+        if ctx.author.name not in admins:
+            await mensaje(f'@{ctx.author.name}, solo los admins pueden usar este comando!')
             return
             
         exito, error = funcion_puntitos(nombre, 1, donante=ctx.author.name)

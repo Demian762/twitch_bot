@@ -22,11 +22,20 @@ class rawg:
             logger.info("Conexión exitosa a rawg.io.")
     
     def info(self, juego: str):
-        key_info = self.key
+        """
+        Obtiene información de un juego desde RAWG.io
+        
+        Returns:
+            tuple: (nombre, puntaje, fecha) si tiene éxito
+            tuple: (None, None, None) si no hay resultados
+            tuple: (False, False, False) si hay error en la API
+        """
+        key_info = self.key.copy()  # Crear copia para no modificar el original
         key_info["search"] = juego
         key_info["search_precise"] = False
         key_info["search_exact"] = False
         url_info = self.url + "games"
+        
         for intento in range(3):
             response = requests.get(url_info, params=key_info)
             if response.status_code == 200:
@@ -34,18 +43,20 @@ class rawg:
             logger.warning(f"Info API - Intento {intento + 1}/3 falló con status code: {response.status_code}")
             if intento < 2:  # No esperar después del último intento
                 time.sleep(2)
+        
         if response.status_code != 200:
             logger.error(f"Hubo un problema con la base de datos de RAWG.io, status code: {response.status_code}")
-            return 200, False, False
+            return False, False, False
         
-        elif  len(response.json().get('results')) > 0:
-            nombre = response.json().get('results')[0]["name"]
-            puntaje = response.json().get('results')[0]["metacritic"]
-            fecha = response.json().get('results')[0]["released"]
+        results = response.json().get('results', [])
+        if len(results) > 0:
+            nombre = results[0]["name"]
+            puntaje = results[0]["metacritic"]
+            fecha = results[0]["released"]
             return nombre, puntaje, fecha
-        
         else:
-            return None, False, False
+            logger.info(f"No se encontraron resultados para el juego: {juego}")
+            return None, None, None
         
     def lanzamientos(self, limite):
         key_info = self.key.copy()  # Crear una copia para evitar modificar el original
@@ -94,15 +105,8 @@ def howlong(game_name:str):
     for intento in range(3):
         try:
             hltb = HowLongToBeat()
-            
-            # Verificar que la instancia se creó correctamente
-            if hltb is None or not hasattr(hltb, 'search'):
-                logger.warning(f"HowLongToBeat API - Intento {intento + 1}/3: Instancia inválida")
-                if intento < 2:
-                    time.sleep(2)
-                continue
-            
             results_list = hltb.search(game_name)
+            
             if results_list is not None and len(results_list) > 0:
                 best_element = max(results_list, key=lambda element: element.similarity)
                 main_story = str(int(best_element.main_story))
@@ -114,13 +118,9 @@ def howlong(game_name:str):
             else:
                 logger.info(f"HowLongToBeat API - No se encontraron resultados para {game_name}")
                 return False
-        except AttributeError as ae:
-            logger.warning(f"HowLongToBeat API - Intento {intento + 1}/3 falló (AttributeError): {str(ae)}")
-            if intento < 2:
-                time.sleep(2)
         except Exception as e:
             logger.warning(f"HowLongToBeat API - Intento {intento + 1}/3 falló: {str(e)}")
-            if intento < 2:  # No esperar después del último intento
+            if intento < 2:
                 time.sleep(2)
     
     logger.error(f"HowLongToBeat API - No se pudo obtener tiempo para {game_name} después de 3 intentos")
@@ -238,27 +238,27 @@ def _parse_requirements(html_text):
         components = {}
         
         # OS
-        os_match = re.search(r'OS[:\s]+([^\n]+?)(?:Processor|Memory|Graphics|DirectX|Storage|Network|$)', text, re.IGNORECASE)
+        os_match = re.search(r'OS[:\s]+(.+?)(?:Processor|Memory|Graphics|DirectX|Storage|Network|$)', text, re.IGNORECASE)
         if os_match:
             components['OS'] = os_match.group(1).strip()
         
         # Processor
-        proc_match = re.search(r'Processor[:\s]+([^\n]+?)(?:Memory|Graphics|DirectX|Storage|Network|$)', text, re.IGNORECASE)
+        proc_match = re.search(r'Processor[:\s]+(.+?)(?:Memory|Graphics|DirectX|Storage|Network|$)', text, re.IGNORECASE)
         if proc_match:
             components['CPU'] = proc_match.group(1).strip()
         
         # Memory
-        mem_match = re.search(r'Memory[:\s]+([^\n]+?)(?:Graphics|DirectX|Storage|Hard Disk|Network|$)', text, re.IGNORECASE)
+        mem_match = re.search(r'Memory[:\s]+(.+?)(?:Graphics|DirectX|Storage|Hard Disk|Network|$)', text, re.IGNORECASE)
         if mem_match:
             components['RAM'] = mem_match.group(1).strip()
         
         # Graphics
-        gpu_match = re.search(r'(?:Graphics|Video Card)[:\s]+([^\n]+?)(?:DirectX|Storage|Hard Disk|Network|Sound|$)', text, re.IGNORECASE)
+        gpu_match = re.search(r'(?:Graphics|Video Card)[:\s]+(.+?)(?:DirectX|Storage|Hard Disk|Network|Sound|$)', text, re.IGNORECASE)
         if gpu_match:
             components['GPU'] = gpu_match.group(1).strip()
         
         # Storage
-        storage_match = re.search(r'(?:Storage|Hard Disk Space)[:\s]+([^\n]+?)(?:DirectX|Network|Sound|Additional|$)', text, re.IGNORECASE)
+        storage_match = re.search(r'(?:Storage|Hard Disk Space)[:\s]+(.+?)(?:DirectX|Network|Sound|Additional|$)', text, re.IGNORECASE)
         if storage_match:
             components['Almacenamiento'] = storage_match.group(1).strip()
         
