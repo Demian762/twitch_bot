@@ -113,10 +113,13 @@ def top_puntitos(n=3):
 
 def validar_puntitos_admin(receptor: str, donante: str = None) -> tuple[bool, str]:
     """
-    Valida si se pueden dar puntitos según las reglas de admins
+    Valida si se pueden dar puntitos según las reglas actuales
     
-    Regla: Los admins solo pueden recibir puntitos de usuarios NO-admins.
-    Si un admin intenta dar puntitos a otro admin, se bloquea la acción.
+    Reglas:
+    - Un admin no puede darse puntitos a sí mismo
+    - Un admin puede dar puntitos a no-admins y a otros admins
+    - Un no-admin puede dar puntitos a admins, pero no a no-admins
+    - El admin "hablemosdepavadaspod" no puede dar puntitos a ningún admin
     
     Args:
         receptor (str): Usuario que recibirá los puntitos
@@ -126,12 +129,6 @@ def validar_puntitos_admin(receptor: str, donante: str = None) -> tuple[bool, st
         tuple[bool, str]: (puede_dar, mensaje_error)
                          - puede_dar: True si se permite, False si se bloquea
                          - mensaje_error: Mensaje descriptivo si se bloquea, "" si se permite
-                         
-    Example:
-        >>> validar_puntitos_admin("admin1", "usuario_normal")
-        (True, "")
-        >>> validar_puntitos_admin("admin1", "admin2")
-        (False, "Los admins solo pueden recibir puntitos de usuarios no-admins")
     """
     # Si no hay donante especificado, permitir (para casos automáticos del bot)
     if donante is None:
@@ -140,10 +137,20 @@ def validar_puntitos_admin(receptor: str, donante: str = None) -> tuple[bool, st
     receptor_lower = receptor.lower().lstrip("@")
     donante_lower = donante.lower().lstrip("@")
     admins_lower = [admin.lower() for admin in admins]
+    es_receptor_admin = receptor_lower in admins_lower
+    es_donante_admin = donante_lower in admins_lower
     
-    # Si el receptor es admin y el donante también es admin, bloquear
-    if receptor_lower in admins_lower and donante_lower in admins_lower:
-        return (False, "Los admins solo pueden recibir puntitos de usuarios no-admins")
+    # Un admin no puede darse puntitos a sí mismo
+    if receptor_lower == donante_lower:
+        return (False, "No podés darte puntitos a vos mismo")
+    
+    # El admin hablemosdepavadaspod no puede dar puntitos a admins
+    if donante_lower == "hablemosdepavadaspod" and es_receptor_admin:
+        return (False, "@hablemosdepavadaspod no puede dar puntitos a otros admins")
+    
+    # Un no-admin no puede dar puntitos a no-admins
+    if not es_donante_admin and not es_receptor_admin:
+        return (False, "Los no-admins solo pueden dar puntitos a admins")
     
     return (True, "")
 

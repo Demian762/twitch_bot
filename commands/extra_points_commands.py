@@ -87,15 +87,11 @@ class ExtraPointsCommands(BaseCommand):
         if await self.check_coma_etilico():
             return
             
-        if ctx.author.name in admins:
-            exito, error = funcion_puntitos(nombre, 1, donante=ctx.author.name)
-            if exito:
-                await mensaje(f'@{nombre.lstrip("@")} acaba de sumar un puntito!')
-            else:
-                await mensaje(f'@{ctx.author.name}, {error}')
+        exito, error = funcion_puntitos(nombre, 1, donante=ctx.author.name)
+        if exito:
+            await mensaje(f'@{nombre.lstrip("@")} acaba de sumar un puntito!')
         else:
-            funcion_puntitos(nombre, -1)
-            await mensaje(f'@{nombre.lstrip("@")} acaba de perder un puntito por hacerse el vivo!')
+            await mensaje(f'@{ctx.author.name}, {error}')
 
     @commands.command()
     async def top(self, ctx: commands.Context, n=3):
