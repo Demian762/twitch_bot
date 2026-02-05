@@ -41,10 +41,8 @@ class ExtraPointsCommands(BaseCommand):
         Otorga puntitos de bienvenida a un usuario (solo admins)
         
         Comando especial para dar la bienvenida a nuevos usuarios del stream
-        otorgando 5 puntitos automáticamente. Si un usuario no autorizado
-        intenta usarlo, pierde 1 puntito como penalización.
-        
-        RESTRICCIÓN: Los admins solo pueden recibir puntitos de usuarios NO-admins.
+        otorgando 5 puntitos automáticamente. Este comando está restringido
+        únicamente a administradores.
         
         Args:
             ctx (commands.Context): Contexto del comando
@@ -58,24 +56,20 @@ class ExtraPointsCommands(BaseCommand):
             Bot: @NuevoUsuario acaba de sumar cinco puntitos de bienvenida!
             
             Usuario: !bienvenida OtroUsuario  
-            Bot: @Usuario acaba de perder un puntito por usar comandos de admin!
+            Bot: @Usuario, solo los admins pueden usar este comando!
         """
         if await self.check_coma_etilico():
             return
+        
+        if ctx.author.name not in admins:
+            await mensaje(f'@{ctx.author.name}, solo los admins pueden usar este comando!')
+            return
             
-        if ctx.author.name in admins:
-            exito, error = funcion_puntitos(nombre, 5, donante=ctx.author.name)
-            if exito:
-                await mensaje(f'@{nombre.lstrip("@")} acaba de sumar cinco puntitos de bienvenida!')
-            else:
-                await mensaje(f'@{ctx.author.name}, {error}')
+        exito, error = funcion_puntitos(nombre, 5, donante=ctx.author.name)
+        if exito:
+            await mensaje(f'@{nombre.lstrip("@")} acaba de sumar cinco puntitos de bienvenida!')
         else:
-            exito, error = funcion_puntitos(nombre, -1)
-            if exito:
-                await mensaje(f'@{nombre.lstrip("@")} acaba de perder un puntito por hacerse el vivo!')
-            else:
-                # No debería ocurrir sin donante, pero se captura por consistencia
-                logger.warning(f"Error al penalizar a {nombre}: {error}")
+            await mensaje(f'@{ctx.author.name}, {error}')
 
     @commands.command()
     async def puntito(self, ctx: commands.Context, nombre: str):
