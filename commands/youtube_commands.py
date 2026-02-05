@@ -100,7 +100,7 @@ class YoutubeCommands(BaseCommand):
             
         try:
             votos_totales = daddy_point()
-            await mensaje(f"¡Voto registrado! Total de votos: {votos_totales}")
+            await mensaje(f"La gente pidió {votos_totales} veces que Sergio se saque la camisa!")
         except Exception as e:
             logger.error(f"Error en comando vot112: {e}")
             await mensaje("Error al procesar el voto, intenta más tarde.")

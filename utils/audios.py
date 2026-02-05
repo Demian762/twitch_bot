@@ -22,6 +22,9 @@ comandos_audios = {
     'yamete':['yamete','yametekudasai','kudasai','horny','hentai','anime'],
     'bija':['bija','capusotto'],
     'fumojuego':['fumo','lulu','fumojuego','fumoyjuego'],
+    'repartidor':['repartidor','demian'],
+    'emperor':['emperor','emperador','warhammer','titus'],
+    'tose':['tose','norespira','heimlich','tos'],
 }
 
 comandos_mensajes = {

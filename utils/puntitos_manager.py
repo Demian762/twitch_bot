@@ -111,7 +111,50 @@ def top_puntitos(n=3):
 
     return top_n_names[:n]
 
-def funcion_puntitos(nombre: str, cant: int = 1):
+def validar_puntitos_admin(receptor: str, donante: str = None) -> tuple[bool, str]:
+    """
+    Valida si se pueden dar puntitos según las reglas actuales
+    
+    Reglas:
+    - Un admin no puede darse puntitos a sí mismo
+    - En general, un admin puede dar puntitos a no-admins y a otros admins
+    - Un no-admin puede dar puntitos a admins, pero no a no-admins
+    - Como excepción, el admin "hablemosdepavadaspod" no puede dar puntitos a ningún admin
+    
+    Args:
+        receptor (str): Usuario que recibirá los puntitos
+        donante (str, optional): Usuario que da los puntitos. Si es None, no se valida.
+        
+    Returns:
+        tuple[bool, str]: (puede_dar, mensaje_error)
+                         - puede_dar: True si se permite, False si se bloquea
+                         - mensaje_error: Mensaje descriptivo si se bloquea, "" si se permite
+    """
+    # Si no hay donante especificado, permitir (para casos automáticos del bot)
+    if donante is None:
+        return (True, "")
+    
+    receptor_lower = receptor.lower().lstrip("@")
+    donante_lower = donante.lower().lstrip("@")
+    admins_lower = [admin.lower() for admin in admins]
+    es_receptor_admin = receptor_lower in admins_lower
+    es_donante_admin = donante_lower in admins_lower
+    
+    # Ningún usuario puede darse puntitos a sí mismo
+    if receptor_lower == donante_lower:
+        return (False, "No podés darte puntitos a vos mismo")
+    
+    # El admin hablemosdepavadaspod no puede dar puntitos a admins
+    if donante_lower == "hablemosdepavadaspod" and es_receptor_admin:
+        return (False, "@hablemosdepavadaspod no puede dar puntitos a otros admins")
+    
+    # Un no-admin no puede dar puntitos a no-admins
+    if not es_donante_admin and not es_receptor_admin:
+        return (False, "Los no-admins solo pueden dar puntitos a admins")
+    
+    return (True, "")
+
+def funcion_puntitos(nombre: str, cant: int = 1, donante: str = None):
     """
     Modifica los puntitos de un usuario (suma o resta)
     
@@ -119,19 +162,41 @@ def funcion_puntitos(nombre: str, cant: int = 1):
     los puntitos actuales como el histórico del usuario. Si el usuario no
     existe, crea un nuevo registro.
     
+    IMPORTANTE - Reglas de validación de admins:
+    - Ningún usuario puede darse puntitos a sí mismo
+    - El admin "hablemosdepavadaspod" NO puede dar puntitos a otros admins
+    - Los demás admins SÍ pueden dar puntitos a otros admins
+    - Un no-admin puede dar puntitos a admins, pero NO a otros no-admins
+    - Los admins pueden dar puntitos a no-admins sin restricciones
+    
     Args:
         nombre (str): Nombre del usuario (se normaliza automáticamente)
         cant (int): Cantidad de puntitos a modificar (default: 1)
                    Puede ser negativo para restar puntitos
+        donante (str, optional): Usuario que da los puntitos. Si se especifica,
+                                se valida la regla de admins.
+                   
+    Returns:
+        tuple[bool, str]: (exito, mensaje_error)
+                         - exito: True si se aplicaron los puntitos, False si se bloqueó
+                         - mensaje_error: Mensaje de error si se bloqueó, "" si fue exitoso
                    
     Example:
         >>> funcion_puntitos("usuario1", 5)   # Suma 5 puntitos
         >>> funcion_puntitos("usuario2", -2)  # Resta 2 puntitos
+        >>> funcion_puntitos("admin1", 5, "admin2")  # Permitido: admin2 SÍ puede dar a admin1
+        >>> funcion_puntitos("admin1", 5, "hablemosdepavadaspod")  # Bloqueado: hablemosdepavadaspod no puede
         
     Note:
         - Los puntitos históricos siempre se incrementan (nunca disminuyen)
         - Si el usuario no existe, se crea con los puntitos especificados
+        - La validación de admins solo aplica cuando se especifica donante
     """
+    # Validar regla de admins si hay donante especificado
+    puede_dar, mensaje_error = validar_puntitos_admin(nombre, donante)
+    if not puede_dar:
+        return (False, mensaje_error)
+    
     nombre = nombre.lower().lstrip("@")
     hoja = sh.get_worksheet(0)
     df = hoja.get_all_records()
@@ -142,9 +207,10 @@ def funcion_puntitos(nombre: str, cant: int = 1):
             historicos = row['historico'] + cant
             hoja.update_cell(idx + 2, 2, puntitos)
             hoja.update_cell(idx + 2, 3, historicos)
-            return
+            return (True, "")
     nuevo_nombre = [nombre, cant, cant]
     hoja.append_row(nuevo_nombre)
+    return (True, "")
 
 def _reiniciar_puntitos(nombre):
     """

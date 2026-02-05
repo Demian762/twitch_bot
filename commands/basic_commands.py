@@ -69,6 +69,7 @@ class BasicCommands(BaseCommand):
         await mensaje([f"hola {nombre}!"])
         if nombre not in self.puntitos_dados:
             self.puntitos_dados.append(nombre)
+            # El comando !hola da puntitos automáticamente (el bot los da, no hay donante humano)
             funcion_puntitos(nombre, 1)
             await mensaje(f'@{nombre.lstrip("@")} acaba de sumar un puntito!')
         else:

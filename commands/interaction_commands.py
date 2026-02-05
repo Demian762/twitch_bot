@@ -87,9 +87,12 @@ class InteractionCommands(BaseCommand):
 
         for llave, valores in autores_exclusivos.items():
             if comando_validado in valores and autor != llave:
-                funcion_puntitos(autor, -1)
-                funcion_puntitos(llave, 1)
-                await mensaje(f"@{autor} acaba de pagarle 1 puntito a @{llave} en concepto de regalías.")
+                # Validar si se puede dar el puntito al autor exclusivo (llave)
+                # La validación de puntitos impide transferencias entre admins (autor y llave siendo ambos admins)
+                exito, _ = funcion_puntitos(llave, 1, donante=autor)
+                if exito:
+                    funcion_puntitos(autor, -1)
+                    await mensaje(f"@{autor} acaba de pagarle 1 puntito a @{llave} en concepto de regalías.")
 
     @routines.routine(minutes=configuracion_basica["rutina_timer"], wait_first=True)
     async def rutinas(self):

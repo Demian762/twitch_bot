@@ -1,6 +1,6 @@
 python-Levenshtein==0.27.1
 twitchio==2.10.0
-howlongtobeatpy==1.0.18
+howlongtobeatpy>=1.0.25
 python-steam-api==2.2.1
 google-api-python-client==2.186.0
 gspread==6.2.1
