@@ -117,9 +117,9 @@ def validar_puntitos_admin(receptor: str, donante: str = None) -> tuple[bool, st
     
     Reglas:
     - Un admin no puede darse puntitos a sí mismo
-    - Un admin puede dar puntitos a no-admins y a otros admins
+    - En general, un admin puede dar puntitos a no-admins y a otros admins
     - Un no-admin puede dar puntitos a admins, pero no a no-admins
-    - El admin "hablemosdepavadaspod" no puede dar puntitos a ningún admin
+    - Como excepción, el admin "hablemosdepavadaspod" no puede dar puntitos a ningún admin
     
     Args:
         receptor (str): Usuario que recibirá los puntitos
