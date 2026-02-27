@@ -65,7 +65,7 @@ class BasicCommands(BaseCommand):
         """
         if await self.check_coma_etilico():
             return
-        nombre = ctx.author.name
+        nombre = ctx.author.name.lower()
         await mensaje([f"hola {nombre}!"])
         if nombre not in self.puntitos_dados:
             self.puntitos_dados.append(nombre)
@@ -143,7 +143,7 @@ class BasicCommands(BaseCommand):
         """
         if await self.check_coma_etilico():
             return
-        autor = ctx.author.name
+        autor = ctx.author.name.lower()
         if autor not in admins:
             return
         await mensaje(spam_messenges)

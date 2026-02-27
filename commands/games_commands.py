@@ -189,7 +189,7 @@ class GameCommands(BaseCommand):
         await handler(ctx, limite)
 
     async def _lanzamientos(self, ctx: commands.Context, limite):
-        if ctx.author.name not in admins and limite > 3:
+        if ctx.author.name.lower() not in admins and limite > 3:
             limite = 3
         output = self.bot.api.rawg.lanzamientos(limite)
         if output is not False:

@@ -64,7 +64,7 @@ class InteractionCommands(BaseCommand):
         if await self.check_coma_etilico():
             return
             
-        autor = ctx.author.name
+        autor = ctx.author.name.lower()
         comando = (str(ctx.message.content).lstrip("!").split(' ')[0]).lower()
         comando_validado = None
 

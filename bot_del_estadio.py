@@ -163,7 +163,7 @@ class Bot(commands.Bot):
         
         # Si el mensaje es un comando (empieza con !), registrar al usuario
         if message.content.startswith('!'):
-            username = message.author.name
+            username = message.author.name.lower()
             self.state.usuarios_activos.add(username)
             logger.debug(f"Usuario registrado: {username} - Total activos: {len(self.state.usuarios_activos)}")
         

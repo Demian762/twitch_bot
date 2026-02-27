@@ -235,7 +235,7 @@ class MinigamesCommands(BaseCommand):
         if await self.check_coma_etilico():
             return
             
-        nombre = ctx.author.name
+        nombre = ctx.author.name.lower()
         if nombre in admins:
             await mensaje("Los admins están sobrados de margaritas.")
             audio_path = resource_path(f"storage/margarita_3.wav")
@@ -289,7 +289,7 @@ class MinigamesCommands(BaseCommand):
         if await self.check_coma_etilico():
             return
             
-        nombre = ctx.author.name
+        nombre = ctx.author.name.lower()
         
         # Los admins siempre obtienen 25
         if nombre in admins:

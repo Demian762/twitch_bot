@@ -47,7 +47,7 @@ class PointsCommands(BaseCommand):
         if await self.check_coma_etilico():
             return
             
-        nombre = ctx.author.name
+        nombre = ctx.author.name.lower()
         puntitos = consulta_puntitos(nombre)
         victorias = consulta_victorias(nombre)
         
@@ -135,7 +135,7 @@ class PointsCommands(BaseCommand):
         if await self.check_coma_etilico():
             return
             
-        nombre = ctx.author.name
+        nombre = ctx.author.name.lower()
         puntitos = consulta_historica(nombre)
         if puntitos == 0:
             await ctx.send(f'@{nombre} todavía no tiene puntitos históricos!')

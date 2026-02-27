@@ -188,7 +188,8 @@ def funcion_puntitos(nombre: str, cant: int = 1, donante: str = None):
         >>> funcion_puntitos("admin1", 5, "hablemosdepavadaspod")  # Bloqueado: hablemosdepavadaspod no puede
         
     Note:
-        - Los puntitos históricos siempre se incrementan (nunca disminuyen)
+        - Los puntitos históricos se modifican igual que los actuales (pueden decrementarse,
+          por ejemplo al perder un torneo de escupitajos)
         - Si el usuario no existe, se crea con los puntitos especificados
         - La validación de admins solo aplica cuando se especifica donante
     """

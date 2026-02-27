@@ -57,7 +57,6 @@ class BotState:
         self.grog_count = 0
         self.escupitajos = {}
         self.ganador = None
-        self.puntitos_dados = []
         self.trivia_actual = None
         self.tiempo_iniciar = timer_iniciar()
         self.rutinas_counter = {"actual":0, "total":0}

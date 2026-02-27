@@ -43,20 +43,6 @@ class TelegramVoiceBot:
             pass
     
     async def start_async(self):
-        self.app = Application.builder().token(self.token).build()  # Crear aquí
-        
-        if self.target_chat_id:
-            handler = MessageHandler(filters.VOICE & filters.Chat(self.target_chat_id), self.handle_voice_message)
-        else:
-            handler = MessageHandler(filters.VOICE, self.handle_voice_message)
-        
-        self.app.add_handler(handler)
-        
-        await self.app.initialize()
-        await self.app.start()
-        await self.app.updater.start_polling()
-    
-    async def start_async(self):
         self.app = Application.builder().token(self.token).build()
         
         if self.target_chat_id:

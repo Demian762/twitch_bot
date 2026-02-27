@@ -37,7 +37,7 @@ class UtilityCommands(BaseCommand):
         if await self.check_coma_etilico():
             return
             
-        autor = ctx.author.name
+        autor = ctx.author.name.lower()
         if autor not in admins:
             return
         self.bot.state.tiempo_iniciar = timer_iniciar()
@@ -118,7 +118,7 @@ class UtilityCommands(BaseCommand):
         if await self.check_coma_etilico():
             return
         
-        autor = ctx.author.name
+        autor = ctx.author.name.lower()
         if autor not in admins:
             return
         

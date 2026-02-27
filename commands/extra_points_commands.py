@@ -21,7 +21,6 @@ Version: 250927
 import asyncio
 from twitchio.ext import commands
 from random import randint
-from utils.logger import logger
 from utils.mensaje import mensaje
 from utils.puntitos_manager import funcion_puntitos, top_puntitos, sorteo_puntitos, sorteo_puntitos_presentes, registrar_victoria_sorteo, consulta_puntitos
 from utils.configuracion import admins
@@ -61,52 +60,51 @@ class ExtraPointsCommands(BaseCommand):
         if await self.check_coma_etilico():
             return
         
-        if ctx.author.name not in admins:
-            await mensaje(f'@{ctx.author.name}, solo los admins pueden usar este comando!')
+        autor = ctx.author.name.lower()
+        if autor not in admins:
+            await mensaje(f'@{autor}, solo los admins pueden usar este comando!')
             return
             
-        exito, error = funcion_puntitos(nombre, 5, donante=ctx.author.name)
+        exito, error = funcion_puntitos(nombre, 5, donante=autor)
         if exito:
             await mensaje(f'@{nombre.lstrip("@")} acaba de sumar cinco puntitos de bienvenida!')
         else:
-            await mensaje(f'@{ctx.author.name}, {error}')
+            await mensaje(f'@{autor}, {error}')
 
     @commands.command()
     async def puntito(self, ctx: commands.Context, nombre: str):
         """
         Otorga 1 puntito a un usuario (solo admins)
         
-        Comando restringido únicamente para administradores. Los usuarios
-        no autorizados recibirán un mensaje de error.
-        
-        RESTRICCIÓN: Los admins solo pueden recibir puntitos de usuarios NO-admins.
+        Comando disponible para todos los usuarios. La validación de permisos
+        se delega a funcion_puntitos/validar_puntitos_admin:
+        - No-admins solo pueden dar puntitos a admins
+        - Admins pueden dar puntitos a otros usuarios (con restricciones entre admins)
+        - Nadie puede darse puntitos a sí mismo
         
         Args:
             ctx (commands.Context): Contexto del comando
             nombre (str): Nombre del usuario que recibirá el puntito
             
         Permissions:
-            Solo usuarios en la lista de admins pueden ejecutar este comando
+            Todos los usuarios (la validación la hace funcion_puntitos)
         """
         if await self.check_coma_etilico():
             return
-        
-        if ctx.author.name not in admins:
-            await mensaje(f'@{ctx.author.name}, solo los admins pueden usar este comando!')
-            return
             
-        exito, error = funcion_puntitos(nombre, 1, donante=ctx.author.name)
+        autor = ctx.author.name.lower()
+        exito, error = funcion_puntitos(nombre, 1, donante=autor)
         if exito:
             await mensaje(f'@{nombre.lstrip("@")} acaba de sumar un puntito!')
         else:
-            await mensaje(f'@{ctx.author.name}, {error}')
+            await mensaje(f'@{autor}, {error}')
 
     @commands.command()
     async def top(self, ctx: commands.Context, n=3):
         if await self.check_coma_etilico():
             return
             
-        nombre = ctx.author.name
+        nombre = ctx.author.name.lower()
         if nombre in admins:
             lista = [f"El top {n} de puntitos es:"]
             top = top_puntitos(n)
@@ -119,7 +117,7 @@ class ExtraPointsCommands(BaseCommand):
         if await self.check_coma_etilico():
             return
             
-        autor = ctx.author.name
+        autor = ctx.author.name.lower()
         if autor in admins:
             ganador = sorteo_puntitos()
             
@@ -142,7 +140,7 @@ class ExtraPointsCommands(BaseCommand):
         if await self.check_coma_etilico():
             return
             
-        autor = ctx.author.name
+        autor = ctx.author.name.lower()
         if autor in admins:
             # Obtener usuarios activos del bot
             usuarios_activos = self.bot.state.usuarios_activos
@@ -189,7 +187,7 @@ class ExtraPointsCommands(BaseCommand):
             return
         
         # Solo usuarios NO-admins pueden usar este comando
-        if ctx.author.name in admins:
+        if ctx.author.name.lower() in admins:
             await mensaje("Solo los no-admins pueden usar este comando!")
             return
         
