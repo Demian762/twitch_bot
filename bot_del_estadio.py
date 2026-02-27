@@ -39,6 +39,7 @@ from utils.secretos import (
     telegram_bot_token,
     channel_name
 )
+from utils.configuracion import BUILD_DATE
 
 # Imports locales - otros
 from telegram_bot.telegram_voice_bot import TelegramVoiceBot
@@ -114,7 +115,8 @@ class Bot(commands.Bot):
             # Configurar rutinas con validación
             self.rutina_lista = getattr(self.config, 'rutina_lista', [])
             if hasattr(self.api, 'ultimo_video'):
-                self.rutina_lista.extend([self.api.ultimo_video, self.api.ultimo_podcast])
+                # Reemplazar el None (placeholder) con ultimo_video
+                self.rutina_lista[-1] = self.api.ultimo_video
             self.state.rutinas_counter["total"] = len(self.rutina_lista) - 1
             
             # Inicializar Telegram y sonido
@@ -141,6 +143,7 @@ class Bot(commands.Bot):
         comandos y eventos. Inicia el bot de Telegram en paralelo.
         """
         logger.info(f'Logueado a Twitch como {self.nick}')
+        logger.info(f'Versión del bot: {BUILD_DATE}')
         asyncio.create_task(self._start_telegram_bot())
 
     async def event_message(self, message):
@@ -160,7 +163,7 @@ class Bot(commands.Bot):
         
         # Si el mensaje es un comando (empieza con !), registrar al usuario
         if message.content.startswith('!'):
-            username = message.author.name
+            username = message.author.name.lower()
             self.state.usuarios_activos.add(username)
             logger.debug(f"Usuario registrado: {username} - Total activos: {len(self.state.usuarios_activos)}")
         

@@ -5,14 +5,14 @@ from utils.api_games import rawg, steam_api
 from utils.api_youtube import (
     build_yt_client,
     get_videos_list,
-    get_latest_podcast,
     get_latest_video,
+    get_latest_videos_list,
     get_video_details
 )
 from utils.utiles_general import timer_iniciar, precio_dolar
 from utils.puntitos_manager import get_programacion, get_restricciones_escupir
 from utils.logger import logger
-from utils.configuracion import configuracion_basica, rutina_lista
+from utils.configuracion import configuracion_basica, rutina_lista, ultimos_n_videos
 
 class BotConfig:
     def __init__(self):
@@ -41,18 +41,15 @@ class APIManager:
     def _init_youtube_data(self):
         try:
             self.videos = get_videos_list(self.yt_client)
-            podcast_id = get_latest_podcast(self.yt_client)
+            self.ultimos_n_videos = get_latest_videos_list(self.yt_client, ultimos_n_videos)
             video_id = get_latest_video(self.yt_client)
-            
-            nombre, link = get_video_details(podcast_id, self.yt_client)
-            self.ultimo_podcast = f"{nombre} {link}"
             
             nombre, link = get_video_details(video_id, self.yt_client)
             self.ultimo_video = f"{nombre} {link}"
         except Exception as e:
             logger.error(f"Error al inicializar datos de YouTube: {e}")
             self.videos = []
-            self.ultimo_podcast = "No disponible"
+            self.ultimos_n_videos = []
             self.ultimo_video = "No disponible"
 
 class BotState:
@@ -60,7 +57,6 @@ class BotState:
         self.grog_count = 0
         self.escupitajos = {}
         self.ganador = None
-        self.puntitos_dados = []
         self.trivia_actual = None
         self.tiempo_iniciar = timer_iniciar()
         self.rutinas_counter = {"actual":0, "total":0}

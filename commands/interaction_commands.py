@@ -10,6 +10,7 @@ Version: 250927
 
 from twitchio.ext import commands, routines
 import winsound
+from random import choice
 
 # Imports locales
 from utils.logger import logger
@@ -63,7 +64,7 @@ class InteractionCommands(BaseCommand):
         if await self.check_coma_etilico():
             return
             
-        autor = ctx.author.name
+        autor = ctx.author.name.lower()
         comando = (str(ctx.message.content).lstrip("!").split(' ')[0]).lower()
         comando_validado = None
 
@@ -86,8 +87,9 @@ class InteractionCommands(BaseCommand):
 
         for llave, valores in autores_exclusivos.items():
             if comando_validado in valores and autor != llave:
-                funcion_puntitos(autor, -1)
+                # Regalías: transferencia automática del bot (sin donante para bypass de validación)
                 funcion_puntitos(llave, 1)
+                funcion_puntitos(autor, -1)
                 await mensaje(f"@{autor} acaba de pagarle 1 puntito a @{llave} en concepto de regalías.")
 
     @routines.routine(minutes=configuracion_basica["rutina_timer"], wait_first=True)
@@ -96,7 +98,8 @@ class InteractionCommands(BaseCommand):
         Rutina periódica para mostrar mensajes automáticos
         
         Ejecuta mensajes programados según el cronograma configurado,
-        rotando entre diferentes mensajes informativos.
+        rotando entre diferentes mensajes informativos. Cuando llega al
+        último elemento, muestra un video aleatorio de los recientes.
         
         Returns:
             None
@@ -106,6 +109,11 @@ class InteractionCommands(BaseCommand):
         """
         actual = self.bot.state.rutinas_counter["actual"]
         mensaje_actual = self.bot.rutina_lista[actual]
+        
+        # Si es el último elemento (video), seleccionar uno aleatorio
+        if actual >= self.bot.state.rutinas_counter["total"]:
+            if hasattr(self.bot.api, 'ultimos_n_videos') and self.bot.api.ultimos_n_videos:
+                mensaje_actual = choice(self.bot.api.ultimos_n_videos)
 
         await mensaje([mensaje_actual])
 

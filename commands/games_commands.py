@@ -24,7 +24,7 @@ from twitchio.ext import commands
 # Imports locales
 from utils.mensaje import mensaje
 from utils.utiles_general import get_args
-from utils.api_games import howlong, steam_price
+from utils.api_games import howlong, steam_price, steam_requirements
 from utils.logger import logger
 from utils.configuracion import admins
 from .base_command import BaseCommand
@@ -85,10 +85,14 @@ class GameCommands(BaseCommand):
         """
         juego = get_args(args)
         nombre, puntaje, fecha = self.bot.api.rawg.info(juego)
-        if nombre == 200:
+        
+        # Manejo explícito de errores
+        if nombre is False:
+            # Error en la API
             await mensaje("La base de datos no está funcionando bien, intentá en un toque!")
             return
         if nombre is None:
+            # Sin resultados
             await mensaje("No se encontró nada en la base de datos!")
             return
         try:
@@ -110,6 +114,73 @@ class GameCommands(BaseCommand):
         await mensaje(output)
 
     @commands.command()
+    async def requisitos(self, ctx: commands.Context, *args):
+        """
+        Proporciona los requisitos mínimos y recomendados de un videojuego
+        
+        Busca un videojuego y muestra sus requisitos del sistema en dos mensajes:
+        - Requisitos Mínimos
+        - Requisitos Recomendados
+        
+        Note:
+            - Si no se encuentra el juego o no tiene requisitos disponibles, lo indica
+            - Utiliza wrapper interno _requisitos() para manejo de errores
+        """
+        if await self.check_coma_etilico():
+            return
+            
+        handler = await self.handle_command(self._requisitos)
+        await handler(ctx, *args)
+
+    async def _requisitos(self, ctx: commands.Context, *args):
+        """
+        Implementación interna del comando requisitos
+        
+        Busca los requisitos de sistema de un juego y los envía en dos mensajes separados
+        
+        Args:
+            ctx (commands.Context): Contexto del comando  
+            *args: Argumentos del nombre del juego
+        """
+        juego = get_args(args)
+        
+        # Obtener nombre del juego primero para búsqueda más precisa
+        nombre, _, _ = self.bot.api.rawg.info(juego)
+        if nombre is False:
+            await mensaje("La base de datos no está funcionando bien, intentá en un toque!")
+            return
+        if nombre is None:
+            await mensaje("No se encontró nada en la base de datos!")
+            return
+        
+        # Enviar primer mensaje con el nombre del juego
+        await mensaje(f"Requisitos para: {nombre}.")
+        
+        # Obtener y enviar requisitos del sistema
+        try:
+            min_req, rec_req = steam_requirements(nombre, self.bot.api.steam)
+            
+            if not min_req and not rec_req:
+                await mensaje("No hay requisitos disponibles para este juego.")
+                return
+            
+            # Enviar requisitos mínimos si existen
+            if min_req:
+                await mensaje(f"Requisitos Mínimos: {min_req}")
+            else:
+                await mensaje("Requisitos Mínimos: No disponibles")
+            
+            # Enviar requisitos recomendados si existen
+            if rec_req:
+                await mensaje(f"Requisitos Recomendados: {rec_req}")
+            else:
+                await mensaje("Requisitos Recomendados: No disponibles")
+                
+        except Exception as e:
+            logger.error(f"Error al obtener requisitos: {e}")
+            await mensaje("Hubo un error al obtener los requisitos del sistema.")
+
+    @commands.command()
     async def lanzamientos(self, ctx: commands.Context, limite = 3):
         if await self.check_coma_etilico():
             return
@@ -118,7 +189,7 @@ class GameCommands(BaseCommand):
         await handler(ctx, limite)
 
     async def _lanzamientos(self, ctx: commands.Context, limite):
-        if ctx.author.name not in admins and limite > 3:
+        if ctx.author.name.lower() not in admins and limite > 3:
             limite = 3
         output = self.bot.api.rawg.lanzamientos(limite)
         if output is not False:

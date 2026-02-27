@@ -1,8 +1,8 @@
 """
 Comandos de integración con YouTube
 
-Este módulo proporciona comandos para obtener recomendaciones de videos,
-el último video publicado y el último podcast del canal.
+Este módulo proporciona comandos para obtener recomendaciones de videos
+y el último video publicado del canal.
 
 Author: Demian762
 Version: 250927
@@ -21,7 +21,7 @@ class YoutubeCommands(BaseCommand):
     Cog para comandos de YouTube
     
     Maneja la interacción con la API de YouTube para obtener
-    información de videos y podcasts del canal.
+    información de videos del canal.
     
     Attributes:
         bot: Instancia del bot principal
@@ -82,31 +82,6 @@ class YoutubeCommands(BaseCommand):
             await mensaje("Error al obtener el último video, intenta más tarde.")
 
     @commands.command()
-    async def podcast(self, ctx: commands.Context):
-        """
-        Muestra el último podcast publicado
-        
-        Busca el podcast más reciente del canal y muestra
-        su título con enlace.
-        
-        Args:
-            ctx: Contexto del comando de Twitch
-            
-        Returns:
-            None
-        """
-        if await self.check_coma_etilico():
-            return
-            
-        try:
-            video_id = get_latest_podcast(self.bot.api.yt_client)
-            nombre_video, link_video = get_video_details(video_id, self.bot.api.yt_client)
-            await mensaje([nombre_video, link_video])
-        except Exception as e:
-            logger.error(f"Error en comando podcast: {e}")
-            await mensaje("Error al obtener el último podcast, intenta más tarde.")
-
-    @commands.command()
     async def vot112(self, ctx: commands.Context):
         """
         Comando de votación especial para eventos del stream
@@ -125,7 +100,7 @@ class YoutubeCommands(BaseCommand):
             
         try:
             votos_totales = daddy_point()
-            await mensaje(f"¡Voto registrado! Total de votos: {votos_totales}")
+            await mensaje(f"La gente pidió {votos_totales} veces que Sergio se saque la camisa!")
         except Exception as e:
             logger.error(f"Error en comando vot112: {e}")
             await mensaje("Error al procesar el voto, intenta más tarde.")

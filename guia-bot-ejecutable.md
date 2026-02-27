@@ -41,27 +41,21 @@ except Exception:
 
 ## 📦 Compilar ejecutable con PyInstaller
 
-### Método 1: Usando archivo .spec (RECOMENDADO)
+### Script Automático
 
-El archivo `bot_del_estadio.spec` ya incluye todas las configuraciones necesarias:
-- Hidden imports para steam_web_api
-- Datos de fake_useragent
-- FFmpeg binario
-- Carpetas storage y telegram_bot
+El script `utils/compile_bot.py` automatiza todo el proceso:
+1. Actualiza la fecha de compilación en `configuracion.py`
+2. Ejecuta PyInstaller con todas las configuraciones
 
 ```powershell
 cd "D:\02 - practicas Python\00_twitch_bot"
-.\bot-env\Scripts\pyinstaller.exe bot_del_estadio.spec --clean
+python utils/compile_bot.py
 ```
 
-### Método 2: Comando directo (alternativo)
-
-```powershell
-cd "D:\02 - practicas Python\00_twitch_bot"
-.\bot-env\Scripts\pyinstaller.exe --onefile --add-data "storage/*;storage" --add-data "telegram_bot;telegram_bot" --add-binary "D:\02 - practicas Python\00_twitch_bot\ffmpeg\ffmpeg.exe;ffmpeg" --add-data "D:\02 - practicas Python\00_twitch_bot\bot-env\Lib\site-packages\fake_useragent\data;fake_useragent/data" --hidden-import steam_web_api._version --hidden-import steam_web_api bot_del_estadio.py
-```
-
-### 📍 El ejecutable se genera en: `dist/bot_del_estadio.exe`
+**Resultado:**
+- Variable `BUILD_DATE` actualizada con formato YYYY-MM-DD
+- Ejecutable generado en: `dist/bot_del_estadio.exe`
+- Fecha de compilación visible en logs y comando `!version`
 
 ---
 
@@ -86,14 +80,3 @@ pip install pyinstaller
 # Desactivar entorno
 deactivate
 ```
-
----
-
-## 📊 Historial de Versiones
-
-| Versión | Fecha | Tamaño | Notas |
-|---------|-------|--------|-------|
-| 251106 | 06/11/2025 | ~110 MB | Fix steam_web_api con hiddenimports en .spec |
-| 251013 | 13/10/2025 | ~110.5 MB | Bug fixes (margarita, paths, steam_web_api), nuevo audio yamete |
-| 250927 | 27/09/2025 | ~113 MB | Refactor completo, nueva estructura |
-
