@@ -17,7 +17,7 @@ comandos_audios = {
     'play':['sony','play','playstation'],
     'mario':['mario','nintendo','gameover'],
     'zelda':['zelda','link','item'],
-    'alert':['alerta','alert','snake','metalgear','kojima'],
+    'alert':['alerta','alert','metalgear','kojima'],
     'ernesto':['ernesto','tenembaum'],
     'yamete':['yamete','yametekudasai','kudasai','horny','hentai','anime'],
     'bija':['bija','capusotto'],
@@ -29,6 +29,16 @@ comandos_audios = {
     'saran':['saran','suspenso','jorge'],
     'win95':['win95','windows95'],
     'win98':['win98','windows98'],
+    'allahu':['allahu','akbar','ala'],
+    'arrugadito':['arrugadito','slurp'],
+    'dross':['dross','poder'],
+    'elisir':['elisir','coco','whisky'],
+    'elpollodiablo':['elpollodiablo','pollodiablo'],
+    'milk':['milk','leche'],
+    'nodenuevo':['nodenuevo','decia','nodenuevodecia'],
+    'snake':['snake'],
+    'gatito':['gatito','gato','miau'],
+    'dificil':['dificil','diablos'],
 }
 
 comandos_mensajes = {
