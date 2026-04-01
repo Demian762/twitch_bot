@@ -44,6 +44,7 @@ from .insults_commands import InsultsCommands
 from .extra_points_commands import ExtraPointsCommands
 from .interaction_commands import InteractionCommands
 from .timba_commands import TimbaCommand
+from .silla_commands import SillaCommands
 
 # Lista maestra de todos los cogs a cargar
 # Esta lista determina qué funcionalidades están activas en el bot
@@ -60,5 +61,6 @@ COGS = [
     InsultsCommands,
     ExtraPointsCommands,
     InteractionCommands,
-    TimbaCommand
+    TimbaCommand,
+    SillaCommands,
 ]
