@@ -1,5 +1,7 @@
 __pycache__
 secretos.py
+.tio.tokens.json
+.claude/
 *.ipynb
 backlog.txt
 bot-env

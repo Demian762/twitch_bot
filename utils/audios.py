@@ -53,4 +53,4 @@ autores_exclusivos = {
     'roque04_':['sega'],
 }
 
-comandos_general = [item for sublista in comandos_audios.values() for item in sublista] + list(comandos_mensajes.keys())
+comandos_general = list(dict.fromkeys([item for sublista in comandos_audios.values() for item in sublista] + list(comandos_mensajes.keys())))

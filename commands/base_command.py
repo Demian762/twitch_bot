@@ -14,7 +14,7 @@ from twitchio.ext import commands
 from utils.logger import logger
 from utils.mensaje import mensaje
 
-class BaseCommand(commands.Cog):
+class BaseCommand(commands.Component):
     """
     Clase base abstracta para todos los comandos del bot
     
