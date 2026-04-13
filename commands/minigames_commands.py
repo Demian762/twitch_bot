@@ -144,7 +144,7 @@ class MinigamesCommands(BaseCommand):
         if self.bot.state.ganador is not None:
             await mensaje(f"{self.bot.state.ganador[0]} va ganando el torneo de escupitajos, con un escupitajo de {self.bot.state.ganador[1]} centímetros!")
         else:
-            await ctx.send("Todavía nadie escupió!")
+            await mensaje("Todavía nadie escupió!")
 
     @commands.command(aliases=("termina",))
     async def terminar(self, ctx: commands.Context):

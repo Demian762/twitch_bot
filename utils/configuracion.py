@@ -29,9 +29,17 @@ configuracion_basica = {
     "rutina_timer": 15,     # Intervalo en minutos para rutinas automáticas
 }
 
+# Configuración del comando !claudio
+claude_config = {
+    "modelo": "claude-haiku-4-5-20251001", # Modelo a usar — opciones: claude-haiku-4-5-20251001 | claude-sonnet-4-6 | claude-opus-4-6
+    "max_tokens_respuesta": 250,            # Máx tokens por respuesta (controla costo por llamada)
+    "max_tokens_por_usuario_sesion": 15000, # Máx tokens totales por usuario por sesión (admins: sin límite)
+    "historial_max_pares": 5,              # Pares user/assistant a recordar por usuario
+}
+
 # Lista de usuarios con permisos de administrador
 # Estos usuarios pueden ejecutar comandos restringidos
-admins = ["hablemosdepavadaspod","demian762","everovius","juancatera","pointandclickstore","lulumy27","mat_max_hdp","wansaia"]
+admins = ["hablemosdepavadaspod","demian762","elevernauta","juancatera","pointandclickstore","lulumy27","chicken_wansaia"]
 
 # Mensajes de redes sociales para el comando !redes  
 lista_redes = [

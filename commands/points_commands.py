@@ -138,7 +138,7 @@ class PointsCommands(BaseCommand):
         nombre = ctx.author.name.lower()
         puntitos = consulta_historica(nombre)
         if puntitos == 0:
-            await ctx.send(f'@{nombre} todavía no tiene puntitos históricos!')
+            await mensaje(f'@{nombre} todavía no tiene puntitos históricos!')
         elif puntitos == 1 or puntitos == -1:
             await mensaje(f'@{nombre} tiene {puntitos} puntito histórico!')
         else:

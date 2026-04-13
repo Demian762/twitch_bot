@@ -1,5 +1,5 @@
 comandos_audios = {
-    'holis':['holis'],
+    'holis':['holis','holi'],
     'helldiver':['helldiver','helldivers','forsuperearth'],
     'cuervo':['cuervo'],
     'zazaraza':['zazaraza','indyforever','indy'],
@@ -26,7 +26,7 @@ comandos_audios = {
     'emperor':['emperor','emperador','warhammer','titus'],
     'tose':['tose','norespira','heimlich','tos'],
     'emilio':['emilio','leon'],
-    'saran':['saran','suspenso','jorge'],
+    'saran':['saran','suspenso','jorge','zaran'],
     'win95':['win95','windows95'],
     'win98':['win98','windows98'],
     'allahu':['allahu','akbar','ala'],

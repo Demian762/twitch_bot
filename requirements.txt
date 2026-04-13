@@ -7,3 +7,4 @@ gspread==6.2.1
 requests==2.33.1
 python-telegram-bot==22.7
 beautifulsoup4==4.14.3
+anthropic==0.92.0

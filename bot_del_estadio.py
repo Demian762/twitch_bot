@@ -121,11 +121,11 @@ class Bot(commands.Bot):
 
     async def load_tokens(self, **_) -> None:
         """Carga tokens desde el directorio del exe/script, no desde el CWD."""
-        await super().load_tokens(path=_token_file_path())
+        await super().load_tokens(_token_file_path())
 
     async def save_tokens(self, **_) -> None:
         """Guarda tokens junto al exe/script, no en el CWD."""
-        await super().save_tokens(path=_token_file_path())
+        await super().save_tokens(_token_file_path())
 
     async def setup_hook(self) -> None:
         """
@@ -165,6 +165,17 @@ class Bot(commands.Bot):
             component = cog_class(self)
             await self.add_component(component)
             self.my_cogs[cog_class.__name__] = component
+
+        # Cargar contexto completo para !claudio (después de los cogs para incluir lista de comandos)
+        try:
+            claudio_cog = self.my_cogs["ClaudioCommands"]
+            self.state.claude_contexto = await asyncio.to_thread(
+                claudio_cog.build_contexto_completo_sync
+            )
+            logger.info("Contexto de Claude cargado (programación + puntitos + comandos)")
+        except Exception as e:
+            logger.error(f"Error al cargar contexto de Claude: {e}")
+            self.state.claude_contexto = ""
 
         logger.info(f"setup_hook completo — canal: {channel_name} (ID: {broadcaster.id})")
 
