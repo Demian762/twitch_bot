@@ -2,6 +2,7 @@ from datetime import datetime
 
 # Imports locales
 from utils.api_games import rawg, steam_api
+from utils.api_search import BraveSearch
 from utils.api_youtube import (
     build_yt_client,
     get_videos_list,
@@ -29,8 +30,10 @@ class BotConfig:
 class APIManager:
     def __init__(self, rawg_url, rawg_key):
         try:
+            from utils.secretos import brave_search_key
             self.rawg = rawg(rawg_url, rawg_key)
             self.steam = steam_api()
+            self.brave = BraveSearch(brave_search_key)
             self.yt_client = build_yt_client()
             self.dolar = precio_dolar()
             self._init_youtube_data()

@@ -20,7 +20,7 @@ Last Update: Refactor completo con nueva estructura modular
 """
 
 # Variable de versión - Se actualiza automáticamente con compile_bot.py
-BUILD_DATE = "2026-03-23"  # Formato: YYYY-MM-DD
+BUILD_DATE = "2026-04-12"  # Formato: YYYY-MM-DD
 
 # Configuración básica del comportamiento del bot
 configuracion_basica = {
@@ -74,6 +74,8 @@ spam_messenges = [
 
 
 cafecito_texto = "Si les gusta nuestro contenido pueden ayudarnos con un cafecito a https://cafecito.app/hablemosdepavadas"
+
+discord_titulo_template = "**Hablemos de Pavadas** en VIVO\n {titulo}\n https://www.twitch.tv/hablemosdepavadaspod"
 
 # Cantidad de videos recientes a obtener para las rutinas
 ultimos_n_videos = 5

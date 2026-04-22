@@ -48,8 +48,10 @@ from utils.secretos import (
     broadcaster_refresh_token,
     bot_access_token,
     bot_refresh_token,
+    discord_webhook_url,
 )
 from utils.configuracion import BUILD_DATE
+from utils.discord_notifier import notificar_titulo
 
 # Imports locales - otros
 from telegram_bot.telegram_voice_bot import TelegramVoiceBot
@@ -144,6 +146,7 @@ class Bot(commands.Bot):
 
         # Registrar en el módulo mensaje para uso global
         mensaje_module.set_broadcaster(broadcaster_partial, self.bot_id)
+        self.broadcaster_id = broadcaster.id
 
         # Cargar tokens desde secretos.py solo si no fueron cargados desde .tio.tokens.json
         loaded = self._http._tokens
@@ -185,6 +188,21 @@ class Bot(commands.Bot):
         logger.info(f'Versión del bot: {BUILD_DATE}')
         await mensaje("Hace su entrada, EL BOT DEL ESTADIO!")
         asyncio.create_task(self._start_telegram_bot())
+        asyncio.create_task(self._notificar_discord_si_en_vivo())
+
+    async def _notificar_discord_si_en_vivo(self):
+        try:
+            stream = None
+            async for s in self.fetch_streams(user_ids=[self.broadcaster_id], max_results=1):
+                stream = s
+                break
+            if not stream:
+                return
+            channel = await self.fetch_channel(self.broadcaster_id)
+            if channel:
+                await notificar_titulo(discord_webhook_url, channel.title)
+        except Exception as e:
+            logger.error(f"Error al notificar Discord al arrancar: {e}")
 
     async def event_message(self, payload) -> None:
         """

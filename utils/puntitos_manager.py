@@ -105,11 +105,47 @@ def top_puntitos(n=3):
     top_n_names = []
     for points in sorted_points:
         combined_names = " - ".join(points_dict[points])
-        top_n_names.append(combined_names)
+        top_n_names.append(f"{combined_names} ({points} pts)")
         if len(top_n_names) >= n:
             break
 
     return top_n_names[:n]
+
+def posicion_ranking(username: str) -> dict | None:
+    """
+    Retorna la posición del usuario en el ranking de puntitos actuales e históricos.
+
+    Returns:
+        dict con 'puntos', 'historico', 'posicion_actual', 'posicion_historica', 'total_jugadores'
+        None si el usuario no existe en el sheet.
+    """
+    username = username.lower().lstrip("@")
+    try:
+        df = sh.sheet1.get_all_records()
+        if not df:
+            return None
+
+        user_row = next((r for r in df if str(r.get('nombre', '')).lower() == username), None)
+        if user_row is None:
+            return None
+
+        sorted_actual = sorted(df, key=lambda r: r.get('puntos', 0), reverse=True)
+        sorted_historico = sorted(df, key=lambda r: r.get('historico', 0), reverse=True)
+
+        pos_actual = next((i + 1 for i, r in enumerate(sorted_actual) if str(r.get('nombre', '')).lower() == username), None)
+        pos_historica = next((i + 1 for i, r in enumerate(sorted_historico) if str(r.get('nombre', '')).lower() == username), None)
+
+        return {
+            'puntos': user_row.get('puntos', 0),
+            'historico': user_row.get('historico', 0),
+            'posicion_actual': pos_actual,
+            'posicion_historica': pos_historica,
+            'total_jugadores': len(df),
+        }
+    except Exception as e:
+        logger.error(f"Error en posicion_ranking para {username}: {e}")
+        return None
+
 
 def validar_puntitos_admin(receptor: str, donante: str = None) -> tuple[bool, str]:
     """
