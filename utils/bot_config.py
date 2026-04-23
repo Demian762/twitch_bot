@@ -2,6 +2,7 @@ from datetime import datetime
 
 # Imports locales
 from utils.api_games import rawg, steam_api
+from utils.api_search import BraveSearch
 from utils.api_youtube import (
     build_yt_client,
     get_videos_list,
@@ -37,6 +38,12 @@ class APIManager:
         except Exception as e:
             logger.error(f"Error en APIManager: {e}")
             raise
+        try:
+            from utils.secretos import brave_search_key
+            self.brave = BraveSearch(brave_search_key)
+        except (ImportError, AttributeError):
+            logger.warning("APIManager: brave_search_key no encontrada en secretos.py — búsqueda web deshabilitada.")
+            self.brave = None
 
     def _init_youtube_data(self):
         try:
@@ -62,3 +69,9 @@ class BotState:
         self.rutinas_counter = {"actual":0, "total":0}
         self.usuarios_activos = set()  # Registro de usuarios que usaron comandos
         self.random_usado = False  # Flag para controlar uso único del comando !random
+        # Estado de !claudio / !bot
+        self.claude_contexto = ""              # Snapshot del Sheet cargado al inicio
+        self.claude_historial = {}             # {username: [{"role":..., "content":...}, ...]}
+        self.claude_token_usage = {}           # {username: tokens_usados_en_sesion}
+        self.claude_memoria_cache = {}         # {username: resumen} — cargado una vez por sesión desde el Sheet
+        self.claude_canal_log = []             # [{"user":..., "q":..., "a":...}, ...] — log completo de la sesión

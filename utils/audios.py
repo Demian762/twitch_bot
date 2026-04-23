@@ -1,5 +1,5 @@
 comandos_audios = {
-    'holis':['holis'],
+    'holis':['holis','holi'],
     'helldiver':['helldiver','helldivers','forsuperearth'],
     'cuervo':['cuervo'],
     'zazaraza':['zazaraza','indyforever','indy'],
@@ -17,7 +17,7 @@ comandos_audios = {
     'play':['sony','play','playstation'],
     'mario':['mario','nintendo','gameover'],
     'zelda':['zelda','link','item'],
-    'alert':['alerta','alert','snake','metalgear','kojima'],
+    'alert':['alerta','alert','metalgear','kojima'],
     'ernesto':['ernesto','tenembaum'],
     'yamete':['yamete','yametekudasai','kudasai','horny','hentai','anime'],
     'bija':['bija','capusotto'],
@@ -26,9 +26,19 @@ comandos_audios = {
     'emperor':['emperor','emperador','warhammer','titus'],
     'tose':['tose','norespira','heimlich','tos'],
     'emilio':['emilio','leon'],
-    'saran':['saran','suspenso','jorge'],
+    'saran':['saran','suspenso','jorge','zaran'],
     'win95':['win95','windows95'],
     'win98':['win98','windows98'],
+    'allahu':['allahu','akbar','ala'],
+    'arrugadito':['arrugadito','slurp'],
+    'dross':['dross','poder'],
+    'elisir':['elisir','coco','whisky'],
+    'elpollodiablo':['elpollodiablo','pollodiablo'],
+    'milk':['milk','leche'],
+    'nodenuevo':['nodenuevo','decia','nodenuevodecia'],
+    'snake':['snake'],
+    'gatito':['gatito','gato','miau'],
+    'dificil':['dificil','diablos'],
 }
 
 comandos_mensajes = {
@@ -43,4 +53,4 @@ autores_exclusivos = {
     'roque04_':['sega'],
 }
 
-comandos_general = [item for sublista in comandos_audios.values() for item in sublista] + list(comandos_mensajes.keys())
+comandos_general = list(dict.fromkeys([item for sublista in comandos_audios.values() for item in sublista] + list(comandos_mensajes.keys())))

@@ -1,6 +1,9 @@
 __pycache__
 secretos.py
+.tio.tokens.json
+.claude/
 *.ipynb
+nb_setup.py
 backlog.txt
 bot-env
 build

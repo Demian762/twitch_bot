@@ -34,7 +34,7 @@ class ExtraPointsCommands(BaseCommand):
     y permiten gestionar el sistema de puntitos de manera directa.
     """
     
-    @commands.command(aliases="bienvenido")
+    @commands.command(aliases=("bienvenido",))
     async def bienvenida(self, ctx: commands.Context, nombre: str):
         """
         Otorga puntitos de bienvenida a un usuario (solo admins)

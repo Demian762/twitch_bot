@@ -12,8 +12,10 @@ from twitchio.ext import commands
 from utils.logger import logger
 from utils.mensaje import mensaje
 from .base_command import BaseCommand
-from utils.configuracion import lista_redes, lista_amigos, cafecito_texto
+from utils.configuracion import lista_redes, lista_amigos, cafecito_texto, admins
 from utils.wikipedia_api import obtener_dato_aleatorio
+from utils.discord_notifier import notificar_titulo
+from utils.secretos import discord_webhook_url
 
 class InfoCommands(BaseCommand):
     """
@@ -87,6 +89,38 @@ class InfoCommands(BaseCommand):
         if await self.check_coma_etilico():
             return
         await mensaje(cafecito_texto)
+
+    @commands.command()
+    async def notificar(self, ctx: commands.Context):
+        if ctx.author.name.lower() not in admins:
+            return
+        try:
+            channel = await self.bot.fetch_channel(self.bot.broadcaster_id)
+            if not channel:
+                await mensaje("No se pudo obtener el título del canal.")
+                return
+            ok = await notificar_titulo(discord_webhook_url, channel.title)
+            if ok:
+                await mensaje("Notificación enviada a Discord!")
+            else:
+                await mensaje("Error al enviar la notificación.")
+        except Exception as e:
+            logger.error(f"Error en !notificar: {e}")
+            await mensaje("Error al enviar la notificación.")
+
+    @commands.command(aliases=("stream",))
+    async def titulo(self, ctx: commands.Context):
+        if await self.check_coma_etilico():
+            return
+        try:
+            channel = await self.bot.fetch_channel(self.bot.broadcaster_id)
+            if channel:
+                await mensaje(f"Título del stream: {channel.title}")
+            else:
+                await mensaje("No se pudo obtener el título del stream.")
+        except Exception as e:
+            logger.error(f"Error en !titulo: {e}")
+            await mensaje("Error al obtener el título del stream.")
 
     @commands.command(aliases=("datos", "tip", "tips"))
     async def dato(self, ctx: commands.Context):

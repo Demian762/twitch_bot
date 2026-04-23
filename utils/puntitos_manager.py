@@ -105,11 +105,47 @@ def top_puntitos(n=3):
     top_n_names = []
     for points in sorted_points:
         combined_names = " - ".join(points_dict[points])
-        top_n_names.append(combined_names)
+        top_n_names.append(f"{combined_names} ({points} pts)")
         if len(top_n_names) >= n:
             break
 
     return top_n_names[:n]
+
+def posicion_ranking(username: str) -> dict | None:
+    """
+    Retorna la posición del usuario en el ranking de puntitos actuales e históricos.
+
+    Returns:
+        dict con 'puntos', 'historico', 'posicion_actual', 'posicion_historica', 'total_jugadores'
+        None si el usuario no existe en el sheet.
+    """
+    username = username.lower().lstrip("@")
+    try:
+        df = sh.sheet1.get_all_records()
+        if not df:
+            return None
+
+        user_row = next((r for r in df if str(r.get('nombre', '')).lower() == username), None)
+        if user_row is None:
+            return None
+
+        sorted_actual = sorted(df, key=lambda r: r.get('puntos', 0), reverse=True)
+        sorted_historico = sorted(df, key=lambda r: r.get('historico', 0), reverse=True)
+
+        pos_actual = next((i + 1 for i, r in enumerate(sorted_actual) if str(r.get('nombre', '')).lower() == username), None)
+        pos_historica = next((i + 1 for i, r in enumerate(sorted_historico) if str(r.get('nombre', '')).lower() == username), None)
+
+        return {
+            'puntos': user_row.get('puntos', 0),
+            'historico': user_row.get('historico', 0),
+            'posicion_actual': pos_actual,
+            'posicion_historica': pos_historica,
+            'total_jugadores': len(df),
+        }
+    except Exception as e:
+        logger.error(f"Error en posicion_ranking para {username}: {e}")
+        return None
+
 
 def validar_puntitos_admin(receptor: str, donante: str = None) -> tuple[bool, str]:
     """
@@ -1022,9 +1058,73 @@ def top_records_escupitajo(n: int = 3):
         
         # Retornar top N
         return records[:n]
-        
+
     except Exception as e:
         logger.error(f"Error al obtener top récords de escupitajo: {e}")
         return []
+
+
+# ─── Memoria de Claudio ────────────────────────────────────────────────────────
+# Usa la hoja "Claude" (abierta por nombre para no depender del índice).
+# Estructura: columna A = usuario, columna B = resumen, columna C = ultima_actualizacion
+
+def _hoja_claude():
+    """Retorna la hoja 'Claude' del spreadsheet."""
+    return sh.worksheet("Claude")
+
+def get_memoria_claude(username: str) -> str:
+    """
+    Lee el resumen de memoria de un usuario desde la hoja Claude.
+
+    Args:
+        username (str): Nombre del usuario (en minúsculas)
+
+    Returns:
+        str: Resumen guardado, o "" si el usuario no tiene memoria aún
+    """
+    try:
+        hoja = _hoja_claude()
+        df = hoja.get_all_records()
+        for row in df:
+            if str(row.get("usuario", "")).lower() == username:
+                return str(row.get("resumen", ""))
+        return ""
+    except Exception as e:
+        logger.error(f"Claude memoria - Error al leer memoria de {username}: {e}")
+        return ""
+
+def guardar_memoria_claude(username: str, resumen: str) -> None:
+    """
+    Guarda o actualiza el resumen de memoria de un usuario en la hoja Claude.
+    Si el usuario ya tiene fila la actualiza; si no, crea una fila nueva.
+
+    Args:
+        username (str): Nombre del usuario (en minúsculas)
+        resumen (str): Resumen generado por Claude
+    """
+    from datetime import datetime
+    fecha = datetime.now().strftime("%Y-%m-%d %H:%M")
+    try:
+        hoja = _hoja_claude()
+
+        # Inicializar headers si la hoja está vacía
+        if hoja.row_count == 0 or not hoja.row_values(1):
+            hoja.append_row(["usuario", "resumen", "ultima_actualizacion"])
+
+        df = hoja.get_all_records()
+        for idx, row in enumerate(df):
+            if str(row.get("usuario", "")).lower() == username:
+                fila = idx + 2  # +1 por header, +1 por índice 1-based
+                hoja.update_cell(fila, 2, resumen)
+                hoja.update_cell(fila, 3, fecha)
+                logger.info(f"Claude memoria - Memoria actualizada para {username}")
+                return
+
+        # Usuario nuevo: agregar fila
+        hoja.append_row([username, resumen, fecha])
+        logger.info(f"Claude memoria - Memoria creada para {username}")
+
+    except Exception as e:
+        logger.error(f"Claude memoria - Error al guardar memoria de {username}: {e}")
 
 

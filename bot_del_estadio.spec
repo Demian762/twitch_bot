@@ -5,7 +5,7 @@ a = Analysis(
     ['bot_del_estadio.py'],
     pathex=[],
     binaries=[('D:\\02 - practicas Python\\00_twitch_bot\\ffmpeg\\ffmpeg.exe', 'ffmpeg')],
-    datas=[('storage/*', 'storage'), ('telegram_bot', 'telegram_bot'), ('D:\\02 - practicas Python\\00_twitch_bot\\bot-env\\Lib\\site-packages\\fake_useragent\\data', 'fake_useragent/data')],
+    datas=[('storage/*', 'storage'), ('telegram_bot', 'telegram_bot'), ('D:\\02 - practicas Python\\00_twitch_bot\\bot-env\\Lib\\site-packages\\fake_useragent\\data', 'fake_useragent/data'), ('D:\\02 - practicas Python\\00_twitch_bot\\bot-env\\Lib\\site-packages\\python_steam_api-2.2.1.dist-info', 'python_steam_api-2.2.1.dist-info')],
     hiddenimports=['steam_web_api._version', 'steam_web_api'],
     hookspath=[],
     hooksconfig={},
