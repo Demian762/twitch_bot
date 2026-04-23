@@ -30,16 +30,20 @@ class BotConfig:
 class APIManager:
     def __init__(self, rawg_url, rawg_key):
         try:
-            from utils.secretos import brave_search_key
             self.rawg = rawg(rawg_url, rawg_key)
             self.steam = steam_api()
-            self.brave = BraveSearch(brave_search_key)
             self.yt_client = build_yt_client()
             self.dolar = precio_dolar()
             self._init_youtube_data()
         except Exception as e:
             logger.error(f"Error en APIManager: {e}")
             raise
+        try:
+            from utils.secretos import brave_search_key
+            self.brave = BraveSearch(brave_search_key)
+        except (ImportError, AttributeError):
+            logger.warning("APIManager: brave_search_key no encontrada en secretos.py — búsqueda web deshabilitada.")
+            self.brave = None
 
     def _init_youtube_data(self):
         try:

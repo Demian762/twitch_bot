@@ -31,13 +31,13 @@ The compile script auto-updates `BUILD_DATE` in `utils/configuracion.py`.
 
 ## Architecture
 
-The main bot class in [bot_del_estadio.py](bot_del_estadio.py) extends `twitchio.ext.commands.Bot` and loads three shared state objects plus all command cogs at startup:
+The main bot class in [bot_del_estadio.py](bot_del_estadio.py) extends `twitchio.ext.commands.Bot` and loads three shared state objects plus all command components at startup:
 
 - **`BotConfig`** — weekly schedule, spit-game restrictions, basic config flags
 - **`APIManager`** — wraps RAWG, Steam, YouTube, and DolarAPI clients
 - **`BotState`** — runtime state: grog counter, active users, minigame state, trivia state
 
-All commands are implemented as **TwitchIO Cogs** in `commands/` and loaded dynamically via `commands/__init__.py`. Each cog receives the shared state objects via its constructor. Adding a new command module means creating a cog and registering it in `__init__.py`.
+All commands are implemented as **TwitchIO V3 `Component`s** in `commands/` and loaded dynamically via `commands/__init__.py`. Each component receives the shared state objects via its constructor. Adding a new command module means creating a component class (inheriting from `BaseCommand(commands.Component)`) and registering it with `add_component` in `commands/__init__.py`.
 
 A `TelegramVoiceBot` runs concurrently via `asyncio`, listening on Telegram and playing audio locally via `winsound`.
 

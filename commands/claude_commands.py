@@ -6,7 +6,6 @@ Características:
     - Contexto del canal cargado desde Google Sheets (programación, top puntitos)
     - Memoria a largo plazo por usuario: guardada en la hoja "Claude" del Sheet
     - Tool use: RAWG.io y Steam para info de videojuegos en tiempo real
-    - Costo: 1 puntito por uso (bloqueado con 0 o negativos)
     - Límite de tokens por usuario por sesión (configurable en configuracion.py)
     - Historial de conversación por usuario en la sesión actual
 
@@ -22,11 +21,9 @@ from utils.mensaje import mensaje
 from utils.audios import comandos_audios
 from utils.detroit_data import DETROIT_INFO, RESPUESTAS_INSISTENTES
 from utils.puntitos_manager import (
-    consulta_puntitos,
     consulta_historica,
     consulta_victorias,
     posicion_ranking,
-    funcion_puntitos,
     get_memoria_claude,
     guardar_memoria_claude,
     top_puntitos,
@@ -381,6 +378,8 @@ class ClaudioCommands(BaseCommand):
             return "Contexto del canal actualizado: programación, ranking de puntitos y lista completa de comandos refrescados."
 
         elif tool_name == "buscar_web":
+            if self.bot.api.brave is None:
+                return "Búsqueda web no disponible: configurá brave_search_key en secretos.py."
             return self.bot.api.brave.search(tool_input["query"])
 
         elif tool_name == "info_usuario":
@@ -517,10 +516,9 @@ class ClaudioCommands(BaseCommand):
                 for m in historial[-6:]  # últimos 3 intercambios
             )
             prompt_memoria = (
-                f"Resumen anterior del usuario '{username}': {memoria_anterior or '(ninguno)'}\n\n"
+                f"Resumen anterior del usuario '{username}':\n{memoria_anterior or '(ninguno)'}\n\n"
                 f"Conversación reciente:\n{fragmento}\n\n"
-                "En base a esto, escribí un resumen actualizado de 1 a 3 oraciones sobre este usuario: "
-                "quién es, qué le interesa, cómo interactúa con el bot. Solo el resumen, sin introducciones."
+                "Actualizá el resumen del usuario incorporando la información de la conversación reciente."
             )
             response = await self.client.messages.create(
                 model=claude_config["modelo"],

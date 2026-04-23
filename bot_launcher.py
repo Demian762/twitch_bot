@@ -16,9 +16,7 @@ class BotLauncher:
         self.root.title("Bot del Estadio")
         self.root.minsize(700, 500)
         self.process: subprocess.Popen | None = None
-        self.audio_var = tk.BooleanVar(value=True)
-        if os.path.exists(AUDIO_MUTED_FLAG):
-            os.remove(AUDIO_MUTED_FLAG)
+        self.audio_var = tk.BooleanVar(value=not os.path.exists(AUDIO_MUTED_FLAG))
         self._build_ui()
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
         threading.Thread(target=self._check_updates, daemon=True).start()
@@ -195,8 +193,6 @@ class BotLauncher:
     def _on_close(self):
         if self.process:
             self.process.terminate()
-        if os.path.exists(AUDIO_MUTED_FLAG):
-            os.remove(AUDIO_MUTED_FLAG)
         self.root.destroy()
 
 

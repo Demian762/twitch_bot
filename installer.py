@@ -140,11 +140,12 @@ class Installer:
             return
         install_dir = Path(self.folder_var.get().strip())
         if install_dir.exists() and any(install_dir.iterdir()):
-            if not messagebox.askyesno(
+            messagebox.showwarning(
                 "Carpeta no vacía",
-                f"La carpeta ya existe y no está vacía:\n{install_dir}\n\n¿Continuar de todas formas?",
-            ):
-                return
+                f"La carpeta ya existe y no está vacía:\n{install_dir}\n\n"
+                "Elegí una carpeta vacía o una carpeta nueva para continuar.",
+            )
+            return
         self.install_btn.config(state=tk.DISABLED, text="Instalando...")
         threading.Thread(target=self._install, args=(install_dir,), daemon=True).start()
 
