@@ -11,13 +11,12 @@ Version: 250927
 from datetime import timedelta
 
 from twitchio.ext import commands, routines
-import winsound
 from random import choice
 
 # Imports locales
 from utils.logger import logger
 from utils.mensaje import mensaje
-from utils.utiles_general import resource_path
+from utils.utiles_general import resource_path, play_sound
 from utils.puntitos_manager import funcion_puntitos
 from utils.configuracion import admins, configuracion_basica
 from utils.audios import comandos_general, comandos_audios, comandos_mensajes, autores_exclusivos
@@ -77,7 +76,7 @@ class InteractionCommands(BaseCommand):
 
         if comando_validado:
             audio_path = resource_path(f"storage/{comando_validado}.wav")
-            winsound.PlaySound(audio_path,winsound.SND_FILENAME)
+            play_sound(audio_path)
             mensaje_string = comandos_mensajes.get(comando_validado, None)
         else:
             mensaje_string = comandos_mensajes.get(comando, None)

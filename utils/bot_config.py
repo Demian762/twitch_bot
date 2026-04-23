@@ -70,3 +70,4 @@ class BotState:
         self.claude_historial = {}             # {username: [{"role":..., "content":...}, ...]}
         self.claude_token_usage = {}           # {username: tokens_usados_en_sesion}
         self.claude_memoria_cache = {}         # {username: resumen} — cargado una vez por sesión desde el Sheet
+        self.claude_canal_log = []             # [{"user":..., "q":..., "a":...}, ...] — log completo de la sesión

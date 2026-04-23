@@ -22,7 +22,6 @@ Repository: https://github.com/Demian762/twitch_bot
 import asyncio
 import os
 import sys
-import winsound
 from random import choice
 
 # Imports de terceros
@@ -34,7 +33,7 @@ from twitchio.ext.commands import CommandNotFound
 from utils.logger import logger
 from utils import mensaje as mensaje_module
 from utils.mensaje import mensaje
-from utils.utiles_general import resource_path
+from utils.utiles_general import resource_path, play_sound
 from utils.bot_config import BotConfig, APIManager, BotState
 from utils.secretos import (
     rawg_url,
@@ -116,7 +115,7 @@ class Bot(commands.Bot):
         self.state.rutinas_counter["total"] = len(self.rutina_lista) - 1
 
         audio_path = resource_path("storage/holis.wav")
-        winsound.PlaySound(audio_path, winsound.SND_FILENAME)
+        play_sound(audio_path)
         self.telegram_bot = TelegramVoiceBot(telegram_bot_token)
 
         logger.info("Bot inicializado correctamente")

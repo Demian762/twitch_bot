@@ -9,12 +9,11 @@ Version: 250927
 """
 
 from twitchio.ext import commands
-import winsound
 from random import triangular, randint
 from utils.logger import logger
 from utils.mensaje import mensaje
 from utils.puntitos_manager import funcion_puntitos, validar_restriccion_escupir, registrar_victoria_torneo, registrar_victoria_margarita, registrar_record_escupitajo, top_records_escupitajo
-from utils.utiles_general import validate_dice_format, resource_path
+from utils.utiles_general import validate_dice_format, resource_path, play_sound
 from utils.configuracion import admins
 from .base_command import BaseCommand
 
@@ -239,7 +238,7 @@ class MinigamesCommands(BaseCommand):
         if nombre in admins:
             await mensaje("Los admins están sobrados de margaritas.")
             audio_path = resource_path(f"storage/margarita_3.wav")
-            winsound.PlaySound(audio_path,winsound.SND_FILENAME)
+            play_sound(audio_path)
             return
             
         if self.cuantas_margaritas is None:
@@ -252,7 +251,7 @@ class MinigamesCommands(BaseCommand):
             
         if self.margaritas >= self.cuantas_margaritas:
             audio_path = resource_path(f"storage/margarita_2.wav")
-            winsound.PlaySound(audio_path,winsound.SND_FILENAME)
+            play_sound(audio_path)
             await mensaje(f"¡¡LA RECALCADA CAJETA DE TU HERMANA {nombre.upper()}!! TOMÁ TUS PUNTITOS!!")
             funcion_puntitos(nombre, cant=2)
             await mensaje(f'{nombre} acaba de sumar 2 puntitos...')
@@ -263,7 +262,7 @@ class MinigamesCommands(BaseCommand):
             await mensaje([f"{nombre} pregunta:","¿Me regalas una margarita?"])
             if self.margaritas == 0:
                 audio_path = resource_path(f"storage/margarita_1.wav")
-                winsound.PlaySound(audio_path,winsound.SND_FILENAME)
+                play_sound(audio_path)
             self.margaritas += 1
             self.ultima_margarita = nombre
 

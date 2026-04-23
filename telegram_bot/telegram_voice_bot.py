@@ -1,10 +1,10 @@
-import winsound
 import os
 import tempfile
 import warnings
 from telegram import Update
 from telegram.ext import Application, MessageHandler, filters, ContextTypes
 
+from utils.utiles_general import play_sound
 from telegram_bot.ffmpeg_manager import FFmpegManager
 from telegram_bot.audio_converter import AudioConverter
 
@@ -38,7 +38,7 @@ class TelegramVoiceBot:
             
             if wav_file:
                 self.temp_files.append(wav_file)
-                winsound.PlaySound(wav_file, winsound.SND_FILENAME)
+                play_sound(wav_file)
         except:
             pass
     

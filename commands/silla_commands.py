@@ -15,7 +15,7 @@ from twitchio.ext import commands
 
 from utils.logger import logger
 from utils.mensaje import mensaje
-from utils.utiles_general import resource_path
+from utils.utiles_general import resource_path, play_sound
 from utils.configuracion import admins
 from .base_command import BaseCommand
 
@@ -55,7 +55,7 @@ class SillaCommands(BaseCommand):
                 audio_path = resource_path(f"storage/{audio}.wav")
                 await loop.run_in_executor(
                     None,
-                    lambda p=audio_path: winsound.PlaySound(p, winsound.SND_FILENAME | winsound.SND_NODEFAULT),
+                    lambda p=audio_path: play_sound(p, winsound.SND_FILENAME | winsound.SND_NODEFAULT),
                 )
                 await asyncio.sleep(1)
         except asyncio.CancelledError:

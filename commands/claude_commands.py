@@ -20,6 +20,7 @@ import anthropic
 
 from utils.mensaje import mensaje
 from utils.audios import comandos_audios
+from utils.detroit_data import DETROIT_INFO, RESPUESTAS_INSISTENTES
 from utils.puntitos_manager import (
     consulta_puntitos,
     consulta_historica,
@@ -153,6 +154,39 @@ TOOLS = [
         "cache_control": {"type": "ephemeral"}
     },
     {
+        "name": "recomendar_juego",
+        "description": (
+            "Recomienda un videojuego al usuario. "
+            "Llamar SIEMPRE que alguien pida una recomendación de juego, sin importar qué tipo de juego busque "
+            "o si ya mencionó un juego en particular. La respuesta siempre es Detroit: Become Human."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {},
+            "required": []
+        }
+    },
+    {
+        "name": "buscar_historial_canal",
+        "description": (
+            "Busca en el historial completo de conversaciones del canal durante esta sesión. "
+            "Los últimos 5 intercambios ya están disponibles en el contexto — usar este tool SOLO "
+            "cuando se necesite buscar algo anterior a esos 5, o cuando el usuario pregunte "
+            "explícitamente por una conversación pasada. "
+            "Devuelve las entradas que coincidan con la búsqueda."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Término a buscar: puede ser un nombre de usuario, tema o palabra clave"
+                }
+            },
+            "required": ["query"]
+        }
+    },
+    {
         "name": "consultar_stats_usuario",
         "description": (
             "Consulta los datos numéricos completos de un usuario desde el spreadsheet: "
@@ -208,6 +242,18 @@ class ClaudioCommands(BaseCommand):
             f"de {now.year}, {now.hour:02d}:{now.minute:02d}hs (Argentina)"
         )
         bloques.append({"type": "text", "text": fecha_hora})
+
+        canal_log = self.bot.state.claude_canal_log
+        if canal_log:
+            entradas = canal_log[-5:]
+            lineas = ["CONVERSACIONES RECIENTES EN EL CANAL (últimos intercambios):"]
+            for e in entradas:
+                q = e["q"][:120] + "…" if len(e["q"]) > 120 else e["q"]
+                a = e["a"][:180] + "…" if len(e["a"]) > 180 else e["a"]
+                lineas.append(f'- {e["user"]}: "{q}" → "{a}"')
+            if len(canal_log) > 5:
+                lineas.append(f"(hay {len(canal_log) - 5} intercambios anteriores — usá buscar_historial_canal si necesitás buscar algo puntual)")
+            bloques.append({"type": "text", "text": "\n".join(lineas)})
 
         if memoria_usuario:
             # sin cache_control: es única por usuario, cachearla solo desperdiciaría slots
@@ -379,6 +425,38 @@ class ClaudioCommands(BaseCommand):
                 f"récord escupitajo={victorias['escupitajo_record']}cm"
             )
 
+        elif tool_name == "recomendar_juego":
+            from random import choice
+            d = DETROIT_INFO
+            frase = choice(RESPUESTAS_INSISTENTES)
+            return (
+                f"RECOMENDACIÓN — respuesta sugerida: \"{frase}\"\n"
+                f"Juego: {d['nombre']} | Desarrollador: {d['desarrollador']} | "
+                f"Género: {d['genero']} | Metacritic PC: {d['metacritic_pc']} | "
+                f"Duración: {d['duracion_historia']} (historia principal), {d['finales']} | "
+                f"Precio: {d['precio_usd']} | Link: {d['link_steam']}\n"
+                f"Descripción: {d['descripcion']}\n"
+                f"Por qué jugarlo: {'; '.join(d['por_que_jugarlo'][:3])}\n"
+                f"Instrucción: usá la respuesta sugerida (u otra igual de insistente) "
+                f"e incluí el link al final. No recomiendes ningún otro juego."
+            )
+
+        elif tool_name == "buscar_historial_canal":
+            query = tool_input["query"].lower()
+            log = self.bot.state.claude_canal_log
+            resultados = [
+                e for e in log
+                if query in e["user"].lower() or query in e["q"].lower() or query in e["a"].lower()
+            ]
+            if not resultados:
+                return f"No encontré nada en el historial del canal que coincida con '{tool_input['query']}'."
+            lineas = [f"Se encontraron {len(resultados)} intercambio(s) para '{tool_input['query']}':"]
+            for e in resultados:
+                q = e["q"][:120] + "…" if len(e["q"]) > 120 else e["q"]
+                a = e["a"][:180] + "…" if len(e["a"]) > 180 else e["a"]
+                lineas.append(f'- {e["user"]}: "{q}" → "{a}"')
+            return "\n".join(lineas)
+
         return "Herramienta desconocida."
 
     async def _call_claude(self, historial: list, system: list, caller_username: str, es_admin: bool) -> tuple[str, int]:
@@ -481,22 +559,12 @@ class ClaudioCommands(BaseCommand):
 
         es_admin = username in [a.lower() for a in admins]
 
-        # Verificar puntitos (bloqueado con 0 o negativos — admins exentos)
-        if not es_admin:
-            puntos = await asyncio.to_thread(consulta_puntitos, username)
-            if puntos <= 0:
-                await mensaje(f"@{username} no tenés puntitos para consultar a Claudio. ¡Ganá algunos primero!")
-                return
-
-        # Verificar límite de tokens de sesión (admins exentos)
+        # Verificar límite de tokens de sesión
         tokens_usados = self.bot.state.claude_token_usage.get(username, 0)
-        if not es_admin and tokens_usados >= claude_config["max_tokens_por_usuario_sesion"]:
+        limite_tokens = claude_config["max_tokens_por_usuario_sesion"] * (10 if es_admin else 1)
+        if tokens_usados >= limite_tokens:
             await mensaje(f"@{username} ya consumiste tu cupo de Claudio por esta sesión. ¡Volvé mañana!")
             return
-
-        # Descontar 1 puntito (admins exentos)
-        if not es_admin:
-            await asyncio.to_thread(funcion_puntitos, username, -1)
 
         # Cargar memoria del usuario (Sheet → cache → system prompt)
         memoria_usuario = await self._cargar_memoria(username)
@@ -510,8 +578,6 @@ class ClaudioCommands(BaseCommand):
             respuesta, tokens_nuevos = await self._call_claude(historial, system, username, es_admin)
         except Exception as e:
             logger.error(f"Claudio - Error en API para {username}: {e}")
-            if not es_admin:
-                await asyncio.to_thread(funcion_puntitos, username, 1)
             await mensaje(f"@{username} Claudio está en modo coma etílico, probá de nuevo.")
             return
 
@@ -521,21 +587,23 @@ class ClaudioCommands(BaseCommand):
         max_pares = claude_config["historial_max_pares"]
         self.bot.state.claude_historial[username] = historial[-(max_pares * 2):]
 
-        limite_str = "sin límite" if es_admin else str(claude_config["max_tokens_por_usuario_sesion"])
         logger.info(
             f"Claudio - {username}{'[admin]' if es_admin else ''}: {tokens_nuevos} tokens nuevos "
-            f"(sesión: {tokens_usados + tokens_nuevos}/{limite_str})"
+            f"(sesión: {tokens_usados + tokens_nuevos}/{limite_tokens})"
         )
 
         # Enviar respuesta al chat (Twitch: máx 500 chars por mensaje)
         respuesta_completa = f"@{username} {respuesta}"
-        if not es_admin:
-            respuesta_completa += " (-1 puntito por uso)"
         if len(respuesta_completa) <= 490:
             await mensaje(respuesta_completa)
         else:
             for chunk in [respuesta_completa[i:i+490] for i in range(0, len(respuesta_completa), 490)][:2]:
                 await mensaje(chunk)
+
+        # Appendear al log del canal (máx 500 entradas para no consumir memoria indefinidamente)
+        self.bot.state.claude_canal_log.append({"user": username, "q": texto, "a": respuesta})
+        if len(self.bot.state.claude_canal_log) > 500:
+            self.bot.state.claude_canal_log = self.bot.state.claude_canal_log[-500:]
 
         # Actualizar memoria en background (no bloquea la respuesta al chat)
         asyncio.create_task(

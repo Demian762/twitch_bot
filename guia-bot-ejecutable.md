@@ -1,82 +1,63 @@
-# 🤖 Guía de Instalación y Compilación - BotDelEstadio
+# Guía de Instalación - BotDelEstadio
 
-## 📋 Requisitos Previos
-- **Python 3.11+** instalado en el sistema
-- **Git** clonado del repositorio
-- **Windows** (para reproducción de audio y compilación)
+## Instalación en una PC nueva
+
+### Lo que necesitás antes de empezar
+- El archivo **`installer.exe`** (pedírselo al administrador del bot)
+- El archivo **`secretos.py`** (pedírselo al administrador del bot)
+
+### Pasos
+
+1. Ejecutar `installer.exe` con doble clic
+2. Elegir la carpeta donde instalar el bot (por defecto: `C:\Users\TuUsuario\BotDelEstadio`)
+3. Hacer clic en **Seleccionar** y buscar el archivo `secretos.py`
+4. Hacer clic en **Instalar** y esperar — el instalador hace todo solo:
+   - Instala Python y Git si no están en la PC
+   - Descarga el bot de GitHub
+   - Instala las dependencias
+   - Copia el archivo de credenciales
+   - Crea un acceso directo en el escritorio
+5. Al terminar, usar el acceso directo **Bot del Estadio** del escritorio para abrir el bot
+
+> El instalador requiere conexión a internet.
 
 ---
 
-## 🏗️ Instalación de dependencias:
+## Uso diario
 
-### Instalación automática (recomendada)
-```bash
-pip install -r requirements.txt
+1. Abrir el acceso directo **Bot del Estadio** del escritorio
+2. El launcher verifica automáticamente si hay actualizaciones y las instala antes de que puedas iniciar el bot
+3. Hacer clic en **Iniciar**
+
+---
+
+## Actualizar el archivo secretos.py
+
+Si cambian las credenciales, reemplazar el archivo manualmente en:
+```
+[carpeta de instalación]\utils\secretos.py
 ```
 
 ---
 
-## 🩹 FIX OBLIGATORIO antes de compilar
+## Compilar el installer.exe (solo para el desarrollador)
 
-### Steam Web API Version Fix:
-**⚠️ APLICAR ANTES de crear el ejecutable**
-
-**Archivo:** `bot-env/Lib/site-packages/steam_web_api/_version.py`
-
-**Línea 18-19:** Cambiar:
-```python
-except Exception:
-    pass
-```
-
-**Por:**
-```python
-except Exception:
-    __version__ = "2.0.4"
-```
-
-**Razón:** PyInstaller no puede importar `__version__` dinámicamente, causando error al ejecutar el .exe
-
----
-
-## 📦 Compilar ejecutable con PyInstaller
-
-### Script Automático
-
-El script `utils/compile_bot.py` automatiza todo el proceso:
-1. Actualiza la fecha de compilación en `configuracion.py`
-2. Ejecuta PyInstaller con todas las configuraciones
+El `installer.exe` se genera con PyInstaller desde el entorno de desarrollo:
 
 ```powershell
-cd "D:\02 - practicas Python\00_twitch_bot"
-python utils/compile_bot.py
+pyinstaller --onefile --windowed --name installer installer.py
 ```
 
-**Resultado:**
-- Variable `BUILD_DATE` actualizada con formato YYYY-MM-DD
-- Ejecutable generado en: `dist/bot_del_estadio.exe`
-- Fecha de compilación visible en logs y comando `!version`
+**Fix obligatorio antes de compilar el bot** (no aplica al installer):
 
----
+Archivo: `bot-env/Lib/site-packages/steam_web_api/_version.py` líneas 18-19
 
-## 🔧 Crear nuevo ambiente virtual (si es necesario)
+```python
+# Cambiar:
+except Exception:
+    pass
 
-```bash
-# Crear entorno
-python -m venv bot-env
-
-# Activar (PowerShell)
-.\bot-env\Scripts\activate
-
-# Actualizar pip
-python -m pip install --upgrade pip
-
-# Instalar dependencias
-pip install -r requirements.txt
-
-# Instalar PyInstaller
-pip install pyinstaller
-
-# Desactivar entorno
-deactivate
+# Por:
+except Exception:
+    __version__ = "2.0.4"
 ```

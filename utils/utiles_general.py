@@ -1,8 +1,15 @@
 import os
 import sys
+import winsound
 import requests
 import time
 from utils.logger import logger
+
+_AUDIO_MUTED_FLAG = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.audio_muted')
+
+def play_sound(path: str, flags: int = winsound.SND_FILENAME) -> None:
+    if not os.path.exists(_AUDIO_MUTED_FLAG):
+        winsound.PlaySound(path, flags)
 
 
 def precio_dolar():

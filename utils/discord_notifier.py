@@ -22,6 +22,7 @@ async def send_discord_message(webhook_url: str, content: str) -> bool:
         logger.error(f"Error enviando mensaje a Discord: {e}")
         return False
 
+# Hola TheRedFallen, que haces por acá?? si descubrís este comentario y lo compartís en discord te doy 10 puntitos xD
 
 async def notificar_titulo(webhook_url: str, titulo: str) -> bool:
     return await send_discord_message(webhook_url, _build_titulo_msg(titulo))
