@@ -18,7 +18,8 @@ class BotLauncher:
         self.root.minsize(700, 500)
         self.process: subprocess.Popen | None = None
         self.audio_var = tk.BooleanVar(value=not os.path.exists(AUDIO_MUTED_FLAG))
-        self._build_ui()
+        if not self._build_ui():
+            return
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
         threading.Thread(target=self._check_updates, daemon=True).start()
 
@@ -31,7 +32,7 @@ class BotLauncher:
                 "Re-ejecutá el instalador.",
             )
             self.root.destroy()
-            return
+            return False
 
         # ── Header ──────────────────────────────────────────────────────────
         header = tk.Label(
@@ -87,6 +88,7 @@ class BotLauncher:
             pady=6,
         )
         self.log.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
+        return True
 
     # ── Update check ─────────────────────────────────────────────────────────
 
