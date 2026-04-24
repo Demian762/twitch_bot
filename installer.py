@@ -165,7 +165,6 @@ class Installer:
             self._copy_secretos(install_dir)
             self._create_shortcut(install_dir)
             self._log("\n✓ ¡Instalación completa!")
-            self._log(f"  Acceso directo creado en el escritorio.")
             self.root.after(
                 0,
                 messagebox.showinfo,
@@ -246,18 +245,22 @@ class Installer:
 
     def _create_shortcut(self, install_dir: Path):
         self._log("→ Creando acceso directo en el escritorio...")
-        python_exe = install_dir / VENV_NAME / "Scripts" / "python.exe"
+        python_exe = install_dir / VENV_NAME / "Scripts" / "pythonw.exe"
         launcher = install_dir / "bot_launcher.py"
-        desktop = Path.home() / "Desktop"
-        shortcut = desktop / "Bot del Estadio.lnk"
         ps = (
-            f"$s = (New-Object -COM WScript.Shell).CreateShortcut('{shortcut}');"
+            "$desktop = [System.Environment]::GetFolderPath('Desktop');"
+            "$shortcut = Join-Path $desktop 'Bot del Estadio.lnk';"
+            f"$s = (New-Object -COM WScript.Shell).CreateShortcut($shortcut);"
             f"$s.TargetPath = '{python_exe}';"
             f"$s.Arguments = '\"{launcher}\"';"
             f"$s.WorkingDirectory = '{install_dir}';"
-            f"$s.Save()"
+            "$s.Save()"
         )
-        subprocess.run(["powershell", "-Command", ps], capture_output=True)
+        result = subprocess.run(["powershell", "-Command", ps], capture_output=True, text=True)
+        if result.returncode != 0:
+            self._log(f"[!] No se pudo crear el acceso directo: {result.stderr.strip()}")
+        else:
+            self._log("  Acceso directo creado OK")
 
     # ── Helpers ───────────────────────────────────────────────────────────────
 
