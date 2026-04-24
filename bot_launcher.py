@@ -1,5 +1,4 @@
 import os
-import sys
 import subprocess
 import threading
 import tkinter as tk
@@ -8,6 +7,8 @@ from tkinter import scrolledtext
 BOT_DIR = os.path.dirname(os.path.abspath(__file__))
 BOT_SCRIPT = os.path.join(BOT_DIR, "bot_del_estadio.py")
 AUDIO_MUTED_FLAG = os.path.join(BOT_DIR, ".audio_muted")
+VENV_PYTHON = os.path.join(BOT_DIR, "bot-env", "Scripts", "python.exe")
+NO_WINDOW = subprocess.CREATE_NO_WINDOW
 
 
 class BotLauncher:
@@ -17,11 +18,22 @@ class BotLauncher:
         self.root.minsize(700, 500)
         self.process: subprocess.Popen | None = None
         self.audio_var = tk.BooleanVar(value=not os.path.exists(AUDIO_MUTED_FLAG))
-        self._build_ui()
+        if not self._build_ui():
+            return
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
         threading.Thread(target=self._check_updates, daemon=True).start()
 
     def _build_ui(self):
+        if not os.path.exists(VENV_PYTHON):
+            from tkinter import messagebox
+            messagebox.showerror(
+                "Entorno no encontrado",
+                f"No se encontró el entorno virtual en:\n{VENV_PYTHON}\n\n"
+                "Re-ejecutá el instalador.",
+            )
+            self.root.destroy()
+            return False
+
         # ── Header ──────────────────────────────────────────────────────────
         header = tk.Label(
             self.root,
@@ -76,6 +88,7 @@ class BotLauncher:
             pady=6,
         )
         self.log.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
+        return True
 
     # ── Update check ─────────────────────────────────────────────────────────
 
@@ -84,14 +97,17 @@ class BotLauncher:
             subprocess.run(
                 ["git", "fetch", "origin", "--quiet"],
                 cwd=BOT_DIR, capture_output=True, timeout=15,
+                creationflags=NO_WINDOW,
             )
             local = subprocess.run(
                 ["git", "rev-parse", "HEAD"],
                 cwd=BOT_DIR, capture_output=True, text=True,
+                creationflags=NO_WINDOW,
             ).stdout.strip()
             remote = subprocess.run(
                 ["git", "rev-parse", "@{u}"],
                 cwd=BOT_DIR, capture_output=True, text=True,
+                creationflags=NO_WINDOW,
             ).stdout.strip()
             if local and remote and local != remote:
                 self._run_update()
@@ -105,14 +121,16 @@ class BotLauncher:
         log("--- actualizando bot ---\n")
         pull = subprocess.run(
             ["git", "pull"], cwd=BOT_DIR, capture_output=True, text=True,
+            creationflags=NO_WINDOW,
         )
         log(pull.stdout or pull.stderr)
         if pull.returncode == 0:
             log("--- instalando dependencias ---\n")
             pip = subprocess.run(
-                [sys.executable, "-m", "pip", "install", "-r",
+                [VENV_PYTHON, "-m", "pip", "install", "-r",
                  os.path.join(BOT_DIR, "requirements.txt"), "-q"],
                 capture_output=True, text=True,
+                creationflags=NO_WINDOW,
             )
             if pip.stderr:
                 log(pip.stderr)
@@ -130,12 +148,13 @@ class BotLauncher:
 
     def _start(self):
         self.process = subprocess.Popen(
-            [sys.executable, "-u", BOT_SCRIPT],
+            [VENV_PYTHON, "-u", BOT_SCRIPT],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             cwd=BOT_DIR,
             text=True,
             bufsize=1,
+            creationflags=NO_WINDOW,
         )
         self._set_status(running=True)
         thread = threading.Thread(target=self._read_output, daemon=True)
