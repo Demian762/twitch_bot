@@ -15,6 +15,9 @@ _TTS_VOICE  = "es-AR-TomasNeural"
 _TTS_RATE   = "+15%"
 _TTS_PITCH  = "-20Hz"
 
+def tts_habilitado() -> bool:
+    return not os.path.exists(_TTS_MUTED_FLAG)
+
 def play_sound(path: str, flags: int = winsound.SND_FILENAME, bypass_mute: bool = False) -> None:
     if bypass_mute or not os.path.exists(_AUDIO_MUTED_FLAG):
         winsound.PlaySound(path, flags)
