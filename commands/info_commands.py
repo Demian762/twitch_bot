@@ -90,7 +90,7 @@ class InfoCommands(BaseCommand):
             return
         await mensaje(cafecito_texto)
 
-    @commands.command()
+    @commands.command(aliases=("notificacion",))
     async def notificar(self, ctx: commands.Context):
         if ctx.author.name.lower() not in admins:
             return

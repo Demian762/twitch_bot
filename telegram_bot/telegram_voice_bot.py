@@ -4,7 +4,7 @@ import warnings
 from telegram import Update
 from telegram.ext import Application, MessageHandler, filters, ContextTypes
 
-from utils.utiles_general import play_sound
+from utils.utiles_general import play_sound, resource_path
 from telegram_bot.ffmpeg_manager import FFmpegManager
 from telegram_bot.audio_converter import AudioConverter
 
@@ -38,7 +38,8 @@ class TelegramVoiceBot:
             
             if wav_file:
                 self.temp_files.append(wav_file)
-                play_sound(wav_file)
+                play_sound(resource_path("storage/suatencion.wav"), bypass_mute=True)
+                play_sound(wav_file, bypass_mute=True)
         except:
             pass
     

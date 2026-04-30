@@ -1,15 +1,52 @@
 import os
 import sys
+import ctypes
+import asyncio
+import tempfile
 import winsound
 import requests
 import time
 from utils.logger import logger
 
-_AUDIO_MUTED_FLAG = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.audio_muted')
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_AUDIO_MUTED_FLAG = os.path.join(_ROOT, '.audio_muted')
+_TTS_MUTED_FLAG   = os.path.join(_ROOT, '.tts_muted')
+_TTS_VOICE  = "es-AR-TomasNeural"
+_TTS_RATE   = "+15%"
+_TTS_PITCH  = "-20Hz"
 
-def play_sound(path: str, flags: int = winsound.SND_FILENAME) -> None:
-    if not os.path.exists(_AUDIO_MUTED_FLAG):
+def tts_habilitado() -> bool:
+    return not os.path.exists(_TTS_MUTED_FLAG)
+
+def play_sound(path: str, flags: int = winsound.SND_FILENAME, bypass_mute: bool = False) -> None:
+    if bypass_mute or not os.path.exists(_AUDIO_MUTED_FLAG):
         winsound.PlaySound(path, flags)
+
+def _play_mp3(path: str) -> None:
+    mci = ctypes.windll.winmm.mciSendStringW
+    alias = f"tts_{id(path)}"
+    mci(f'open "{path}" type mpegvideo alias {alias}', None, 0, None)
+    mci(f'play {alias} wait', None, 0, None)
+    mci(f'close {alias}', None, 0, None)
+
+async def play_tts(text: str) -> None:
+    if os.path.exists(_TTS_MUTED_FLAG):
+        return
+    tmp = None
+    try:
+        import edge_tts
+        with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as f:
+            tmp = f.name
+        await edge_tts.Communicate(text, _TTS_VOICE, rate=_TTS_RATE, pitch=_TTS_PITCH).save(tmp)
+        await asyncio.to_thread(_play_mp3, tmp)
+    except Exception as e:
+        logger.warning(f"TTS: {e}")
+    finally:
+        if tmp and os.path.exists(tmp):
+            try:
+                os.unlink(tmp)
+            except OSError:
+                pass
 
 
 def precio_dolar():

@@ -23,6 +23,8 @@ from utils.detroit_data import DETROIT_INFO, RESPUESTAS_INSISTENTES
 from utils.puntitos_manager import (
     consulta_historica,
     consulta_victorias,
+    consulta_puntitos,
+    funcion_puntitos,
     posicion_ranking,
     get_memoria_claude,
     guardar_memoria_claude,
@@ -32,6 +34,7 @@ from utils.api_games import steam_price
 from utils.configuracion import claude_config, admins
 from utils.secretos import anthropic_api_key
 from utils.logger import logger
+from utils.utiles_general import play_tts, tts_habilitado
 from utils.claude_prompts import (
     PROMPT_BASE,
     PROMPT_ADMIN,
@@ -110,10 +113,10 @@ TOOLS = [
     {
         "name": "buscar_web",
         "description": (
-            "Busca información actual en la web: noticias de juegos, lanzamientos anunciados, "
-            "actualizaciones, parches, DLCs, eventos gaming u otras noticias recientes. "
-            "Usar cuando RAWG o Steam no cubran la info (ej: fechas de anuncio, rumores confirmados, "
-            "estado de un juego en desarrollo, noticias de la industria)."
+            "Busca información actual en la web. Usar siempre que se necesite info que no esté en el "
+            "conocimiento interno: noticias, precios, eventos, personas, lugares, fechas, deportes, "
+            "política, tecnología, entretenimiento, videojuegos u cualquier otro tema. "
+            "Preferir esta tool antes de responder 'no sé' o dar info que puede estar desactualizada."
         ),
         "input_schema": {
             "type": "object",
@@ -121,8 +124,8 @@ TOOLS = [
                 "query": {
                     "type": "string",
                     "description": (
-                        "Búsqueda en español. Ser específico: incluir nombre del juego/tema, "
-                        "año si aplica, y tipo de info buscada (ej: 'GTA 6 fecha de lanzamiento 2025')."
+                        "Consulta de búsqueda. Ser específico: incluir nombres propios, "
+                        "año si aplica, y tipo de info buscada (ej: 'River Plate próximo partido 2025')."
                     )
                 }
             },
@@ -543,11 +546,9 @@ class ClaudioCommands(BaseCommand):
         self.bot.state.claude_memoria_cache[username] = memoria
         return memoria
 
-    @commands.command(aliases=("bot",))
-    async def claudio(self, ctx: commands.Context):
+    async def _ejecutar_claudio(self, ctx: commands.Context, usar_tts: bool = False):
         username = ctx.author.name.lower()
 
-        # Extraer texto de la pregunta
         partes = ctx.message.text.split(maxsplit=1)
         if len(partes) < 2 or not partes[1].strip():
             await mensaje(f"@{username} ¿qué me querés preguntar? Usá: !claudio <tu pregunta>")
@@ -564,6 +565,18 @@ class ClaudioCommands(BaseCommand):
             await mensaje(f"@{username} ya consumiste tu cupo de Claudio por esta sesión. ¡Volvé mañana!")
             return
 
+        # Si se pide TTS: verificar config de UI, puntos y cobrar si corresponde
+        # Si TTS está muteado en la UI o el usuario no tiene puntos: igual se responde, sin audio
+        cobro_aplicado = False
+        tts_activo = usar_tts and tts_habilitado()
+        if tts_activo and not es_admin:
+            puntos = await asyncio.to_thread(consulta_puntitos, username)
+            if puntos < 1:
+                tts_activo = False
+            else:
+                await asyncio.to_thread(funcion_puntitos, username, -1)
+                cobro_aplicado = True
+
         # Cargar memoria del usuario (Sheet → cache → system prompt)
         memoria_usuario = await self._cargar_memoria(username)
 
@@ -576,6 +589,8 @@ class ClaudioCommands(BaseCommand):
             respuesta, tokens_nuevos = await self._call_claude(historial, system, username, es_admin)
         except Exception as e:
             logger.error(f"Claudio - Error en API para {username}: {e}")
+            if cobro_aplicado:
+                await asyncio.to_thread(funcion_puntitos, username, 1)
             await mensaje(f"@{username} Claudio está en modo coma etílico, probá de nuevo.")
             return
 
@@ -591,12 +606,16 @@ class ClaudioCommands(BaseCommand):
         )
 
         # Enviar respuesta al chat (Twitch: máx 500 chars por mensaje)
-        respuesta_completa = f"@{username} {respuesta}"
+        sufijo = " (-1 puntito cobrado)" if cobro_aplicado else ""
+        respuesta_completa = f"@{username} {respuesta}{sufijo}"
         if len(respuesta_completa) <= 490:
             await mensaje(respuesta_completa)
         else:
             for chunk in [respuesta_completa[i:i+490] for i in range(0, len(respuesta_completa), 490)][:2]:
                 await mensaje(chunk)
+
+        if tts_activo:
+            asyncio.create_task(play_tts(respuesta))
 
         # Appendear al log del canal (máx 500 entradas para no consumir memoria indefinidamente)
         self.bot.state.claude_canal_log.append({"user": username, "q": texto, "a": respuesta})
@@ -607,3 +626,11 @@ class ClaudioCommands(BaseCommand):
         asyncio.create_task(
             self._actualizar_memoria(username, self.bot.state.claude_historial[username], memoria_usuario)
         )
+
+    @commands.command(aliases=("bot",))
+    async def claudio(self, ctx: commands.Context):
+        await self._ejecutar_claudio(ctx, usar_tts=False)
+
+    @commands.command()
+    async def botardo(self, ctx: commands.Context):
+        await self._ejecutar_claudio(ctx, usar_tts=True)
