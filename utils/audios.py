@@ -39,6 +39,7 @@ comandos_audios = {
     'snake':['snake'],
     'gatito':['gatito','gato','miau'],
     'dificil':['dificil','diablos'],
+    'suatencion':['suatencion'],
 }
 
 comandos_mensajes = {

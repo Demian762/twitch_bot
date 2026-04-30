@@ -32,6 +32,7 @@ from utils.api_games import steam_price
 from utils.configuracion import claude_config, admins
 from utils.secretos import anthropic_api_key
 from utils.logger import logger
+from utils.utiles_general import play_tts
 from utils.claude_prompts import (
     PROMPT_BASE,
     PROMPT_ADMIN,
@@ -110,10 +111,10 @@ TOOLS = [
     {
         "name": "buscar_web",
         "description": (
-            "Busca información actual en la web: noticias de juegos, lanzamientos anunciados, "
-            "actualizaciones, parches, DLCs, eventos gaming u otras noticias recientes. "
-            "Usar cuando RAWG o Steam no cubran la info (ej: fechas de anuncio, rumores confirmados, "
-            "estado de un juego en desarrollo, noticias de la industria)."
+            "Busca información actual en la web. Usar siempre que se necesite info que no esté en el "
+            "conocimiento interno: noticias, precios, eventos, personas, lugares, fechas, deportes, "
+            "política, tecnología, entretenimiento, videojuegos u cualquier otro tema. "
+            "Preferir esta tool antes de responder 'no sé' o dar info que puede estar desactualizada."
         ),
         "input_schema": {
             "type": "object",
@@ -121,8 +122,8 @@ TOOLS = [
                 "query": {
                     "type": "string",
                     "description": (
-                        "Búsqueda en español. Ser específico: incluir nombre del juego/tema, "
-                        "año si aplica, y tipo de info buscada (ej: 'GTA 6 fecha de lanzamiento 2025')."
+                        "Consulta de búsqueda. Ser específico: incluir nombres propios, "
+                        "año si aplica, y tipo de info buscada (ej: 'River Plate próximo partido 2025')."
                     )
                 }
             },
@@ -597,6 +598,8 @@ class ClaudioCommands(BaseCommand):
         else:
             for chunk in [respuesta_completa[i:i+490] for i in range(0, len(respuesta_completa), 490)][:2]:
                 await mensaje(chunk)
+
+        asyncio.create_task(play_tts(respuesta))
 
         # Appendear al log del canal (máx 500 entradas para no consumir memoria indefinidamente)
         self.bot.state.claude_canal_log.append({"user": username, "q": texto, "a": respuesta})

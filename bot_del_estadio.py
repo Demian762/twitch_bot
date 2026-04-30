@@ -51,6 +51,7 @@ from utils.secretos import (
 )
 from utils.configuracion import BUILD_DATE
 from utils.discord_notifier import notificar_titulo
+from utils.metrics_server import MetricsServer
 
 # Imports locales - otros
 from telegram_bot.telegram_voice_bot import TelegramVoiceBot
@@ -105,6 +106,7 @@ class Bot(commands.Bot):
             raise
 
         self.state = BotState()
+        self.metrics = MetricsServer()
 
         self.lista_programacion = getattr(self.config, 'lista_programacion', [])
         self.videos = getattr(self.api, 'videos', [])
@@ -136,6 +138,15 @@ class Bot(commands.Bot):
         2. Suscribe al EventSub de chat del canal
         3. Carga todos los components (antes llamados cogs)
         """
+        _metrics_flag = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".metrics_disabled")
+        if os.path.exists(_metrics_flag):
+            logger.info("[metrics] Deshabilitado por flag — WebSocket no iniciado")
+        else:
+            try:
+                await self.metrics.start()
+            except OSError as e:
+                logger.warning(f"[metrics] No se pudo iniciar el WebSocket: {e} — el bot continúa sin métricas")
+
         # Obtener broadcaster para poder enviar mensajes desde mensaje()
         broadcaster_users = await self.fetch_users(logins=[channel_name])
         if not broadcaster_users:
@@ -253,6 +264,10 @@ class Bot(commands.Bot):
 
         logger.error(f"Error en comando {ctx.command.name if ctx.command else '?'}: {error}")
         await mensaje("Ya rompiste el bot con ese comando...")
+
+    async def close(self) -> None:
+        await self.metrics.stop()
+        await super().close()
 
     def coma_etilico(self):
         """

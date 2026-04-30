@@ -1,14 +1,101 @@
 import os
 import subprocess
 import threading
+import time
 import tkinter as tk
 from tkinter import scrolledtext
 
 BOT_DIR = os.path.dirname(os.path.abspath(__file__))
 BOT_SCRIPT = os.path.join(BOT_DIR, "bot_del_estadio.py")
-AUDIO_MUTED_FLAG = os.path.join(BOT_DIR, ".audio_muted")
+AUDIO_MUTED_FLAG    = os.path.join(BOT_DIR, ".audio_muted")
+TTS_MUTED_FLAG      = os.path.join(BOT_DIR, ".tts_muted")
+METRICS_DISABLED_FLAG = os.path.join(BOT_DIR, ".metrics_disabled")
+BOT_PID_FILE          = os.path.join(BOT_DIR, ".bot.pid")
 VENV_PYTHON = os.path.join(BOT_DIR, "bot-env", "Scripts", "python.exe")
 NO_WINDOW = subprocess.CREATE_NO_WINDOW
+
+
+def _open_launcher(root: tk.Tk):
+    for widget in root.winfo_children():
+        widget.destroy()
+    root.resizable(True, True)
+    root.minsize(700, 500)
+    root.geometry("700x500")
+    root.deiconify()
+    BotLauncher(root)
+
+
+class UpdateWindow:
+    """Shown when a newer commit is available; downloads and applies the update."""
+
+    def __init__(self, root: tk.Tk):
+        self.root = root
+        self.root.title("Bot del Estadio — Actualizando")
+        self.root.resizable(False, False)
+        self.root.geometry("460x230")
+        self.root.protocol("WM_DELETE_WINDOW", lambda: None)
+        self._build_ui()
+        self.root.deiconify()
+        threading.Thread(target=self._do_update, daemon=True).start()
+
+    def _build_ui(self):
+        tk.Label(
+            self.root,
+            text="Descargando actualizacion...",
+            font=("Segoe UI", 12, "bold"),
+            pady=12,
+        ).pack()
+        self.log = scrolledtext.ScrolledText(
+            self.root,
+            state=tk.DISABLED,
+            height=8,
+            font=("Consolas", 8),
+            bg="#1e1e1e",
+            fg="#d4d4d4",
+            wrap=tk.WORD,
+            padx=6,
+            pady=4,
+        )
+        self.log.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
+
+    def _do_update(self):
+        import time
+        self._log("--- descargando actualizacion ---\n")
+        pull = subprocess.run(
+            ["git", "pull"],
+            cwd=BOT_DIR,
+            capture_output=True,
+            text=True,
+            creationflags=NO_WINDOW,
+        )
+        self._log(pull.stdout or pull.stderr)
+
+        if pull.returncode == 0:
+            self._log("--- instalando dependencias ---\n")
+            pip = subprocess.run(
+                [VENV_PYTHON, "-m", "pip", "install", "-r",
+                 os.path.join(BOT_DIR, "requirements.txt"), "-q"],
+                capture_output=True,
+                text=True,
+                creationflags=NO_WINDOW,
+            )
+            if pip.stderr:
+                self._log(pip.stderr)
+            self._log("--- listo, abriendo launcher ---\n")
+        else:
+            self._log("[!] Error al actualizar. Abriendo launcher de todas formas...\n")
+
+        time.sleep(1.5)
+        self.root.after(0, _open_launcher, self.root)
+
+    def _log(self, text: str):
+        self.root.after(0, self._append, text)
+
+    def _append(self, text: str):
+        self.log.config(state=tk.NORMAL)
+        self.log.insert(tk.END, text)
+        self.log.see(tk.END)
+        self.log.config(state=tk.DISABLED)
 
 
 class BotLauncher:
@@ -17,11 +104,12 @@ class BotLauncher:
         self.root.title("Bot del Estadio")
         self.root.minsize(700, 500)
         self.process: subprocess.Popen | None = None
-        self.audio_var = tk.BooleanVar(value=not os.path.exists(AUDIO_MUTED_FLAG))
+        self.audio_var   = tk.BooleanVar(value=not os.path.exists(AUDIO_MUTED_FLAG))
+        self.tts_var     = tk.BooleanVar(value=not os.path.exists(TTS_MUTED_FLAG))
+        self.metrics_var = tk.BooleanVar(value=not os.path.exists(METRICS_DISABLED_FLAG))
         if not self._build_ui():
             return
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
-        threading.Thread(target=self._check_updates, daemon=True).start()
 
     def _build_ui(self):
         if not os.path.exists(VENV_PYTHON):
@@ -74,6 +162,21 @@ class BotLauncher:
             font=("Segoe UI", 10),
         ).pack(side=tk.LEFT, padx=(20, 0))
 
+        tk.Checkbutton(
+            bar,
+            text="Voz",
+            variable=self.tts_var,
+            command=self._toggle_tts,
+            font=("Segoe UI", 10),
+        ).pack(side=tk.LEFT, padx=(10, 0))
+
+        tk.Checkbutton(
+            bar,
+            text="Métricas",
+            variable=self.metrics_var,
+            command=self._toggle_metrics,
+            font=("Segoe UI", 10),
+        ).pack(side=tk.LEFT, padx=(10, 0))
 
         # ── Log area ─────────────────────────────────────────────────────────
         self.log = scrolledtext.ScrolledText(
@@ -90,54 +193,6 @@ class BotLauncher:
         self.log.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
         return True
 
-    # ── Update check ─────────────────────────────────────────────────────────
-
-    def _check_updates(self):
-        try:
-            subprocess.run(
-                ["git", "fetch", "origin", "--quiet"],
-                cwd=BOT_DIR, capture_output=True, timeout=15,
-                creationflags=NO_WINDOW,
-            )
-            local = subprocess.run(
-                ["git", "rev-parse", "HEAD"],
-                cwd=BOT_DIR, capture_output=True, text=True,
-                creationflags=NO_WINDOW,
-            ).stdout.strip()
-            remote = subprocess.run(
-                ["git", "rev-parse", "@{u}"],
-                cwd=BOT_DIR, capture_output=True, text=True,
-                creationflags=NO_WINDOW,
-            ).stdout.strip()
-            if local and remote and local != remote:
-                self._run_update()
-        except Exception:
-            pass
-
-    def _run_update(self):
-        def log(text):
-            self.root.after(0, self._append, text)
-
-        log("--- actualizando bot ---\n")
-        pull = subprocess.run(
-            ["git", "pull"], cwd=BOT_DIR, capture_output=True, text=True,
-            creationflags=NO_WINDOW,
-        )
-        log(pull.stdout or pull.stderr)
-        if pull.returncode == 0:
-            log("--- instalando dependencias ---\n")
-            pip = subprocess.run(
-                [VENV_PYTHON, "-m", "pip", "install", "-r",
-                 os.path.join(BOT_DIR, "requirements.txt"), "-q"],
-                capture_output=True, text=True,
-                creationflags=NO_WINDOW,
-            )
-            if pip.stderr:
-                log(pip.stderr)
-            log("--- actualización completa ---\n")
-        else:
-            log("[!] Error al actualizar.\n")
-
     # ── Bot control ──────────────────────────────────────────────────────────
 
     def _toggle(self):
@@ -146,7 +201,30 @@ class BotLauncher:
         else:
             self._stop()
 
+    def _kill_leftover(self):
+        """Mata cualquier proceso bot previo usando el PID guardado en .bot.pid."""
+        if not os.path.exists(BOT_PID_FILE):
+            return
+        try:
+            with open(BOT_PID_FILE) as f:
+                pid = int(f.read().strip())
+            result = subprocess.run(
+                ["taskkill", "/F", "/PID", str(pid)],
+                capture_output=True,
+                creationflags=NO_WINDOW,
+            )
+            if result.returncode == 0:
+                time.sleep(0.5)  # pausa para que el OS libere los puertos
+        except (ValueError, OSError):
+            pass
+        finally:
+            try:
+                os.remove(BOT_PID_FILE)
+            except OSError:
+                pass
+
     def _start(self):
+        self._kill_leftover()
         self.process = subprocess.Popen(
             [VENV_PYTHON, "-u", BOT_SCRIPT],
             stdout=subprocess.PIPE,
@@ -156,6 +234,11 @@ class BotLauncher:
             bufsize=1,
             creationflags=NO_WINDOW,
         )
+        try:
+            with open(BOT_PID_FILE, "w") as f:
+                f.write(str(self.process.pid))
+        except OSError:
+            pass
         self._set_status(running=True)
         thread = threading.Thread(target=self._read_output, daemon=True)
         thread.start()
@@ -182,6 +265,10 @@ class BotLauncher:
 
     def _on_process_exit(self, exit_code: int):
         self._append(f"--- proceso finalizado (código {exit_code}) ---\n")
+        try:
+            os.remove(BOT_PID_FILE)
+        except OSError:
+            pass
         self._set_status(running=False)
 
     # ── UI helpers ───────────────────────────────────────────────────────────
@@ -209,13 +296,83 @@ class BotLauncher:
         else:
             open(AUDIO_MUTED_FLAG, "w").close()
 
+    def _toggle_tts(self):
+        if self.tts_var.get():
+            if os.path.exists(TTS_MUTED_FLAG):
+                os.remove(TTS_MUTED_FLAG)
+        else:
+            open(TTS_MUTED_FLAG, "w").close()
+
+    def _toggle_metrics(self):
+        if self.metrics_var.get():
+            if os.path.exists(METRICS_DISABLED_FLAG):
+                os.remove(METRICS_DISABLED_FLAG)
+        else:
+            open(METRICS_DISABLED_FLAG, "w").close()
+
     def _on_close(self):
         if self.process:
             self.process.terminate()
+        try:
+            os.remove(BOT_PID_FILE)
+        except OSError:
+            pass
         self.root.destroy()
 
 
 if __name__ == "__main__":
+    try:
+        _branch = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            cwd=BOT_DIR, capture_output=True, text=True,
+            creationflags=NO_WINDOW,
+        ).stdout.strip()
+    except Exception:
+        _branch = ""
+
     root = tk.Tk()
-    BotLauncher(root)
+
+    if _branch != "master":
+        BotLauncher(root)
+    else:
+        root.withdraw()
+        root.title("Bot del Estadio")
+        root.resizable(False, False)
+        root.geometry("300x80")
+        tk.Label(
+            root,
+            text="Verificando actualizaciones...",
+            font=("Segoe UI", 11),
+            pady=24,
+        ).pack()
+        root.deiconify()
+
+        def _on_fetch_done(update_needed: bool):
+            for widget in root.winfo_children():
+                widget.destroy()
+            if update_needed:
+                UpdateWindow(root)
+            else:
+                _open_launcher(root)
+
+        def _fetch():
+            update_needed = False
+            try:
+                subprocess.run(
+                    ["git", "fetch", "origin", "--quiet"],
+                    cwd=BOT_DIR, capture_output=True, timeout=15,
+                    creationflags=NO_WINDOW,
+                )
+                behind = subprocess.run(
+                    ["git", "rev-list", "--count", "HEAD..@{u}"],
+                    cwd=BOT_DIR, capture_output=True, text=True,
+                    creationflags=NO_WINDOW,
+                ).stdout.strip()
+                update_needed = behind.isdigit() and int(behind) > 0
+            except Exception:
+                pass
+            root.after(0, _on_fetch_done, update_needed)
+
+        threading.Thread(target=_fetch, daemon=True).start()
+
     root.mainloop()
