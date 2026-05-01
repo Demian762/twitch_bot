@@ -33,6 +33,7 @@ from twitchio.ext.commands import CommandNotFound
 from utils.logger import logger
 from utils import mensaje as mensaje_module
 from utils.mensaje import mensaje
+from utils.calendario_celebraciones import get_mensaje_diade
 from utils.utiles_general import resource_path, play_sound
 from utils.bot_config import BotConfig, APIManager, BotState
 from utils.secretos import (
@@ -197,6 +198,7 @@ class Bot(commands.Bot):
         logger.info(f'Logueado a Twitch como {self.user}')
         logger.info(f'Versión del bot: {BUILD_DATE}')
         await mensaje("Hace su entrada, EL BOT DEL ESTADIO!")
+        await mensaje(get_mensaje_diade())
         asyncio.create_task(self._start_telegram_bot())
         asyncio.create_task(self._notificar_discord_si_en_vivo())
 
