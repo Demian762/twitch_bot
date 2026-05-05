@@ -33,7 +33,7 @@ configuracion_basica = {
 claude_config = {
     "modelo": "claude-haiku-4-5-20251001", # Modelo a usar — opciones: claude-haiku-4-5-20251001 | claude-sonnet-4-6 | claude-opus-4-6
     "max_tokens_respuesta": 250,            # Máx tokens por respuesta (controla costo por llamada)
-    "max_tokens_por_usuario_sesion": 15000, # Máx tokens totales por usuario por sesión (admins: 10x)
+    "max_tokens_por_usuario_sesion": 30000, # Máx tokens totales por usuario por sesión (admins: 10x)
     "historial_max_pares": 5,              # Pares user/assistant a recordar por usuario
 }
 
@@ -75,7 +75,7 @@ spam_messenges = [
 
 cafecito_texto = "Si les gusta nuestro contenido pueden ayudarnos con un cafecito a https://cafecito.app/hablemosdepavadas"
 
-discord_titulo_template = "**Hablemos de Pavadas** en VIVO\n {titulo}\n https://www.twitch.tv/hablemosdepavadaspod"
+discord_titulo_template = "@everyone **Hablemos de Pavadas** en VIVO\n {titulo}\n https://www.twitch.tv/hablemosdepavadaspod"
 
 # Cantidad de videos recientes a obtener para las rutinas
 ultimos_n_videos = 5

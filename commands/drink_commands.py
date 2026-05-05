@@ -69,5 +69,11 @@ class DrinkCommands(BaseCommand):
         Example:
             !agua -> "Gracias {usuario} por darle agua al Bot."
         """
+        en_coma = self.bot.state.grog_count >= len(grog_list)
         self.bot.state.grog_count = 0
-        await mensaje(f'Gracias {ctx.author.name} por darle agua al Bot.')
+        if en_coma:
+            self.bot.state.claude_historial.clear()
+            self.bot.state.claude_canal_log.clear()
+            await mensaje(f'Gracias {ctx.author.name} por darle agua al Bot. Claudio volvió a la vida... sin recuerdo de lo que pasó.')
+        else:
+            await mensaje(f'Gracias {ctx.author.name} por darle agua al Bot.')

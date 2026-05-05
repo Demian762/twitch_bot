@@ -20,6 +20,7 @@ from utils.utiles_general import resource_path, play_sound
 from utils.puntitos_manager import funcion_puntitos
 from utils.configuracion import admins, configuracion_basica
 from utils.audios import comandos_general, comandos_audios, comandos_mensajes, autores_exclusivos
+from utils.calendario_celebraciones import get_mensaje_diade
 from .base_command import BaseCommand
 
 class InteractionCommands(BaseCommand):
@@ -82,6 +83,9 @@ class InteractionCommands(BaseCommand):
             mensaje_string = comandos_mensajes.get(comando, None)
 
         await mensaje(mensaje_string)
+
+        if comando_validado == "holis":
+            await mensaje(get_mensaje_diade())
 
         if autor in admins:
             return

@@ -14,6 +14,7 @@ from utils.logger import logger
 from utils.mensaje import mensaje
 from utils.utiles_general import timer_iniciar, timer_consulta, format_time
 from utils.configuracion import admins, BUILD_DATE
+from utils.calendario_celebraciones import get_mensaje_diade
 from .base_command import BaseCommand
 
 class UtilityCommands(BaseCommand):
@@ -103,6 +104,12 @@ class UtilityCommands(BaseCommand):
         elif len(args) > 1:
             eleccion = choice(list(args))
             await mensaje(f"Me decidí por: {eleccion}")
+
+    @commands.command(aliases=("celebracion", "celebración"))
+    async def diade(self, ctx: commands.Context):
+        if await self.check_coma_etilico():
+            return
+        await mensaje(get_mensaje_diade())
 
     @commands.command()
     async def version(self, ctx: commands.Context):

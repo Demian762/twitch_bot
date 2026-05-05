@@ -33,6 +33,7 @@ from twitchio.ext.commands import CommandNotFound
 from utils.logger import logger
 from utils import mensaje as mensaje_module
 from utils.mensaje import mensaje
+from utils.calendario_celebraciones import get_mensaje_diade
 from utils.utiles_general import resource_path, play_sound
 from utils.bot_config import BotConfig, APIManager, BotState
 from utils.secretos import (
@@ -50,6 +51,12 @@ from utils.secretos import (
     discord_webhook_url,
 )
 from utils.configuracion import BUILD_DATE
+from utils.puntitos_manager import funcion_puntitos
+
+CAMBIO_CAMBIO_REWARDS = {
+    "09bc1126-f824-4240-99ad-8767f3358dac": 1,   # cambio cambio..        → 1 puntito
+    "4aeab761-d5ae-4960-af54-8905634d015b": 10,  # cambio cambio cambio.. → 10 puntitos
+}
 from utils.discord_notifier import notificar_titulo
 from utils.metrics_server import MetricsServer
 
@@ -158,11 +165,10 @@ class Bot(commands.Bot):
         mensaje_module.set_broadcaster(broadcaster_partial, self.bot_id)
         self.broadcaster_id = broadcaster.id
 
-        # Cargar tokens desde secretos.py solo si no fueron cargados desde .tio.tokens.json
-        loaded = self._http._tokens
-        if bot_access_token and bot_id not in loaded:
+        # Los tokens de secretos.py siempre tienen prioridad sobre el cache
+        if bot_access_token:
             await self.add_token(bot_access_token, bot_refresh_token)
-        if broadcaster_access_token and broadcaster.id not in loaded:
+        if broadcaster_access_token:
             await self.add_token(broadcaster_access_token, broadcaster_refresh_token)
 
         # Suscribir al chat del canal via EventSub WebSocket
@@ -171,6 +177,13 @@ class Bot(commands.Bot):
             user_id=self.bot_id,
         )
         await self.subscribe_websocket(payload=payload)
+
+        # Suscribir a canjes de puntos del canal
+        for reward_id in CAMBIO_CAMBIO_REWARDS:
+            await self.subscribe_websocket(payload=eventsub.ChannelPointsRedeemAddSubscription(
+                broadcaster_user_id=broadcaster.id,
+                reward_id=reward_id,
+            ))
 
         # Cargar components (equivalente a add_cog en V2)
         self.my_cogs = {}
@@ -197,6 +210,7 @@ class Bot(commands.Bot):
         logger.info(f'Logueado a Twitch como {self.user}')
         logger.info(f'Versión del bot: {BUILD_DATE}')
         await mensaje("Hace su entrada, EL BOT DEL ESTADIO!")
+        await mensaje(get_mensaje_diade())
         asyncio.create_task(self._start_telegram_bot())
         asyncio.create_task(self._notificar_discord_si_en_vivo())
 
@@ -264,6 +278,15 @@ class Bot(commands.Bot):
 
         logger.error(f"Error en comando {ctx.command.name if ctx.command else '?'}: {error}")
         await mensaje("Ya rompiste el bot con ese comando...")
+
+    async def event_custom_redemption_add(self, payload) -> None:
+        puntitos = CAMBIO_CAMBIO_REWARDS.get(payload.reward.id)
+        if puntitos is None:
+            return
+        username = payload.user.name
+        await asyncio.to_thread(funcion_puntitos, username, puntitos)
+        await mensaje(f"@{username} canjeó '{payload.reward.title}' y ganó {puntitos} puntito{'s' if puntitos > 1 else ''}!")
+        logger.info(f"Redemption '{payload.reward.title}': +{puntitos} puntito(s) para {username}")
 
     async def close(self) -> None:
         await self.metrics.stop()
