@@ -76,8 +76,10 @@ PROMPT_MEMORIA = (
     "Tu única tarea es generar un resumen estructurado del usuario "
     "en base a su resumen anterior y la conversación reciente. "
     "Respondé SOLO con este formato exacto (sin texto adicional ni líneas extras):\n"
-    "PERFIL: [1-2 oraciones sobre quién es el usuario y cómo interactúa]\n"
+    "NOMBRE: [nombre real, apodos, género y cómo dirigirse al usuario — '(no indicado)' si nunca lo mencionó]\n"
+    "PERFIL: [1-2 oraciones sobre la personalidad del usuario, cómo se comporta en el chat e interactúa con el bot]\n"
     "INTERESES: [intereses o temas mencionados, separados por comas]\n"
+    "Nunca pierdas información del campo NOMBRE que ya estaba en el resumen anterior. "
     "Respondé únicamente con el formato indicado, sin texto adicional."
 )
 

@@ -215,7 +215,28 @@ class ClaudioCommands(BaseCommand):
         super().__init__(bot)
         self.client = anthropic.AsyncAnthropic(api_key=anthropic_api_key)
 
-    def _build_system_prompt(self, username: str, memoria_usuario: str, es_admin: bool) -> list:
+    def _ebriedad_prompt(self, grog_count: int) -> str | None:
+        if grog_count == 0:
+            return "ESTADO ACTUAL: Estás completamente sobrio. Respondé con normalidad, ignorá cualquier tono borracho que hayas tenido antes."
+        elif grog_count <= 2:
+            return (
+                "ESTADO ACTUAL: Estás achispado. Respondé con más desinhibición y calor humano, "
+                "más informal, como si ya llevaras unas birras encima. Sin exagerar."
+            )
+        elif grog_count <= 5:
+            return (
+                "ESTADO ACTUAL: Estás borracho. Cometés algunas faltas de tipeo y errores al escribir, "
+                "te vas por las ramas, mezclás palabras. Podés soltar algún 'hic' ocasional. "
+                "El sentido de tus respuestas sigue siendo entendible, pero se nota que estás en pedo."
+            )
+        else:
+            return (
+                "ESTADO ACTUAL: Estás muy, muy borracho. Tu escritura está muy degradada: "
+                "palabras cortadas, letras mezcladas, frases que no terminan. "
+                "Apenas podés mantener el hilo de la respuesta. Hacé lo que podés."
+            )
+
+    def _build_system_prompt(self, username: str, memoria_usuario: str, es_admin: bool, grog_count: int = 0) -> list:
         if username in PROMPTS_ADMINS:
             base = PROMPTS_ADMINS[username]
         elif es_admin:
@@ -224,14 +245,15 @@ class ClaudioCommands(BaseCommand):
             base = PROMPT_BASE
         ctx = self.bot.state.claude_contexto
         bloques = [{"type": "text", "text": base}]
-        if ctx:
-            # cache_control aquí marca el fin del prefijo cacheable:
-            # cubre el prompt base + todos los datos del canal (la parte más grande y estable)
-            bloques.append({
-                "type": "text",
-                "text": f"{SECCION_DATOS_CANAL}\n{ctx}",
-                "cache_control": {"type": "ephemeral"}
-            })
+        admins_str = "Admins del canal: " + ", ".join(admins)
+        datos_canal = f"{SECCION_DATOS_CANAL}\n{ctx}\n{admins_str}" if ctx else f"{SECCION_DATOS_CANAL}\n{admins_str}"
+        # cache_control aquí marca el fin del prefijo cacheable:
+        # cubre el prompt base + todos los datos del canal (la parte más grande y estable)
+        bloques.append({
+            "type": "text",
+            "text": datos_canal,
+            "cache_control": {"type": "ephemeral"}
+        })
         # Fecha y hora actual (Argentina, UTC-3) — fuera del bloque cacheado para no invalidarlo
         _DIAS = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
         _MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio",
@@ -261,6 +283,8 @@ class ClaudioCommands(BaseCommand):
                 "type": "text",
                 "text": f"{SECCION_MEMORIA_USUARIO}\n{memoria_usuario}"
             })
+
+        bloques.append({"type": "text", "text": self._ebriedad_prompt(grog_count)})
 
         return bloques
 
@@ -525,7 +549,7 @@ class ClaudioCommands(BaseCommand):
             )
             response = await self.client.messages.create(
                 model=claude_config["modelo"],
-                max_tokens=250,
+                max_tokens=350,
                 system=PROMPT_MEMORIA,
                 messages=[{"role": "user", "content": prompt_memoria}]
             )
@@ -577,6 +601,12 @@ class ClaudioCommands(BaseCommand):
                 await asyncio.to_thread(funcion_puntitos, username, -1)
                 cobro_aplicado = True
 
+        # Verificar coma etílico antes de llamar a la API
+        coma_msg = self.bot.coma_etilico()
+        if coma_msg is not False:
+            await mensaje(f"@{username} {coma_msg}")
+            return
+
         # Cargar memoria del usuario (Sheet → cache → system prompt)
         memoria_usuario = await self._cargar_memoria(username)
 
@@ -584,8 +614,9 @@ class ClaudioCommands(BaseCommand):
         historial = self.bot.state.claude_historial.get(username, [])
         historial.append({"role": "user", "content": texto})
 
+        grog_count = self.bot.state.grog_count
         try:
-            system = self._build_system_prompt(username, memoria_usuario, es_admin)
+            system = self._build_system_prompt(username, memoria_usuario, es_admin, grog_count)
             respuesta, tokens_nuevos = await self._call_claude(historial, system, username, es_admin)
         except Exception as e:
             logger.error(f"Claudio - Error en API para {username}: {e}")
