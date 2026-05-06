@@ -85,9 +85,21 @@ class RTSSCollector:
       +0x10C: DWORD dwTime0  (inicio ventana de medición, ms)
       +0x110: DWORD dwTime1  (fin ventana de medición, ms)
       +0x114: DWORD dwFrames (frames en la ventana)
-    Si fps siempre es null, revisar estos offsets contra la versión instalada de RTSS.
     """
+
+    # Procesos no-juego que RTSS puede capturar — agregar más según logs
+    _EXCLUIDOS = {
+        "obs64.exe", "obs.exe", "obs32.exe",
+        "obs-browser-page.exe",
+        "dwm.exe", "explorer.exe",
+        "chrome.exe", "firefox.exe", "msedge.exe",
+        "discord.exe", "streamlabs obs.exe",
+        "wavelink.exe",           # Elgato Wave Link
+        "widgetboard.exe",        # Windows Widgets
+        "xboxpcappft.exe",        # Xbox PC App
+    }
     _warn_logged = False
+    _vistos: set[str] = set()  # para loguear cada proceso nuevo una sola vez
 
     def read(self):
         try:
@@ -103,7 +115,6 @@ class RTSSCollector:
         if not h:
             return None
         try:
-            # Primera pasada: leer el header (28 bytes) para obtener tamaños
             ptr = _k32.MapViewOfFile(h, _FILE_MAP_READ, 0, 0, 28)
             if ptr is None:
                 return None
@@ -118,7 +129,6 @@ class RTSSCollector:
             app_entry_size, app_arr_offset, app_arr_size = struct.unpack_from("<III", header_raw, 8)
             total_needed = app_arr_offset + app_arr_size * app_entry_size
 
-            # Segunda pasada: mapear la región completa de app entries
             ptr2 = _k32.MapViewOfFile(h, _FILE_MAP_READ, 0, 0, total_needed)
             if ptr2 is None:
                 return None
@@ -133,6 +143,20 @@ class RTSSCollector:
                 pid = struct.unpack_from("<I", full, base)[0]
                 if pid == 0:
                     continue
+
+                # Nombre del proceso (null-terminated, 260 bytes en +0x004)
+                # Puede venir con ruta completa — usamos solo el basename
+                name_raw = full[base + 4:base + 4 + 260]
+                name = name_raw.split(b'\x00')[0].decode('ascii', errors='replace')
+                basename = name.split('\\')[-1].split('/')[-1]
+
+                if name not in RTSSCollector._vistos:
+                    RTSSCollector._vistos.add(name)
+                    logger.info(f"[RTSS] Proceso detectado: '{basename}' (PID {pid})")
+
+                if basename.lower() in RTSSCollector._EXCLUIDOS:
+                    continue
+
                 try:
                     t0, t1, frames = struct.unpack_from("<III", full, base + 0x10C)
                 except struct.error:
@@ -158,6 +182,9 @@ class MetricsServer:
         self._clients: set[web.WebSocketResponse] = set()
         self._runner: web.AppRunner | None = None
         self._broadcast_task: asyncio.Task | None = None
+        self.followers: int = 0
+        self.subscribers: int = 0
+        self._bot_state = None
 
     async def _ws_handler(self, request: web.Request) -> web.WebSocketResponse:
         ws = web.WebSocketResponse()
@@ -187,6 +214,10 @@ class MetricsServer:
             "ram_pct": cpu.get("ram_pct"),
             "ram_used_mb": cpu.get("ram_used_mb"),
             "ram_total_mb": cpu.get("ram_total_mb"),
+            "followers": self.followers,
+            "subscribers": self.subscribers,
+            "chat_active": len(self._bot_state.usuarios_activos) if self._bot_state else 0,
+            "puntitos": self._bot_state.puntitos_netos_sesion if self._bot_state else 0,
         }
 
     async def _broadcast_loop(self):
