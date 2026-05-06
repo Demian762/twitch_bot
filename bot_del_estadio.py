@@ -51,7 +51,7 @@ from utils.secretos import (
     discord_webhook_url,
 )
 from utils.configuracion import BUILD_DATE
-from utils.puntitos_manager import funcion_puntitos
+from utils.puntitos_manager import funcion_puntitos, set_bot_state
 
 CAMBIO_CAMBIO_REWARDS = {
     "09bc1126-f824-4240-99ad-8767f3358dac": 1,   # cambio cambio..        → 1 puntito
@@ -114,6 +114,8 @@ class Bot(commands.Bot):
 
         self.state = BotState()
         self.metrics = MetricsServer()
+        self.metrics._bot_state = self.state
+        set_bot_state(self.state)
 
         self.lista_programacion = getattr(self.config, 'lista_programacion', [])
         self.videos = getattr(self.api, 'videos', [])
@@ -184,6 +186,60 @@ class Bot(commands.Bot):
                 broadcaster_user_id=broadcaster.id,
                 reward_id=reward_id,
             ))
+
+        # Obtener conteos iniciales de followers y subscribers
+        broadcaster_id_str = str(broadcaster.id)
+        try:
+            ch_followers = await self._http.get_channel_followers(
+                broadcaster_id=broadcaster.id,
+                token_for=broadcaster_id_str,
+            )
+            self.metrics.followers = ch_followers.total
+            logger.info(f"Followers iniciales: {self.metrics.followers}")
+        except Exception as e:
+            logger.warning(f"No se pudo obtener followers iniciales: {e}")
+
+        try:
+            ch_subs = await self._http.get_broadcaster_subscriptions(
+                token_for=broadcaster_id_str,
+                broadcaster_id=broadcaster.id,
+                first=1,
+            )
+            self.metrics.subscribers = ch_subs.total or 0
+            logger.info(f"Subscribers iniciales: {self.metrics.subscribers}")
+        except Exception as e:
+            logger.warning(f"No se pudo obtener subscribers iniciales: {e}")
+
+        # Suscribir a follows y subscribes vía EventSub
+        # ChannelFollowSubscription requiere token del broadcaster (moderator_user_id debe coincidir con el token)
+        try:
+            await self.subscribe_websocket(
+                payload=eventsub.ChannelFollowSubscription(
+                    broadcaster_user_id=broadcaster.id,
+                    moderator_user_id=broadcaster.id,
+                ),
+                as_bot=False,
+                token_for=str(broadcaster.id),
+            )
+            logger.info("EventSub: suscripto a channel.follow")
+        except Exception as e:
+            logger.warning(f"EventSub channel.follow no disponible: {e}")
+
+        try:
+            await self.subscribe_websocket(payload=eventsub.ChannelSubscribeSubscription(
+                broadcaster_user_id=broadcaster.id,
+            ))
+            logger.info("EventSub: suscripto a channel.subscribe")
+        except Exception as e:
+            logger.warning(f"EventSub channel.subscribe no disponible: {e}")
+
+        try:
+            await self.subscribe_websocket(payload=eventsub.ChannelSubscriptionEndSubscription(
+                broadcaster_user_id=broadcaster.id,
+            ))
+            logger.info("EventSub: suscripto a channel.subscription.end")
+        except Exception as e:
+            logger.warning(f"EventSub channel.subscription.end no disponible: {e}")
 
         # Cargar components (equivalente a add_cog en V2)
         self.my_cogs = {}
@@ -287,6 +343,18 @@ class Bot(commands.Bot):
         await asyncio.to_thread(funcion_puntitos, username, puntitos)
         await mensaje(f"@{username} canjeó '{payload.reward.title}' y ganó {puntitos} puntito{'s' if puntitos > 1 else ''}!")
         logger.info(f"Redemption '{payload.reward.title}': +{puntitos} puntito(s) para {username}")
+
+    async def event_follow(self, payload) -> None:
+        self.metrics.followers += 1
+        logger.info(f"Nuevo follower — Total: {self.metrics.followers}")
+
+    async def event_subscription(self, payload) -> None:
+        self.metrics.subscribers += 1
+        logger.info(f"Nuevo sub — Total: {self.metrics.subscribers}")
+
+    async def event_subscription_end(self, payload) -> None:
+        self.metrics.subscribers = max(0, self.metrics.subscribers - 1)
+        logger.info(f"Sub expirado — Total: {self.metrics.subscribers}")
 
     async def close(self) -> None:
         await self.metrics.stop()

@@ -190,6 +190,12 @@ def validar_puntitos_admin(receptor: str, donante: str = None) -> tuple[bool, st
     
     return (True, "")
 
+_bot_state = None
+
+def set_bot_state(state) -> None:
+    global _bot_state
+    _bot_state = state
+
 def funcion_puntitos(nombre: str, cant: int = 1, donante: str = None):
     """
     Modifica los puntitos de un usuario (suma o resta)
@@ -244,9 +250,13 @@ def funcion_puntitos(nombre: str, cant: int = 1, donante: str = None):
             historicos = row['historico'] + cant
             hoja.update_cell(idx + 2, 2, puntitos)
             hoja.update_cell(idx + 2, 3, historicos)
+            if _bot_state is not None:
+                _bot_state.puntitos_netos_sesion += cant
             return (True, "")
     nuevo_nombre = [nombre, cant, cant]
     hoja.append_row(nuevo_nombre)
+    if _bot_state is not None:
+        _bot_state.puntitos_netos_sesion += cant
     return (True, "")
 
 def _reiniciar_puntitos(nombre):
