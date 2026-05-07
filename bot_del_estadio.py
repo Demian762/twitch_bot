@@ -180,12 +180,15 @@ class Bot(commands.Bot):
         )
         await self.subscribe_websocket(payload=payload)
 
-        # Suscribir a canjes de puntos del canal
+        # Suscribir a canjes de puntos del canal (requiere token del broadcaster con channel:read:redemptions)
         for reward_id in CAMBIO_CAMBIO_REWARDS:
-            await self.subscribe_websocket(payload=eventsub.ChannelPointsRedeemAddSubscription(
-                broadcaster_user_id=broadcaster.id,
-                reward_id=reward_id,
-            ))
+            await self.subscribe_websocket(
+                payload=eventsub.ChannelPointsRedeemAddSubscription(
+                    broadcaster_user_id=broadcaster.id,
+                    reward_id=reward_id,
+                ),
+                token_for=str(broadcaster.id),
+            )
 
         # Obtener conteos iniciales de followers y subscribers
         broadcaster_id_str = str(broadcaster.id)
