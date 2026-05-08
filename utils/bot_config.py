@@ -75,4 +75,5 @@ class BotState:
         self.claude_token_usage = {}           # {username: tokens_usados_en_sesion}
         self.claude_memoria_cache = {}         # {username: resumen} — cargado una vez por sesión desde el Sheet
         self.claude_canal_log = []             # [{"user":..., "q":..., "a":...}, ...] — log completo de la sesión
+        self.chat_log = []                     # [{"user":..., "msg":...}, ...] — todos los mensajes del chat en orden
         self.puntitos_netos_sesion = 0         # Suma neta de puntitos dados/restados en la sesión

@@ -67,7 +67,7 @@ class ExtraPointsCommands(BaseCommand):
             
         exito, error = funcion_puntitos(nombre, 5, donante=autor)
         if exito:
-            await mensaje(f'@{nombre.lstrip("@")} acaba de sumar cinco puntitos de bienvenida!')
+            await self.responder_con_claude(ctx, f"{autor} le dio la bienvenida al canal a {nombre.lstrip('@')} con 5 puntitos de bienvenida.")
         else:
             await mensaje(f'@{autor}, {error}')
 
@@ -126,13 +126,10 @@ class ExtraPointsCommands(BaseCommand):
                 await mensaje(ganador)
                 return
             
-            texto = ["¡SORTEO INICIADO!","sorteando...."]
-            await mensaje(texto)
-            await asyncio.sleep(randint(1,30))
-            texto = ["AND THE WINNER IS:", ganador]
-            await mensaje(texto)
-            # Registrar la victoria del sorteo en el spreadsheet
+            await mensaje(["¡SORTEO INICIADO!", "sorteando...."])
+            await asyncio.sleep(randint(1, 30))
             registrar_victoria_sorteo(ganador)
+            await self.responder_con_claude(ctx, f"El sorteo terminó y el ganador fue {ganador}.")
 
     @commands.command()
     async def sorteopresentes(self, ctx: commands.Context):
@@ -156,13 +153,10 @@ class ExtraPointsCommands(BaseCommand):
                 await mensaje(ganador)
                 return
             
-            texto = ["¡SORTEO DE PRESENTES INICIADO!","sorteando...."]
-            await mensaje(texto)
-            await asyncio.sleep(randint(1,30))
-            texto = ["AND THE WINNER IS:", ganador]
-            await mensaje(texto)
-            # Registrar la victoria del sorteo en el spreadsheet (misma columna que !sorteo)
+            await mensaje(["¡SORTEO DE PRESENTES INICIADO!", "sorteando...."])
+            await asyncio.sleep(randint(1, 30))
             registrar_victoria_sorteo(ganador)
+            await self.responder_con_claude(ctx, f"El sorteo de presentes terminó y el ganador fue {ganador}.")
 
     @commands.command()
     async def admins(self, ctx: commands.Context):

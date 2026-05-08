@@ -300,9 +300,15 @@ class Bot(commands.Bot):
         if payload.chatter.id == self.bot_id:
             return
 
+        username = payload.chatter.name.lower()
+
         if payload.text.startswith('!'):
-            username = payload.chatter.name.lower()
             self.state.usuarios_activos.add(username)
+
+        self.state.chat_log.append({"user": username, "msg": payload.text})
+        # Mantener el log acotado: descartar entradas viejas cuando supere los 5000 chars
+        while sum(len(e["user"]) + len(e["msg"]) + 4 for e in self.state.chat_log) > 5000:
+            self.state.chat_log.pop(0)
 
         await self.process_commands(payload)
 

@@ -137,7 +137,9 @@ TOOLS = [
         "description": (
             "Consulta información pública de OTRO usuario del canal (nunca del propio usuario). "
             "Devuelve: posición en el ranking actual e histórico, récord de escupitajo, "
-            "y el perfil resumido que el bot tiene guardado en memoria. "
+            "y el perfil completo guardado en memoria (nombre, apodo, trato, personalidad, intereses). "
+            "Llamar SIEMPRE antes de responder cualquier pregunta sobre otro usuario — "
+            "nunca responder 'no tengo información' sin haber llamado esta tool primero. "
             "Compartir solo lo que sea relevante a la pregunta — no volcar todo si no se pidió explícitamente. "
             "Si el usuario pregunta por sí mismo, indicarle que use !consulta o !historico."
         ),
@@ -265,16 +267,20 @@ class ClaudioCommands(BaseCommand):
         )
         bloques.append({"type": "text", "text": fecha_hora})
 
-        canal_log = self.bot.state.claude_canal_log
-        if canal_log:
-            entradas = canal_log[-5:]
-            lineas = ["CONVERSACIONES RECIENTES EN EL CANAL (últimos intercambios):"]
-            for e in entradas:
-                q = e["q"][:120] + "…" if len(e["q"]) > 120 else e["q"]
-                a = e["a"][:180] + "…" if len(e["a"]) > 180 else e["a"]
-                lineas.append(f'- {e["user"]}: "{q}" → "{a}"')
-            if len(canal_log) > 5:
-                lineas.append(f"(hay {len(canal_log) - 5} intercambios anteriores — usá buscar_historial_canal si necesitás buscar algo puntual)")
+        chat_log = self.bot.state.chat_log
+        if chat_log:
+            lineas = ["CHAT RECIENTE DEL CANAL:"]
+            acumulado = 0
+            limite = 3000
+            entradas = []
+            for e in reversed(chat_log):
+                costo = len(e["user"]) + len(e["msg"]) + 4
+                if acumulado + costo > limite:
+                    break
+                entradas.append(e)
+                acumulado += costo
+            for e in reversed(entradas):
+                lineas.append(f'- {e["user"]}: {e["msg"]}')
             bloques.append({"type": "text", "text": "\n".join(lineas)})
 
         if memoria_usuario:
@@ -337,10 +343,6 @@ class ClaudioCommands(BaseCommand):
 
     @staticmethod
     def _perfil_desde_memoria(memoria: str) -> str:
-        """Extrae la línea PERFIL del formato estructurado; si es formato viejo devuelve el texto completo."""
-        for line in memoria.splitlines():
-            if line.strip().upper().startswith("PERFIL:"):
-                return line.split(":", 1)[1].strip()
         return memoria.strip()
 
     def build_contexto_completo_sync(self) -> str:
@@ -658,6 +660,53 @@ class ClaudioCommands(BaseCommand):
             self._actualizar_memoria(username, self.bot.state.claude_historial[username], memoria_usuario)
         )
 
+    async def claude_para_comando(self, ctx: commands.Context, contexto: str):
+        """Genera una respuesta de Claude para eventos disparados por otros comandos."""
+        username = ctx.author.name.lower()
+        es_admin = username in [a.lower() for a in admins]
+
+        tokens_usados = self.bot.state.claude_token_usage.get(username, 0)
+        limite_tokens = claude_config["max_tokens_por_usuario_sesion"] * (10 if es_admin else 1)
+        if tokens_usados >= limite_tokens:
+            return
+
+        if self.bot.coma_etilico() is not False:
+            return
+
+        memoria_usuario = await self._cargar_memoria(username)
+        historial = self.bot.state.claude_historial.get(username, [])
+        historial.append({"role": "user", "content": f"[EVENTO - reacción directa de máximo 8 palabras, sin explicaciones] {contexto}"})
+
+        grog_count = self.bot.state.grog_count
+        try:
+            system = self._build_system_prompt(username, memoria_usuario, es_admin, grog_count)
+            respuesta, tokens_nuevos = await self._call_claude(historial, system, username, es_admin)
+        except Exception as e:
+            logger.error(f"Claudio (cmd) - Error en API para {username}: {e}")
+            return
+
+        self.bot.state.claude_token_usage[username] = tokens_usados + tokens_nuevos
+        historial.append({"role": "assistant", "content": respuesta})
+        max_pares = claude_config["historial_max_pares"]
+        self.bot.state.claude_historial[username] = historial[-(max_pares * 2):]
+
+        logger.info(f"Claudio (cmd) - {username}: {tokens_nuevos} tokens")
+
+        respuesta_completa = f"@{username} {respuesta}"
+        if len(respuesta_completa) <= 490:
+            await mensaje(respuesta_completa)
+        else:
+            for chunk in [respuesta_completa[i:i+490] for i in range(0, len(respuesta_completa), 490)][:2]:
+                await mensaje(chunk)
+
+        self.bot.state.claude_canal_log.append({"user": username, "q": contexto, "a": respuesta})
+        if len(self.bot.state.claude_canal_log) > 500:
+            self.bot.state.claude_canal_log = self.bot.state.claude_canal_log[-500:]
+
+        asyncio.create_task(
+            self._actualizar_memoria(username, self.bot.state.claude_historial[username], memoria_usuario)
+        )
+
     @commands.command(aliases=("bot",))
     async def claudio(self, ctx: commands.Context):
         await self._ejecutar_claudio(ctx, usar_tts=False)
@@ -665,3 +714,20 @@ class ClaudioCommands(BaseCommand):
     @commands.command()
     async def botardo(self, ctx: commands.Context):
         await self._ejecutar_claudio(ctx, usar_tts=True)
+
+    @commands.command(name="setmodelo")
+    async def setmodelo(self, ctx: commands.Context):
+        if ctx.author.name.lower() != "demian762":
+            return
+        MODELOS = {
+            "haiku": "claude-haiku-4-5-20251001",
+            "sonnet": "claude-sonnet-4-6",
+            "opus": "claude-opus-4-7",
+        }
+        partes = ctx.message.text.split(maxsplit=1)
+        arg = partes[1].lower() if len(partes) > 1 else ""
+        if arg not in MODELOS:
+            await ctx.send(f"Uso: !setmodelo haiku | sonnet | opus — Actual: {claude_config['modelo']}")
+            return
+        claude_config["modelo"] = MODELOS[arg]
+        await ctx.send(f"Modelo cambiado a {arg} ({MODELOS[arg]})")
