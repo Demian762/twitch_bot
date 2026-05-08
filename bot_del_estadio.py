@@ -68,6 +68,7 @@ from utils.configuracion import (
     coma_etilico_list
 )
 from commands import COGS
+from utils.audio_transcriber import AudioTranscriber
 
 
 def _token_file_path() -> str:
@@ -142,6 +143,7 @@ class Bot(commands.Bot):
         self.telegram_bot = TelegramVoiceBot(telegram_bot_token)
 
         self._auto_respuesta_ts = 0.0
+        self._transcriber = AudioTranscriber()
         logger.info("Bot inicializado correctamente")
 
     async def load_tokens(self, **_) -> None:
@@ -285,6 +287,7 @@ class Bot(commands.Bot):
         await mensaje(get_mensaje_diade())
         asyncio.create_task(self._start_telegram_bot())
         asyncio.create_task(self._notificar_discord_si_en_vivo())
+        asyncio.create_task(self._start_transcriber())
 
     async def _notificar_discord_si_en_vivo(self):
         try:
@@ -350,6 +353,35 @@ class Bot(commands.Bot):
         except Exception as e:
             logger.error(f"Error con bot de Telegram: {e}")
 
+    async def _start_transcriber(self) -> None:
+        try:
+            loop = asyncio.get_event_loop()
+            self._transcriber.start(loop, self._on_transcripcion)
+        except Exception as e:
+            logger.warning(f"[mic] No se pudo iniciar el transcriptor: {e}")
+
+    async def _on_transcripcion(self, texto: str) -> None:
+        self.state.audio_log.append({"texto": texto})
+        while sum(len(e["texto"]) + 2 for e in self.state.audio_log) > 3000:
+            self.state.audio_log.pop(0)
+        logger.debug(f"[mic] {texto}")
+
+        texto_lower = texto.lower()
+        if (
+            any(kw in texto_lower for kw in _KEYWORDS_BOT)
+            and time.monotonic() - self._auto_respuesta_ts >= _AUTO_RESPUESTA_COOLDOWN
+        ):
+            claude_cog = self.my_cogs.get("ClaudioCommands")
+            if claude_cog:
+                self._auto_respuesta_ts = time.monotonic()
+                asyncio.create_task(
+                    claude_cog.claude_para_comando(
+                        channel_name.lower(),
+                        f"[VOZ DEL STREAMER]: {texto}",
+                        sufijo=" — el streamer te mencionó por voz",
+                    )
+                )
+
     async def event_error(self, payload) -> None:
         """Manejador global de errores del bot."""
         logger.error(f"Error en el bot [{payload.listener.__name__}]: {payload.error}", exc_info=payload.error)
@@ -397,6 +429,7 @@ class Bot(commands.Bot):
         logger.info(f"Sub expirado — Total: {self.metrics.subscribers}")
 
     async def close(self) -> None:
+        self._transcriber.stop()
         await self.metrics.stop()
         await super().close()
 

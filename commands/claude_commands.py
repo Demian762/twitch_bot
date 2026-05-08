@@ -283,6 +283,21 @@ class ClaudioCommands(BaseCommand):
                 lineas.append(f'- {e["user"]}: {e["msg"]}')
             bloques.append({"type": "text", "text": "\n".join(lineas)})
 
+        audio_log = self.bot.state.audio_log
+        if audio_log:
+            lineas = ["VOZ DEL STREAMER (últimas transcripciones del micrófono):"]
+            acumulado = 0
+            entradas = []
+            for e in reversed(audio_log):
+                costo = len(e["texto"]) + 2
+                if acumulado + costo > 2000:
+                    break
+                entradas.append(e)
+                acumulado += costo
+            for e in reversed(entradas):
+                lineas.append(f"- {e['texto']}")
+            bloques.append({"type": "text", "text": "\n".join(lineas)})
+
         if memoria_usuario:
             # sin cache_control: es única por usuario, cachearla solo desperdiciaría slots
             bloques.append({
