@@ -85,13 +85,13 @@ def _token_file_path() -> str:
 
 
 def _get_streamer_user() -> str:
-    """Lee el usuario streamer configurado en el launcher. Fallback: channel_name."""
+    """Lee el usuario streamer configurado en el launcher. Fallback: hablemosdepavadaspod."""
     try:
         with open(_bot_file_path('.streamer_user'), encoding='utf-8') as f:
             user = f.read().strip().lower()
-            return user if user else channel_name.lower()
+            return user if user else "hablemosdepavadaspod"
     except OSError:
-        return channel_name.lower()
+        return "hablemosdepavadaspod"
 
 
 _KEYWORDS_BOT = (

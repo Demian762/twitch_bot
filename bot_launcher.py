@@ -126,11 +126,12 @@ class BotLauncher:
         self.metrics_var = tk.BooleanVar(value=not os.path.exists(METRICS_DISABLED_FLAG))
         self._admins = _get_admins()
         self._streamer_var = tk.StringVar()
+        _FALLBACK_STREAMER = "hablemosdepavadaspod"
         try:
             saved = open(STREAMER_USER_FILE, encoding='utf-8').read().strip()
-            self._streamer_var.set(saved if saved in self._admins else (self._admins[0] if self._admins else ""))
+            self._streamer_var.set(saved if saved in self._admins else _FALLBACK_STREAMER)
         except OSError:
-            self._streamer_var.set(self._admins[0] if self._admins else "")
+            self._streamer_var.set(_FALLBACK_STREAMER)
         if not self._build_ui():
             return
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
