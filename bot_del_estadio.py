@@ -22,6 +22,7 @@ Repository: https://github.com/Demian762/twitch_bot
 import asyncio
 import os
 import sys
+import time
 from random import choice
 
 # Imports de terceros
@@ -78,6 +79,17 @@ def _token_file_path() -> str:
     return os.path.join(base, '.tio.tokens.json')
 
 
+_KEYWORDS_BOT = (
+    "botdelestadio", "bot del estadio", "claudio",
+    "está el bot", "esta el bot", "hay bot",
+    "bot activo", "bot presente", "bot online",
+    "bot dormido", "bot muerto",
+    "funciona el bot", "anda el bot",
+    "oye bot", "ey bot", "hey bot", "che bot",
+)
+_AUTO_RESPUESTA_COOLDOWN = 90  # segundos entre respuestas automáticas
+
+
 class Bot(commands.Bot):
     """
     Clase principal del BotDelEstadio que extiende twitchio.ext.commands.Bot (V3)
@@ -129,6 +141,7 @@ class Bot(commands.Bot):
         play_sound(audio_path)
         self.telegram_bot = TelegramVoiceBot(telegram_bot_token)
 
+        self._auto_respuesta_ts = 0.0
         logger.info("Bot inicializado correctamente")
 
     async def load_tokens(self, **_) -> None:
@@ -309,6 +322,24 @@ class Bot(commands.Bot):
         # Mantener el log acotado: descartar entradas viejas cuando supere los 5000 chars
         while sum(len(e["user"]) + len(e["msg"]) + 4 for e in self.state.chat_log) > 5000:
             self.state.chat_log.pop(0)
+
+        # Respuesta automática por keyword, con cooldown global
+        texto_lower = payload.text.lower()
+        if (
+            not payload.text.startswith('!')
+            and any(kw in texto_lower for kw in _KEYWORDS_BOT)
+            and time.monotonic() - self._auto_respuesta_ts >= _AUTO_RESPUESTA_COOLDOWN
+        ):
+            claude_cog = self.my_cogs.get("ClaudioCommands")
+            if claude_cog:
+                self._auto_respuesta_ts = time.monotonic()
+                asyncio.create_task(
+                    claude_cog.claude_para_comando(
+                        username,
+                        payload.text,
+                        sufijo=" — usá !bot para seguir charlando!",
+                    )
+                )
 
         await self.process_commands(payload)
 

@@ -660,9 +660,8 @@ class ClaudioCommands(BaseCommand):
             self._actualizar_memoria(username, self.bot.state.claude_historial[username], memoria_usuario)
         )
 
-    async def claude_para_comando(self, ctx: commands.Context, contexto: str):
+    async def claude_para_comando(self, username: str, contexto: str, sufijo: str = ""):
         """Genera una respuesta de Claude para eventos disparados por otros comandos."""
-        username = ctx.author.name.lower()
         es_admin = username in [a.lower() for a in admins]
 
         tokens_usados = self.bot.state.claude_token_usage.get(username, 0)
@@ -692,7 +691,7 @@ class ClaudioCommands(BaseCommand):
 
         logger.info(f"Claudio (cmd) - {username}: {tokens_nuevos} tokens")
 
-        respuesta_completa = f"@{username} {respuesta}"
+        respuesta_completa = f"@{username} {respuesta}{sufijo}"
         if len(respuesta_completa) <= 490:
             await mensaje(respuesta_completa)
         else:
