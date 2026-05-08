@@ -3,7 +3,8 @@ import subprocess
 import threading
 import time
 import tkinter as tk
-from tkinter import scrolledtext
+from tkinter import scrolledtext, ttk
+import datetime
 
 BOT_DIR = os.path.dirname(os.path.abspath(__file__))
 BOT_SCRIPT = os.path.join(BOT_DIR, "bot_del_estadio.py")
@@ -178,9 +179,26 @@ class BotLauncher:
             font=("Segoe UI", 10),
         ).pack(side=tk.LEFT, padx=(10, 0))
 
-        # ── Log area ─────────────────────────────────────────────────────────
-        self.log = scrolledtext.ScrolledText(
-            self.root,
+        # ── Tabs ─────────────────────────────────────────────────────────────
+        style = ttk.Style()
+        style.theme_use("default")
+        style.configure("TNotebook", background="#1e1e1e", borderwidth=0)
+        style.configure("TNotebook.Tab", background="#2d2d2d", foreground="#aaaaaa",
+                        padding=[14, 4], font=("Segoe UI", 9))
+        style.map("TNotebook.Tab",
+                  background=[("selected", "#1e1e1e")],
+                  foreground=[("selected", "#ffffff")])
+
+        self.notebook = ttk.Notebook(self.root)
+        self.notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
+
+        tab_logs = tk.Frame(self.notebook, bg="#1e1e1e")
+        self.notebook.add(tab_logs, text="Logs")
+
+        tab_mic = tk.Frame(self.notebook, bg="#1e1e1e")
+        self.notebook.add(tab_mic, text="Transcripción")
+
+        _text_opts = dict(
             state=tk.DISABLED,
             font=("Consolas", 9),
             bg="#1e1e1e",
@@ -190,7 +208,14 @@ class BotLauncher:
             padx=6,
             pady=6,
         )
-        self.log.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
+        self.log = scrolledtext.ScrolledText(tab_logs, **_text_opts)
+        self.log.pack(fill=tk.BOTH, expand=True)
+
+        self.mic_log = scrolledtext.ScrolledText(tab_mic, **_text_opts)
+        self.mic_log.pack(fill=tk.BOTH, expand=True)
+        self.mic_log.tag_configure("normal", foreground="#d4d4d4")
+        self.mic_log.tag_configure("trigger", foreground="#f5a623")
+
         return True
 
     # ── Bot control ──────────────────────────────────────────────────────────
@@ -284,10 +309,24 @@ class BotLauncher:
             self.btn.config(state=tk.NORMAL, text="Iniciar")
 
     def _append(self, text: str):
+        if text.startswith("[MIC_TRANSCRIPT]"):
+            self._append_mic(text[16:], triggered=False)
+            return
+        if text.startswith("[MIC_TRIGGER]"):
+            self._append_mic(text[13:], triggered=True)
+            return
         self.log.config(state=tk.NORMAL)
         self.log.insert(tk.END, text)
         self.log.see(tk.END)
         self.log.config(state=tk.DISABLED)
+
+    def _append_mic(self, text: str, triggered: bool):
+        ts = datetime.datetime.now().strftime("%H:%M:%S")
+        tag = "trigger" if triggered else "normal"
+        self.mic_log.config(state=tk.NORMAL)
+        self.mic_log.insert(tk.END, f"[{ts}] {text.strip()}\n", tag)
+        self.mic_log.see(tk.END)
+        self.mic_log.config(state=tk.DISABLED)
 
     def _toggle_audio(self):
         if self.audio_var.get():

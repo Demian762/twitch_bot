@@ -364,13 +364,16 @@ class Bot(commands.Bot):
         self.state.audio_log.append({"texto": texto})
         while sum(len(e["texto"]) + 2 for e in self.state.audio_log) > 3000:
             self.state.audio_log.pop(0)
-        logger.debug(f"[mic] {texto}")
 
         texto_lower = texto.lower()
-        if (
+        triggered = (
             any(kw in texto_lower for kw in _KEYWORDS_BOT)
             and time.monotonic() - self._auto_respuesta_ts >= _AUTO_RESPUESTA_COOLDOWN
-        ):
+        )
+        marker = "[MIC_TRIGGER]" if triggered else "[MIC_TRANSCRIPT]"
+        print(f"{marker}{texto}", flush=True)
+
+        if triggered:
             claude_cog = self.my_cogs.get("ClaudioCommands")
             if claude_cog:
                 self._auto_respuesta_ts = time.monotonic()
@@ -378,7 +381,6 @@ class Bot(commands.Bot):
                     claude_cog.claude_para_comando(
                         channel_name.lower(),
                         f"[VOZ DEL STREAMER]: {texto}",
-                        sufijo=" — el streamer te mencionó por voz",
                     )
                 )
 
