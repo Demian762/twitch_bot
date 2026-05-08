@@ -75,7 +75,6 @@ class MinigamesCommands(BaseCommand):
         
         if restriccion_activa:
             await mensaje(f"{restriccion_activa['mensaje']} {nombre}!!")
-            # Las restricciones solo pueden restar puntos (o ser neutras con 0)
             if restriccion_activa['penalizacion'] < 0:
                 funcion_puntitos(nombre, cant=restriccion_activa['penalizacion'])
                 puntos_texto = "puntito" if abs(restriccion_activa['penalizacion']) == 1 else "puntitos"
@@ -83,51 +82,50 @@ class MinigamesCommands(BaseCommand):
             return
 
         if self.bot.state.ganador is not None and nombre == self.bot.state.ganador[0]:
-            await mensaje(f"Vas ganando {nombre}, dejá que otros escupan!!")
+            await self.responder_con_claude(ctx, f"{nombre} intentó escupir pero ya va ganando el torneo con {self.bot.state.ganador[1]} cm, no puede seguir hasta que alguien le supere.")
             return
 
         if not self.bot.state.escupitajos.get(nombre):
-            self.bot.state.escupitajos[nombre] = {"escupida":escupida, "count":0}
+            self.bot.state.escupitajos[nombre] = {"escupida": escupida, "count": 0}
         else:
             if self.bot.state.escupitajos[nombre].get("count") >= 5:
-                await mensaje(f"{nombre} se quedó sin saliva!")
+                await self.responder_con_claude(ctx, f"{nombre} intentó escupir pero ya usó sus 5 intentos y se quedó sin saliva.")
                 return
 
         self.bot.state.escupitajos[nombre]["escupida"] = escupida
         count = self.bot.state.escupitajos[nombre].get("count")
         self.bot.state.escupitajos[nombre]["count"] = count + 1
-        await mensaje(f"El escupitajo de {nombre} llegó a los {escupida} centímetros!")
 
-        # Registrar el récord de escupitajo del usuario (todos los usuarios, incluyendo admins)
         es_nuevo_record = registrar_record_escupitajo(nombre, escupida)
         if es_nuevo_record:
             logger.info(f"Nuevo récord personal de escupitajo para {nombre}: {escupida} cm")
 
         if nombre in admins:
+            record_txt = " Nuevo récord personal." if es_nuevo_record else ""
+            await self.responder_con_claude(ctx, f"El admin {nombre} escupió {escupida} cm (los admins no compiten en el torneo).{record_txt}")
             return
-        
+
         if self.bot.state.ganador is None:
-            # Primer escupitajo del torneo - iniciar torneo
             self.bot.state.ganador = [nombre, escupida]
-            await mensaje(f"{nombre} inició el torneo de escupitajos con {escupida} cm!")
             funcion_puntitos(nombre, cant=2)
-            await mensaje(f"{nombre} acaba de ganar dos puntitos!")
-            # Registrar victoria de torneo (ya que es el ganador actual)
             registrar_victoria_torneo(nombre)
+            record_txt = " Nuevo récord personal." if es_nuevo_record else ""
+            await self.responder_con_claude(ctx, f"{nombre} inició el torneo de escupitajos con {escupida} cm y ganó 2 puntitos por ser el primero.{record_txt}")
             return
-        
+
         if escupida > self.bot.state.ganador[1]:
-            # Nuevo ganador - quitar victoria al anterior y dársela al nuevo
             ganador_previo = self.bot.state.ganador[0]
+            distancia_previa = self.bot.state.ganador[1]
             self.bot.state.ganador = [nombre, escupida]
-            await mensaje(f"{nombre} va ganando el torneo!")
             funcion_puntitos(nombre, cant=2)
-            await mensaje(f"{nombre} acaba de ganar dos puntitos!")
             funcion_puntitos(ganador_previo, cant=-2)
-            await mensaje(f"{ganador_previo} acaba de perder dos puntitos!")
-            # Restar victoria al ganador previo y sumar al nuevo ganador
             registrar_victoria_torneo(ganador_previo, cant=-1)
             registrar_victoria_torneo(nombre, cant=1)
+            record_txt = " Nuevo récord personal." if es_nuevo_record else ""
+            await self.responder_con_claude(ctx, f"{nombre} superó a {ganador_previo} en el torneo con {escupida} cm (anterior líder: {distancia_previa} cm) y ganó 2 puntitos.{record_txt}")
+        else:
+            record_txt = " Nuevo récord personal." if es_nuevo_record else ""
+            await self.responder_con_claude(ctx, f"{nombre} escupió {escupida} cm pero no superó al líder {self.bot.state.ganador[0]} con {self.bot.state.ganador[1]} cm.{record_txt}")
 
     @commands.command()
     async def ganador(self, ctx: commands.Context):
@@ -141,9 +139,9 @@ class MinigamesCommands(BaseCommand):
             return
             
         if self.bot.state.ganador is not None:
-            await mensaje(f"{self.bot.state.ganador[0]} va ganando el torneo de escupitajos, con un escupitajo de {self.bot.state.ganador[1]} centímetros!")
+            await self.responder_con_claude(ctx, f"En el torneo de escupitajos, {self.bot.state.ganador[0]} va ganando con {self.bot.state.ganador[1]} cm.")
         else:
-            await mensaje("Todavía nadie escupió!")
+            await self.responder_con_claude(ctx, "Todavía nadie ha tirado un escupitajo en este torneo.")
 
     @commands.command(aliases=("termina",))
     async def terminar(self, ctx: commands.Context):
@@ -162,13 +160,10 @@ class MinigamesCommands(BaseCommand):
             
         if ctx.author.name.lower() in admins and self.bot.state.ganador is not None:
             nombre = self.bot.state.ganador[0]
-            await mensaje(f"{nombre} ganó el torneo de escupitajos, con un escupitajo de {self.bot.state.ganador[1]} centímetros!")
-            await mensaje(f"Se reinicia el torneo!")
-            # La victoria ya está registrada desde !escupir, solo limpiamos el estado
+            distancia = self.bot.state.ganador[1]
             self.bot.state.escupitajos = {}
             self.bot.state.ganador = None
-        else:
-            await mensaje("Na na na....")
+            await self.responder_con_claude(ctx, f"El torneo de escupitajos terminó. El ganador fue {nombre} con {distancia} cm.")
 
     @commands.command(aliases=("dados",))
     async def dado(self, ctx: commands.Context, formato: str = None):
@@ -195,22 +190,22 @@ class MinigamesCommands(BaseCommand):
 
         if formato and formato.lower() == "porcentaje":
             resultado = randint(1, 100)
-            await mensaje(f"🎲 {autor} sacó {str(resultado)} puntos de porcentaje.")
+            await self.responder_con_claude(ctx, f"{autor} tiró el dado de porcentaje y sacó {resultado}%.")
             return
 
         formato = validate_dice_format(formato)
         if not formato:
             await mensaje("Poné bien el dado cheee...")
             return
-        
+
         cantidad, caras = formato.split('d')
         cantidad = int(cantidad)
         caras = int(caras)
 
         resultados = [randint(1, caras) for _ in range(cantidad)]
         total = sum(resultados)
-
-        await mensaje(f"🎲 {autor} sacó {str(total)} puntos.")
+        detalle = f" ({'+'.join(map(str, resultados))})" if cantidad > 1 else ""
+        await self.responder_con_claude(ctx, f"{autor} tiró {cantidad}d{caras} y sacó {total}{detalle}.")
 
     @commands.command()
     async def margarita(self, ctx: commands.Context):
@@ -236,35 +231,33 @@ class MinigamesCommands(BaseCommand):
             
         nombre = ctx.author.name.lower()
         if nombre in admins:
-            await mensaje("Los admins están sobrados de margaritas.")
-            audio_path = resource_path(f"storage/margarita_3.wav")
+            audio_path = resource_path("storage/margarita_3.wav")
             play_sound(audio_path)
+            await self.responder_con_claude(ctx, f"{nombre} es admin y quiso pedir margarita.")
             return
-            
+
         if self.cuantas_margaritas is None:
-            await mensaje(f"Basta con la margarita, {nombre}.")
+            await self.responder_con_claude(ctx, f"{nombre} quiso pedir margarita pero la colección ya se completó.")
             return
-            
+
         if nombre == self.ultima_margarita:
-            await mensaje(f"No no no, que pregunte otro ahora...")
+            await self.responder_con_claude(ctx, f"{nombre} quiso pedir margarita de nuevo pero fue el último en pedir, tiene que esperar a que otro pida primero.")
             return
-            
+
         if self.margaritas >= self.cuantas_margaritas:
-            audio_path = resource_path(f"storage/margarita_2.wav")
+            audio_path = resource_path("storage/margarita_2.wav")
             play_sound(audio_path)
-            await mensaje(f"¡¡LA RECALCADA CAJETA DE TU HERMANA {nombre.upper()}!! TOMÁ TUS PUNTITOS!!")
             funcion_puntitos(nombre, cant=2)
-            await mensaje(f'{nombre} acaba de sumar 2 puntitos...')
-            # Registrar victoria en margarita
             registrar_victoria_margarita(nombre)
             self.cuantas_margaritas = None
+            await self.responder_con_claude(ctx, f"{nombre} completó la colección de margaritas y ganó 2 puntitos.")
         else:
-            await mensaje([f"{nombre} pregunta:","¿Me regalas una margarita?"])
             if self.margaritas == 0:
-                audio_path = resource_path(f"storage/margarita_1.wav")
+                audio_path = resource_path("storage/margarita_1.wav")
                 play_sound(audio_path)
             self.margaritas += 1
             self.ultima_margarita = nombre
+            await self.responder_con_claude(ctx, f"{nombre} pidió una margarita. Llevan {self.margaritas} de {self.cuantas_margaritas}.")
 
     @commands.command()
     async def medimela(self, ctx: commands.Context):

@@ -39,7 +39,7 @@ claude_config = {
 
 # Lista de usuarios con permisos de administrador
 # Estos usuarios pueden ejecutar comandos restringidos
-admins = ["hablemosdepavadaspod","demian762","elevernauta","juancatera","pointandclickstore","lulumy27","chicken_wansaia"]
+admins = ["hablemosdepavadaspod","demian762","elevernauta","juancatera","pointandclickstore","lulumy27","El_Pollo_Wansaia"]
 
 # Mensajes de redes sociales para el comando !redes  
 lista_redes = [
