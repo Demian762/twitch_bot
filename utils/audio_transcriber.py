@@ -1,8 +1,9 @@
 """
 Transcripción de micrófono en tiempo real usando faster-whisper.
 
-Captura audio del micrófono en chunks de CHUNK_SECONDS segundos y transcribe
-localmente con Whisper. Llama al callback asíncrono con cada fragmento reconocido.
+Graba micro-chunks de MICRO_CHUNK_S segundos y acumula audio mientras hay voz.
+Cuando detecta silencio sostenido (>= SILENCE_DURATION_S), corta y transcribe
+el buffer completo como una sola oración. Esto evita partir frases en el medio.
 
 Deps (opcionales — el bot arranca sin ellas):
     pip install sounddevice faster-whisper
@@ -14,10 +15,13 @@ import numpy as np
 
 from utils.logger import logger
 
-MODELO_DEFAULT = "small"
-SAMPLE_RATE = 16000
-CHUNK_SECONDS = 5
-SILENCE_THRESHOLD = 0.01
+MODELO_DEFAULT  = "small"
+SAMPLE_RATE     = 16000
+MICRO_CHUNK_S   = 0.3   # granularidad de detección de silencio
+SILENCE_THRESHOLD  = 0.01  # amplitud máxima para considerar silencio
+SILENCE_DURATION_S = 0.8   # silencio sostenido que corta una oración
+MIN_UTTERANCE_S    = 0.4   # duración mínima para intentar transcribir
+MAX_UTTERANCE_S    = 30.0  # corte forzado si la oración es muy larga
 
 
 class AudioTranscriber:
@@ -40,8 +44,6 @@ class AudioTranscriber:
         logger.info("[mic] Modelo listo")
 
     def _transcribe(self, audio: np.ndarray) -> str:
-        if np.abs(audio).max() < SILENCE_THRESHOLD:
-            return ""
         segments, _ = self._model.transcribe(
             audio, language="es", vad_filter=True, beam_size=5
         )
@@ -59,19 +61,50 @@ class AudioTranscriber:
             logger.error(f"[mic] No se pudo cargar el modelo: {e}")
             return
 
-        chunk_frames = int(SAMPLE_RATE * CHUNK_SECONDS)
+        micro_frames         = int(SAMPLE_RATE * MICRO_CHUNK_S)
+        silence_needed       = int(SILENCE_DURATION_S / MICRO_CHUNK_S)  # micro-chunks consecutivos de silencio
+        min_speech_frames    = int(MIN_UTTERANCE_S * SAMPLE_RATE)
+        max_speech_frames    = int(MAX_UTTERANCE_S * SAMPLE_RATE)
+
+        buffer: list[np.ndarray] = []
+        silence_count = 0
+
         while self._running:
             try:
-                audio = sd.rec(chunk_frames, samplerate=SAMPLE_RATE, channels=1, dtype="float32")
+                chunk = sd.rec(micro_frames, samplerate=SAMPLE_RATE, channels=1, dtype="float32")
                 sd.wait()
                 if not self._running:
                     break
-                text = self._transcribe(audio.flatten())
-                if text and self._callback and self._loop:
-                    asyncio.run_coroutine_threadsafe(self._callback(text), self._loop)
+
+                flat = chunk.flatten()
+                is_silent = np.abs(flat).max() < SILENCE_THRESHOLD
+
+                if is_silent:
+                    if buffer:
+                        # Incluir silencio al final para contexto natural de Whisper
+                        buffer.append(flat)
+                        silence_count += 1
+                else:
+                    silence_count = 0
+                    buffer.append(flat)
+
+                total_frames = sum(len(c) for c in buffer)
+                should_cut = (
+                    (silence_count >= silence_needed and total_frames >= min_speech_frames)
+                    or total_frames >= max_speech_frames
+                )
+
+                if should_cut:
+                    audio = np.concatenate(buffer)
+                    buffer = []
+                    silence_count = 0
+                    text = self._transcribe(audio)
+                    if text and self._callback and self._loop:
+                        asyncio.run_coroutine_threadsafe(self._callback(text), self._loop)
+
             except Exception as e:
                 if self._running:
-                    logger.error(f"[mic] Error en loop de grabación: {e}")
+                    logger.error(f"[mic] Error en loop: {e}")
 
     def start(self, loop: asyncio.AbstractEventLoop, callback) -> None:
         self._loop = loop
@@ -81,7 +114,7 @@ class AudioTranscriber:
             target=self._record_loop, daemon=True, name="audio-transcriber"
         )
         self._thread.start()
-        logger.info("[mic] Transcriptor de micrófono iniciado")
+        logger.info("[mic] Transcriptor de micrófono iniciado (VAD por silencio)")
 
     def stop(self) -> None:
         self._running = False
