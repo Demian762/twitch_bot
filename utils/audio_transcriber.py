@@ -18,10 +18,14 @@ from utils.logger import logger
 MODELO_DEFAULT  = "small"
 SAMPLE_RATE     = 16000
 MICRO_CHUNK_S   = 0.3   # granularidad de detección de silencio
-SILENCE_THRESHOLD  = 0.01  # amplitud máxima para considerar silencio
-SILENCE_DURATION_S = 0.8   # silencio sostenido que corta una oración
-MIN_UTTERANCE_S    = 0.4   # duración mínima para intentar transcribir
-MAX_UTTERANCE_S    = 30.0  # corte forzado si la oración es muy larga
+SILENCE_THRESHOLD  = 0.015  # amplitud máxima para considerar silencio
+SILENCE_DURATION_S = 0.8    # silencio sostenido que corta una oración
+MIN_UTTERANCE_S    = 0.6    # duración mínima para intentar transcribir
+MAX_UTTERANCE_S    = 30.0   # corte forzado si la oración es muy larga
+MIN_SPEECH_RMS     = 0.02   # energía RMS mínima del habla para no alucinaciones
+
+# Vocabulario del canal: sesga al modelo a deletrear bien estas palabras
+INITIAL_PROMPT = "Bot del Estadio, Claudio, Hablemos de Pavadas, Demian"
 
 
 class AudioTranscriber:
@@ -45,7 +49,8 @@ class AudioTranscriber:
 
     def _transcribe(self, audio: np.ndarray) -> str:
         segments, _ = self._model.transcribe(
-            audio, language="es", vad_filter=True, beam_size=5
+            audio, language="es", vad_filter=True, beam_size=5,
+            initial_prompt=INITIAL_PROMPT,
         )
         return " ".join(seg.text for seg in segments).strip()
 
@@ -98,6 +103,10 @@ class AudioTranscriber:
                     audio = np.concatenate(buffer)
                     buffer = []
                     silence_count = 0
+                    # Verificar energía mínima antes de transcribir para evitar alucinaciones
+                    speech_frames = audio[np.abs(audio) >= SILENCE_THRESHOLD]
+                    if len(speech_frames) == 0 or np.sqrt(np.mean(speech_frames ** 2)) < MIN_SPEECH_RMS:
+                        continue
                     text = self._transcribe(audio)
                     if text and self._callback and self._loop:
                         asyncio.run_coroutine_threadsafe(self._callback(text), self._loop)
