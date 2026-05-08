@@ -71,13 +71,27 @@ from commands import COGS
 from utils.audio_transcriber import AudioTranscriber
 
 
-def _token_file_path() -> str:
-    """Retorna la ruta del archivo de tokens junto al exe (o al script en desarrollo)."""
+def _bot_file_path(filename: str) -> str:
+    """Retorna la ruta de un archivo junto al exe (o al script en desarrollo)."""
     if getattr(sys, 'frozen', False):
         base = os.path.dirname(sys.executable)
     else:
         base = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(base, '.tio.tokens.json')
+    return os.path.join(base, filename)
+
+
+def _token_file_path() -> str:
+    return _bot_file_path('.tio.tokens.json')
+
+
+def _get_streamer_user() -> str:
+    """Lee el usuario streamer configurado en el launcher. Fallback: channel_name."""
+    try:
+        with open(_bot_file_path('.streamer_user'), encoding='utf-8') as f:
+            user = f.read().strip().lower()
+            return user if user else channel_name.lower()
+    except OSError:
+        return channel_name.lower()
 
 
 _KEYWORDS_BOT = (
@@ -144,7 +158,8 @@ class Bot(commands.Bot):
 
         self._auto_respuesta_ts = 0.0
         self._transcriber = AudioTranscriber()
-        logger.info("Bot inicializado correctamente")
+        self._streamer_user = _get_streamer_user()
+        logger.info(f"Bot inicializado correctamente — streamer: {self._streamer_user}")
 
     async def load_tokens(self, **_) -> None:
         """Carga tokens desde el directorio del exe/script, no desde el CWD."""
@@ -375,7 +390,7 @@ class Bot(commands.Bot):
             if claude_cog:
                 asyncio.create_task(
                     claude_cog.claude_para_comando(
-                        channel_name.lower(),
+                        self._streamer_user,
                         f"[VOZ DEL STREAMER]: {texto}",
                     )
                 )

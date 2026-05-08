@@ -12,8 +12,24 @@ AUDIO_MUTED_FLAG    = os.path.join(BOT_DIR, ".audio_muted")
 TTS_MUTED_FLAG      = os.path.join(BOT_DIR, ".tts_muted")
 METRICS_DISABLED_FLAG = os.path.join(BOT_DIR, ".metrics_disabled")
 BOT_PID_FILE          = os.path.join(BOT_DIR, ".bot.pid")
+STREAMER_USER_FILE    = os.path.join(BOT_DIR, ".streamer_user")
 VENV_PYTHON = os.path.join(BOT_DIR, "bot-env", "Scripts", "python.exe")
 NO_WINDOW = subprocess.CREATE_NO_WINDOW
+
+
+def _get_admins() -> list[str]:
+    """Lee la lista de admins desde configuracion.py via subprocess."""
+    try:
+        result = subprocess.run(
+            [VENV_PYTHON, "-c", "from utils.configuracion import admins; print(','.join(admins))"],
+            cwd=BOT_DIR, capture_output=True, text=True, timeout=10,
+            creationflags=NO_WINDOW,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            return [a.strip() for a in result.stdout.strip().split(',') if a.strip()]
+    except Exception:
+        pass
+    return []
 
 
 def _open_launcher(root: tk.Tk):
@@ -108,6 +124,13 @@ class BotLauncher:
         self.audio_var   = tk.BooleanVar(value=not os.path.exists(AUDIO_MUTED_FLAG))
         self.tts_var     = tk.BooleanVar(value=not os.path.exists(TTS_MUTED_FLAG))
         self.metrics_var = tk.BooleanVar(value=not os.path.exists(METRICS_DISABLED_FLAG))
+        self._admins = _get_admins()
+        self._streamer_var = tk.StringVar()
+        try:
+            saved = open(STREAMER_USER_FILE, encoding='utf-8').read().strip()
+            self._streamer_var.set(saved if saved in self._admins else (self._admins[0] if self._admins else ""))
+        except OSError:
+            self._streamer_var.set(self._admins[0] if self._admins else "")
         if not self._build_ui():
             return
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
@@ -178,6 +201,19 @@ class BotLauncher:
             command=self._toggle_metrics,
             font=("Segoe UI", 10),
         ).pack(side=tk.LEFT, padx=(10, 0))
+
+        if self._admins:
+            tk.Label(bar, text="Streamer:", font=("Segoe UI", 10)).pack(side=tk.LEFT, padx=(20, 4))
+            streamer_cb = ttk.Combobox(
+                bar,
+                textvariable=self._streamer_var,
+                values=self._admins,
+                state="readonly",
+                width=14,
+                font=("Segoe UI", 10),
+            )
+            streamer_cb.pack(side=tk.LEFT)
+            streamer_cb.bind("<<ComboboxSelected>>", self._on_streamer_change)
 
         # ── Tabs ─────────────────────────────────────────────────────────────
         style = ttk.Style()
@@ -348,6 +384,12 @@ class BotLauncher:
                 os.remove(METRICS_DISABLED_FLAG)
         else:
             open(METRICS_DISABLED_FLAG, "w").close()
+
+    def _on_streamer_change(self, _event=None):
+        user = self._streamer_var.get().strip()
+        if user:
+            with open(STREAMER_USER_FILE, "w", encoding="utf-8") as f:
+                f.write(user)
 
     def _on_close(self):
         if self.process:
