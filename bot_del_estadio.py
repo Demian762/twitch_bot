@@ -366,17 +366,13 @@ class Bot(commands.Bot):
             self.state.audio_log.pop(0)
 
         texto_lower = texto.lower()
-        triggered = (
-            any(kw in texto_lower for kw in _KEYWORDS_BOT)
-            and time.monotonic() - self._auto_respuesta_ts >= _AUTO_RESPUESTA_COOLDOWN
-        )
+        triggered = any(kw in texto_lower for kw in _KEYWORDS_BOT)
         marker = "[MIC_TRIGGER]" if triggered else "[MIC_TRANSCRIPT]"
         print(f"{marker}{texto}", flush=True)
 
         if triggered:
             claude_cog = self.my_cogs.get("ClaudioCommands")
             if claude_cog:
-                self._auto_respuesta_ts = time.monotonic()
                 asyncio.create_task(
                     claude_cog.claude_para_comando(
                         channel_name.lower(),
