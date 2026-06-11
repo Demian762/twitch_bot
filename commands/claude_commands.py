@@ -582,7 +582,7 @@ class ClaudioCommands(BaseCommand):
 
         texto = partes[1].strip()
 
-        es_admin = username in [a.lower() for a in admins]
+        es_admin = username in admins
 
         # Verificar límite de tokens de sesión
         tokens_usados = self.bot.state.claude_token_usage.get(username, 0)
@@ -662,7 +662,7 @@ class ClaudioCommands(BaseCommand):
 
     async def claude_para_comando(self, username: str, contexto: str, sufijo: str = ""):
         """Genera una respuesta de Claude para eventos disparados por otros comandos."""
-        es_admin = username in [a.lower() for a in admins]
+        es_admin = username in admins
 
         tokens_usados = self.bot.state.claude_token_usage.get(username, 0)
         limite_tokens = claude_config["max_tokens_por_usuario_sesion"] * (10 if es_admin else 1)

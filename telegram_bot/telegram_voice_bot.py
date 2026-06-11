@@ -40,7 +40,7 @@ class TelegramVoiceBot:
                 self.temp_files.append(wav_file)
                 play_sound(resource_path("storage/suatencion.wav"), bypass_mute=True)
                 play_sound(wav_file, bypass_mute=True)
-        except:
+        except Exception:
             pass
     
     async def start_async(self):
@@ -57,10 +57,20 @@ class TelegramVoiceBot:
         await self.app.start()
         await self.app.updater.start_polling()
     
+    async def stop_async(self):
+        try:
+            if self.app.updater.running:
+                await self.app.updater.stop()
+            await self.app.stop()
+            await self.app.shutdown()
+        except Exception as e:
+            pass
+        self.cleanup()
+
     def cleanup(self):
         for file_path in self.temp_files:
             try:
                 os.unlink(file_path)
-            except:
+            except Exception:
                 pass
         self.temp_files.clear()

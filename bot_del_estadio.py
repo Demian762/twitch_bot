@@ -423,9 +423,12 @@ class Bot(commands.Bot):
             logger.critical(
                 f"Watchdog EventSub: stream en vivo pero sin eventos por {elapsed/60:.1f} min. Reiniciando proceso..."
             )
-            os.execv(sys.executable, sys.argv)
+            import subprocess
+            subprocess.Popen([sys.executable] + sys.argv)
+            sys.exit(0)
 
     async def close(self) -> None:
+        await self.telegram_bot.stop_async()
         await self.metrics.stop()
         await super().close()
 

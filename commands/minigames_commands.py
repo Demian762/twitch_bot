@@ -65,8 +65,10 @@ class MinigamesCommands(BaseCommand):
             - El ganador actual no puede seguir escupiendo
             - Las restricciones aplican penalizaciones configurables
         """
+        if await self.check_coma_etilico():
+            return
         nombre = ctx.author.name.lower()
-        escupida = int(triangular(2,500,1))
+        escupida = int(triangular(2, 500, 2))
 
         # Validar restricciones configurables desde el spreadsheet
         restriccion_activa = validar_restriccion_escupir(

@@ -19,6 +19,7 @@ Author: Demian762
 Version: 250927
 """
 
+import asyncio
 from twitchio.ext import commands
 
 # Imports locales
@@ -84,22 +85,19 @@ class GameCommands(BaseCommand):
             *args: Argumentos del nombre del juego
         """
         juego = get_args(args)
-        nombre, puntaje, fecha = self.bot.api.rawg.info(juego)
-        
-        # Manejo explícito de errores
+        nombre, puntaje, fecha = await asyncio.to_thread(self.bot.api.rawg.info, juego)
+
         if nombre is False:
-            # Error en la API
             await mensaje("La base de datos no está funcionando bien, intentá en un toque!")
             return
         if nombre is None:
-            # Sin resultados
             await mensaje("No se encontró nada en la base de datos!")
             return
         try:
-            tiempo = howlong(juego)
-        except:
+            tiempo = await asyncio.to_thread(howlong, juego)
+        except Exception:
             tiempo = None
-        nombre_steam, precio = steam_price(nombre, self.bot.api.steam, self.bot.api.dolar)
+        nombre_steam, precio = await asyncio.to_thread(steam_price, nombre, self.bot.api.steam, self.bot.api.dolar)
         sep = " // "
         output = nombre
         if puntaje:
@@ -145,7 +143,7 @@ class GameCommands(BaseCommand):
         juego = get_args(args)
         
         # Obtener nombre del juego primero para búsqueda más precisa
-        nombre, _, _ = self.bot.api.rawg.info(juego)
+        nombre, _, _ = await asyncio.to_thread(self.bot.api.rawg.info, juego)
         if nombre is False:
             await mensaje("La base de datos no está funcionando bien, intentá en un toque!")
             return
@@ -158,7 +156,7 @@ class GameCommands(BaseCommand):
         
         # Obtener y enviar requisitos del sistema
         try:
-            min_req, rec_req = steam_requirements(nombre, self.bot.api.steam)
+            min_req, rec_req = await asyncio.to_thread(steam_requirements, nombre, self.bot.api.steam)
             
             if not min_req and not rec_req:
                 await mensaje("No hay requisitos disponibles para este juego.")
@@ -181,7 +179,7 @@ class GameCommands(BaseCommand):
             await mensaje("Hubo un error al obtener los requisitos del sistema.")
 
     @commands.command()
-    async def lanzamientos(self, ctx: commands.Context, limite = 3):
+    async def lanzamientos(self, ctx: commands.Context, limite: int = 3):
         if await self.check_coma_etilico():
             return
             
@@ -191,7 +189,7 @@ class GameCommands(BaseCommand):
     async def _lanzamientos(self, ctx: commands.Context, limite):
         if ctx.author.name.lower() not in admins and limite > 3:
             limite = 3
-        output = self.bot.api.rawg.lanzamientos(limite)
+        output = await asyncio.to_thread(self.bot.api.rawg.lanzamientos, limite)
         if output is not False:
             await mensaje(output)
         else:

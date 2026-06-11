@@ -18,7 +18,7 @@ _TTS_PITCH  = "-20Hz"
 def tts_habilitado() -> bool:
     return not os.path.exists(_TTS_MUTED_FLAG)
 
-def play_sound(path: str, flags: int = winsound.SND_FILENAME, bypass_mute: bool = False) -> None:
+def play_sound(path: str, flags: int = winsound.SND_FILENAME | winsound.SND_ASYNC, bypass_mute: bool = False) -> None:
     if bypass_mute or not os.path.exists(_AUDIO_MUTED_FLAG):
         winsound.PlaySound(path, flags)
 
@@ -50,7 +50,7 @@ async def play_tts(text: str) -> None:
 
 
 def precio_dolar():
-    response = requests.get("https://dolarapi.com/v1/dolares/oficial")
+    response = requests.get("https://dolarapi.com/v1/dolares/oficial", timeout=10)
     if response.status_code == 200:
         data = response.json()
         venta = data.get('venta', 0)

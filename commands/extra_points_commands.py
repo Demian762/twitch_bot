@@ -100,7 +100,7 @@ class ExtraPointsCommands(BaseCommand):
             await mensaje(f'@{autor}, {error}')
 
     @commands.command()
-    async def top(self, ctx: commands.Context, n=3):
+    async def top(self, ctx: commands.Context, n: int = 3):
         if await self.check_coma_etilico():
             return
             

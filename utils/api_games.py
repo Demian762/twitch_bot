@@ -15,7 +15,7 @@ class rawg:
         self.test_connection()
 
     def test_connection(self):
-        response = requests.get(self.url, params=self.key)
+        response = requests.get(self.url, params=self.key, timeout=10)
         if response.status_code != 200:
             logger.error(f"Hubo un problema con la base de datos de RAWG.io, status code = {response.status_code}")
         else:
@@ -37,7 +37,7 @@ class rawg:
         url_info = self.url + "games"
         
         for intento in range(3):
-            response = requests.get(url_info, params=key_info)
+            response = requests.get(url_info, params=key_info, timeout=10)
             if response.status_code == 200:
                 break
             logger.warning(f"Info API - Intento {intento + 1}/3 falló con status code: {response.status_code}")
@@ -67,7 +67,7 @@ class rawg:
         url_info = self.url + "games"
         
         for intento in range(3):
-            response = requests.get(url_info, params=key_info)
+            response = requests.get(url_info, params=key_info, timeout=10)
             if response.status_code == 200:
                 break
             logger.warning(f"Lanzamientos API - Intento {intento + 1}/3 falló con status code: {response.status_code}")
@@ -131,7 +131,7 @@ def steam_api():
         steam = Steam(steam_api_key)
         logger.info("conexión exitosa con Steam.")
         return steam
-    except:
+    except Exception:
         raise Exception("No se pudo conectar a Steam.")
     
 def steam_price(nombre, steam, dolar):

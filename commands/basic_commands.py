@@ -26,7 +26,7 @@ class BasicCommands(BaseCommand):
     Cog que maneja comandos básicos y funcionalidades esenciales
     
     Attributes:
-        puntitos_dados (list): Lista de usuarios que ya recibieron su puntito diario
+        puntitos_dados (set): Usuarios que ya recibieron su puntito diario
         proteccion_activa (bool): Estado del horario de protección al menor
     """
     
@@ -38,7 +38,7 @@ class BasicCommands(BaseCommand):
             bot: Instancia del bot principal
         """
         super().__init__(bot)
-        self.puntitos_dados = []
+        self.puntitos_dados = set()
         self.proteccion_activa = False
 
     @commands.command(aliases=("buenas",))
@@ -71,7 +71,7 @@ class BasicCommands(BaseCommand):
             await self.responder_con_claude(ctx, f"{nombre} llegó al stream.")
             return
         if nombre not in self.puntitos_dados:
-            self.puntitos_dados.append(nombre)
+            self.puntitos_dados.add(nombre)
             await asyncio.to_thread(funcion_puntitos, nombre, 1)
             await self.responder_con_claude(ctx, f"{nombre} llegó al stream y recibió su puntito de bienvenida diario.")
         else:
