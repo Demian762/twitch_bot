@@ -312,8 +312,15 @@ class Bot(commands.Bot):
           - payload.chatter.name → nombre del usuario
           - payload.text        → contenido del mensaje (antes .content)
         """
-        # Ignorar mensajes del propio bot (V3 no tiene .echo)
+        # Registrar respuestas del bot en chat_log antes de salir, para que Claude
+        # tenga contexto de los resultados (ej: "el escupitajo llegó a 87 cm").
         if payload.chatter.id == self.bot_id:
+            entry_size = len("bot") + len(payload.text) + 4
+            self.state.chat_log.append({"user": "bot", "msg": payload.text})
+            self._chat_log_size += entry_size
+            while self._chat_log_size > 5000:
+                removed = self.state.chat_log.pop(0)
+                self._chat_log_size -= len(removed["user"]) + len(removed["msg"]) + 4
             return
         self._last_event_ts = time.monotonic()
 
