@@ -142,6 +142,7 @@ class Bot(commands.Bot):
         self.telegram_bot = TelegramVoiceBot(telegram_bot_token)
 
         self._auto_respuesta_ts = 0.0
+        self._last_event_ts = time.monotonic()
         logger.info("Bot inicializado correctamente")
 
     async def load_tokens(self, **_) -> None:
@@ -285,6 +286,7 @@ class Bot(commands.Bot):
         await mensaje(get_mensaje_diade())
         asyncio.create_task(self._start_telegram_bot())
         asyncio.create_task(self._notificar_discord_si_en_vivo())
+        asyncio.create_task(self._eventsub_watchdog())
 
     async def _notificar_discord_si_en_vivo(self):
         try:
@@ -312,6 +314,7 @@ class Bot(commands.Bot):
         # Ignorar mensajes del propio bot (V3 no tiene .echo)
         if payload.chatter.id == self.bot_id:
             return
+        self._last_event_ts = time.monotonic()
 
         username = payload.chatter.name.lower()
 
@@ -376,6 +379,7 @@ class Bot(commands.Bot):
         await mensaje("Ya rompiste el bot con ese comando...")
 
     async def event_custom_redemption_add(self, payload) -> None:
+        self._last_event_ts = time.monotonic()
         puntitos = CAMBIO_CAMBIO_REWARDS.get(payload.reward.id)
         if puntitos is None:
             return
@@ -385,16 +389,41 @@ class Bot(commands.Bot):
         logger.info(f"Redemption '{payload.reward.title}': +{puntitos} puntito(s) para {username}")
 
     async def event_follow(self, payload) -> None:
+        self._last_event_ts = time.monotonic()
         self.metrics.followers += 1
         logger.info(f"Nuevo follower — Total: {self.metrics.followers}")
 
     async def event_subscription(self, payload) -> None:
+        self._last_event_ts = time.monotonic()
         self.metrics.subscribers += 1
         logger.info(f"Nuevo sub — Total: {self.metrics.subscribers}")
 
     async def event_subscription_end(self, payload) -> None:
         self.metrics.subscribers = max(0, self.metrics.subscribers - 1)
         logger.info(f"Sub expirado — Total: {self.metrics.subscribers}")
+
+    async def _eventsub_watchdog(self) -> None:
+        DEAD_THRESHOLD = 20 * 60   # 20 min sin eventos → sospechoso
+        CHECK_INTERVAL = 5 * 60    # Chequear cada 5 min
+        await asyncio.sleep(CHECK_INTERVAL)  # Dar tiempo al bot para arrancar
+        while True:
+            await asyncio.sleep(CHECK_INTERVAL)
+            elapsed = time.monotonic() - self._last_event_ts
+            if elapsed < DEAD_THRESHOLD:
+                continue
+            try:
+                stream = None
+                async for s in self.fetch_streams(user_ids=[self.broadcaster_id], max_results=1):
+                    stream = s
+                    break
+                if not stream:
+                    continue  # Stream offline, silencio esperado
+            except Exception:
+                continue
+            logger.critical(
+                f"Watchdog EventSub: stream en vivo pero sin eventos por {elapsed/60:.1f} min. Reiniciando proceso..."
+            )
+            os.execv(sys.executable, sys.argv)
 
     async def close(self) -> None:
         await self.metrics.stop()

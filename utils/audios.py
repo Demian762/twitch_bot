@@ -40,6 +40,7 @@ comandos_audios = {
     'gatito':['gatito','gato','miau'],
     'dificil':['dificil','diablos'],
     'suatencion':['suatencion'],
+    'coronacion':['coronacion','gloria'],
 }
 
 comandos_mensajes = {

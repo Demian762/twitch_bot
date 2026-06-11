@@ -14,6 +14,7 @@ Author: Demian762
 Version: 250927
 """
 
+import asyncio
 from twitchio.ext import commands
 from utils.mensaje import mensaje
 from utils.puntitos_manager import funcion_puntitos
@@ -71,7 +72,7 @@ class BasicCommands(BaseCommand):
             return
         if nombre not in self.puntitos_dados:
             self.puntitos_dados.append(nombre)
-            funcion_puntitos(nombre, 1)
+            await asyncio.to_thread(funcion_puntitos, nombre, 1)
             await self.responder_con_claude(ctx, f"{nombre} llegó al stream y recibió su puntito de bienvenida diario.")
         else:
             await self.responder_con_claude(ctx, f"{nombre} intentó saludar de nuevo pero ya recibió su puntito de hoy.")

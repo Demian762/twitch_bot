@@ -8,6 +8,7 @@ Author: Demian762
 Version: 250927
 """
 
+import asyncio
 from twitchio.ext import commands
 from random import choice
 
@@ -192,8 +193,8 @@ class PointsCommands(BaseCommand):
         ganador = choice(usuarios_elegibles)
         
         # Otorgar 3 puntitos
-        funcion_puntitos(ganador, 3)
-        
+        await asyncio.to_thread(funcion_puntitos, ganador, 3)
+
         # Marcar comando como usado
         self.bot.state.random_usado = True
         

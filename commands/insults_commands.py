@@ -9,6 +9,7 @@ Author: Demian762
 Version: 250927
 """
 
+import asyncio
 from twitchio.ext import commands
 from random import choice
 from Levenshtein import distance as lev
@@ -96,7 +97,7 @@ class InsultsCommands(BaseCommand):
 
                 if self.peleas[nombre]["score"][0] >= 3:
                     enviar.append(f"{nombre} ganó la pelea de insultos!")
-                    funcion_puntitos(nombre, cant=5)
+                    await asyncio.to_thread(funcion_puntitos, nombre, 5)
                     enviar.append(f'{nombre} acaba de sumar cinco puntitos!')
                     await mensaje(enviar)
                     return

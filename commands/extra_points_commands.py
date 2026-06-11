@@ -65,9 +65,9 @@ class ExtraPointsCommands(BaseCommand):
             await mensaje(f'@{autor}, solo los admins pueden usar este comando!')
             return
             
-        exito, error = funcion_puntitos(nombre, 5, donante=autor)
+        exito, error = await asyncio.to_thread(funcion_puntitos, nombre, 5, donante=autor)
         if exito:
-            await self.responder_con_claude(ctx, f"{autor} le dio la bienvenida al canal a {nombre.lstrip('@')} con 5 puntitos de bienvenida.")
+            await mensaje(f'@{nombre.lstrip("@")} acaba de sumar cinco puntitos de bienvenida!')
         else:
             await mensaje(f'@{autor}, {error}')
 
@@ -93,7 +93,7 @@ class ExtraPointsCommands(BaseCommand):
             return
             
         autor = ctx.author.name.lower()
-        exito, error = funcion_puntitos(nombre, 1, donante=autor)
+        exito, error = await asyncio.to_thread(funcion_puntitos, nombre, 1, donante=autor)
         if exito:
             await mensaje(f'@{nombre.lstrip("@")} acaba de sumar un puntito!')
         else:
@@ -129,7 +129,7 @@ class ExtraPointsCommands(BaseCommand):
             await mensaje(["¡SORTEO INICIADO!", "sorteando...."])
             await asyncio.sleep(randint(1, 30))
             registrar_victoria_sorteo(ganador)
-            await self.responder_con_claude(ctx, f"El sorteo terminó y el ganador fue {ganador}.")
+            await mensaje(["AND THE WINNER IS:", ganador])
 
     @commands.command()
     async def sorteopresentes(self, ctx: commands.Context):
@@ -156,7 +156,7 @@ class ExtraPointsCommands(BaseCommand):
             await mensaje(["¡SORTEO DE PRESENTES INICIADO!", "sorteando...."])
             await asyncio.sleep(randint(1, 30))
             registrar_victoria_sorteo(ganador)
-            await self.responder_con_claude(ctx, f"El sorteo de presentes terminó y el ganador fue {ganador}.")
+            await mensaje(["AND THE WINNER IS:", ganador])
 
     @commands.command()
     async def admins(self, ctx: commands.Context):

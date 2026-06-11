@@ -8,6 +8,7 @@ Author: Demian762
 Version: 250927
 """
 
+import asyncio
 from datetime import timedelta
 
 from twitchio.ext import commands, routines
@@ -20,7 +21,6 @@ from utils.utiles_general import resource_path, play_sound
 from utils.puntitos_manager import funcion_puntitos
 from utils.configuracion import admins, configuracion_basica
 from utils.audios import comandos_general, comandos_audios, comandos_mensajes, autores_exclusivos
-from utils.calendario_celebraciones import get_mensaje_diade
 from .base_command import BaseCommand
 
 class InteractionCommands(BaseCommand):
@@ -84,17 +84,14 @@ class InteractionCommands(BaseCommand):
 
         await mensaje(mensaje_string)
 
-        if comando_validado == "holis":
-            await mensaje(get_mensaje_diade())
-
         if autor in admins:
             return
 
         for llave, valores in autores_exclusivos.items():
             if comando_validado in valores and autor != llave:
                 # Regalías: transferencia automática del bot (sin donante para bypass de validación)
-                funcion_puntitos(llave, 1)
-                funcion_puntitos(autor, -1)
+                await asyncio.to_thread(funcion_puntitos, llave, 1)
+                await asyncio.to_thread(funcion_puntitos, autor, -1)
                 await mensaje(f"@{autor} acaba de pagarle 1 puntito a @{llave} en concepto de regalías.")
 
     @routines.routine(delta=timedelta(minutes=configuracion_basica["rutina_timer"]), wait_first=True)

@@ -27,6 +27,7 @@ Version: 311025 (Nueva implementación)
 """
 
 from twitchio.ext import commands
+import asyncio
 from random import randint
 
 # Imports locales
@@ -106,7 +107,7 @@ class TimbaCommand(BaseCommand):
         # Intentar parsear como número (adivinanza)
         try:
             numero = int(args[0])
-            await self._procesar_adivinanza(ctx, usuario, numero)
+            await self._procesar_adivinanza(usuario, numero)
             return
         except ValueError:
             # No es un número, debe ser un usuario (reto)
@@ -164,7 +165,7 @@ class TimbaCommand(BaseCommand):
         
         await mensaje(f"@{retador} retó a @{retado} a una timba! @{retado}, usá !timba [número] para aceptar el reto y hacer tu primera adivinanza.")
     
-    async def _procesar_adivinanza(self, ctx, usuario: str, numero: int):
+    async def _procesar_adivinanza(self, usuario: str, numero: int):
         """
         Procesa una adivinanza de número
 
@@ -173,7 +174,6 @@ class TimbaCommand(BaseCommand):
         - Adivinanza durante un juego activo
 
         Args:
-            ctx: Contexto del comando
             usuario (str): Usuario que adivina
             numero (int): Número adivinado
         """
@@ -184,7 +184,7 @@ class TimbaCommand(BaseCommand):
 
         # Si hay un reto pendiente y el usuario es el retado, aceptar el reto
         if self.reto_pendiente and self.reto_pendiente['retado'] == usuario:
-            await self._aceptar_reto(ctx, usuario, numero)
+            await self._aceptar_reto(usuario, numero)
             return
 
         # Si hay un juego activo, procesar la adivinanza
@@ -195,7 +195,7 @@ class TimbaCommand(BaseCommand):
         # No hay reto pendiente ni juego activo
         await mensaje(f"@{usuario}, no hay ningún juego activo. Usá !timba @usuario para retar a alguien.")
     
-    async def _aceptar_reto(self, ctx, retado: str, primer_numero: int):
+    async def _aceptar_reto(self, retado: str, primer_numero: int):
         """
         Acepta un reto pendiente e inicia el juego
         
@@ -207,20 +207,21 @@ class TimbaCommand(BaseCommand):
             primer_numero (int): Primera adivinanza del retado
         """
         retador = self.reto_pendiente['retador']
-        
+        self.reto_pendiente = None  # Limpiar antes del primer await
+
         # Verificar si alguno es admin
         retador_es_admin = retador in admins
         retado_es_admin = retado in admins
         con_apuesta = not (retador_es_admin or retado_es_admin)
-        
+
         # Quitar puntos si no son admins
         if con_apuesta:
-            funcion_puntitos(retador, -5)
-            funcion_puntitos(retado, -5)
-        
+            await asyncio.to_thread(funcion_puntitos, retador, -5)
+            await asyncio.to_thread(funcion_puntitos, retado, -5)
+
         # Generar número secreto
         numero_secreto = randint(1, 100)
-        
+
         # Crear juego activo
         self.juego_activo = {
             'jugador1': retador,
@@ -228,14 +229,9 @@ class TimbaCommand(BaseCommand):
             'numero_secreto': numero_secreto,
             'turno_actual': retado,  # El retado juega primero
             'con_apuesta': con_apuesta,
-            'ctx': ctx,
         }
-        
-        # Log del número secreto para debugging
+
         logger.info(f"Timba iniciada: {retador} vs {retado} | Número secreto: {numero_secreto}")
-        
-        # Limpiar reto pendiente
-        self.reto_pendiente = None
         
         # Mensaje de inicio
         if con_apuesta:
@@ -322,21 +318,14 @@ class TimbaCommand(BaseCommand):
         # Registrar victoria en timba para el ganador
         registrar_victoria_timba(ganador)
         
-        ctx = self.juego_activo.get('ctx')
         con_apuesta = self.juego_activo['con_apuesta']
+        self.juego_activo = None  # Limpiar antes del primer await
 
         if con_apuesta:
-            funcion_puntitos(ganador, 10)
-
-        self.juego_activo = None
-
-        if ctx:
-            if con_apuesta:
-                await self.responder_con_claude(ctx, f"{ganador} adivinó el número secreto ({numero_secreto}) en la timba contra {perdedor} y ganó 10 puntitos.")
-            else:
-                await self.responder_con_claude(ctx, f"{ganador} adivinó el número secreto ({numero_secreto}) en la timba contra {perdedor} (sin apuesta).")
+            await asyncio.to_thread(funcion_puntitos, ganador, 10)
+            await mensaje(f"🎉 ¡@{ganador} adivinó el número {numero_secreto} y ganó 10 puntitos! @{perdedor} mejor suerte la próxima.")
         else:
-            await mensaje(f"🎉 ¡@{ganador} adivinó el número {numero_secreto}! @{perdedor} mejor suerte la próxima.")
+            await mensaje(f"🎉 ¡@{ganador} adivinó el número {numero_secreto} y ganó el juego! @{perdedor} mejor suerte la próxima.")
     
     async def _finalizar_juego(self, usuario: str):
         """
