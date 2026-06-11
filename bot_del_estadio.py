@@ -143,6 +143,7 @@ class Bot(commands.Bot):
 
         self._auto_respuesta_ts = 0.0
         self._last_event_ts = time.monotonic()
+        self._chat_log_size = 0
         logger.info("Bot inicializado correctamente")
 
     async def load_tokens(self, **_) -> None:
@@ -321,10 +322,12 @@ class Bot(commands.Bot):
         if payload.text.startswith('!'):
             self.state.usuarios_activos.add(username)
 
+        entry_size = len(username) + len(payload.text) + 4
         self.state.chat_log.append({"user": username, "msg": payload.text})
-        # Mantener el log acotado: descartar entradas viejas cuando supere los 5000 chars
-        while sum(len(e["user"]) + len(e["msg"]) + 4 for e in self.state.chat_log) > 5000:
-            self.state.chat_log.pop(0)
+        self._chat_log_size += entry_size
+        while self._chat_log_size > 5000:
+            removed = self.state.chat_log.pop(0)
+            self._chat_log_size -= len(removed["user"]) + len(removed["msg"]) + 4
 
         # Respuesta automática por keyword, con cooldown global
         texto_lower = payload.text.lower()

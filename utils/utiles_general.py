@@ -3,6 +3,7 @@ import sys
 import ctypes
 import asyncio
 import tempfile
+import threading
 import winsound
 import requests
 import time
@@ -15,12 +16,22 @@ _TTS_VOICE  = "es-AR-TomasNeural"
 _TTS_RATE   = "+15%"
 _TTS_PITCH  = "-20Hz"
 
+_audio_lock = threading.Lock()
+
 def tts_habilitado() -> bool:
     return not os.path.exists(_TTS_MUTED_FLAG)
 
 def play_sound(path: str, flags: int = winsound.SND_FILENAME | winsound.SND_ASYNC, bypass_mute: bool = False) -> None:
     if bypass_mute or not os.path.exists(_AUDIO_MUTED_FLAG):
-        winsound.PlaySound(path, flags)
+        with _audio_lock:
+            winsound.PlaySound(path, flags)
+
+def play_sounds_sequential(*paths: str, bypass_mute: bool = False) -> None:
+    """Reproduce varios sonidos en secuencia de forma bloqueante y exclusiva."""
+    if bypass_mute or not os.path.exists(_AUDIO_MUTED_FLAG):
+        with _audio_lock:
+            for path in paths:
+                winsound.PlaySound(path, winsound.SND_FILENAME)
 
 def _play_mp3(path: str) -> None:
     mci = ctypes.windll.winmm.mciSendStringW

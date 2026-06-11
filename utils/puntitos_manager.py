@@ -265,23 +265,24 @@ def funcion_puntitos(nombre: str, cant: int = 1, donante: str = None):
 def _reiniciar_puntitos(nombre):
     """
     Reinicia los puntitos actuales de un usuario a 0 (función interna)
-    
+
     Utilizada internamente por el sistema de sorteos para resetear
     los puntitos del ganador a 0. No afecta el historial.
-    
+
     Args:
         nombre (str): Nombre del usuario a reiniciar
-        
+
     Note:
         - Solo reinicia puntitos actuales, no históricos
         - Es una función interna (prefijo _)
         - Principalmente usada por sorteo_puntitos()
     """
-    hoja = sh.get_worksheet(0)
-    df = hoja.get_all_records()
-    for idx, row in enumerate(df):
-        if row['nombre'].lower() == nombre.lower():
-            hoja.update_cell(idx + 2, 2, 0)
+    with _sheet_lock:
+        hoja = sh.get_worksheet(0)
+        df = hoja.get_all_records()
+        for idx, row in enumerate(df):
+            if row['nombre'].lower() == nombre.lower():
+                hoja.update_cell(idx + 2, 2, 0)
 
 def _realizar_sorteo_ponderado(nombres, puntos):
     """
@@ -685,19 +686,20 @@ def validar_restriccion_escupir(restricciones: list, dia_semana: str):
 def _registrar_en_victorias(nombre: str, col: int, campo: str, cant: int = 1) -> bool:
     """Helper interno: suma `cant` en la columna `col` del worksheet 4 para el usuario."""
     try:
-        hoja = sh.get_worksheet(4)
-        df = hoja.get_all_records()
-        for idx, row in enumerate(df):
-            if row.get('nombre') == nombre:
-                actual = int(row.get(campo, 0) or 0)
-                hoja.update_cell(idx + 2, col, actual + cant)
-                logger.info(f"{campo} actualizado para {nombre}: {actual + cant}")
-                return True
-        nuevo = [nombre, 0, 0, 0, 0, 0]
-        nuevo[col - 1] = cant
-        hoja.append_row(nuevo)
-        logger.info(f"Nuevo registro de victorias para {nombre} ({campo}={cant})")
-        return True
+        with _sheet_lock:
+            hoja = sh.get_worksheet(4)
+            df = hoja.get_all_records()
+            for idx, row in enumerate(df):
+                if row.get('nombre') == nombre:
+                    actual = int(row.get(campo, 0) or 0)
+                    hoja.update_cell(idx + 2, col, actual + cant)
+                    logger.info(f"{campo} actualizado para {nombre}: {actual + cant}")
+                    return True
+            nuevo = [nombre, 0, 0, 0, 0, 0]
+            nuevo[col - 1] = cant
+            hoja.append_row(nuevo)
+            logger.info(f"Nuevo registro de victorias para {nombre} ({campo}={cant})")
+            return True
     except Exception as e:
         logger.error(f"Error registrando {campo} para {nombre}: {e}")
         return False
@@ -774,19 +776,20 @@ def registrar_record_escupitajo(nombre: str, distancia: int) -> bool:
     """Actualiza el récord de escupitajo solo si la nueva distancia es mayor. Retorna True si hubo nuevo récord."""
     nombre = nombre.lower().lstrip("@")
     try:
-        hoja = sh.get_worksheet(4)
-        df = hoja.get_all_records()
-        for idx, row in enumerate(df):
-            if row.get('nombre') == nombre:
-                record_actual = int(row.get('escupitajo_record', 0) or 0)
-                if distancia > record_actual:
-                    hoja.update_cell(idx + 2, 6, distancia)
-                    logger.info(f"Nuevo récord de escupitajo para {nombre}: {distancia} cm (anterior: {record_actual} cm)")
-                    return True
-                return False
-        hoja.append_row([nombre, 0, 0, 0, 0, distancia])
-        logger.info(f"Nuevo registro de victorias para {nombre} (escupitajo_record={distancia})")
-        return True
+        with _sheet_lock:
+            hoja = sh.get_worksheet(4)
+            df = hoja.get_all_records()
+            for idx, row in enumerate(df):
+                if row.get('nombre') == nombre:
+                    record_actual = int(row.get('escupitajo_record', 0) or 0)
+                    if distancia > record_actual:
+                        hoja.update_cell(idx + 2, 6, distancia)
+                        logger.info(f"Nuevo récord de escupitajo para {nombre}: {distancia} cm (anterior: {record_actual} cm)")
+                        return True
+                    return False
+            hoja.append_row([nombre, 0, 0, 0, 0, distancia])
+            logger.info(f"Nuevo registro de victorias para {nombre} (escupitajo_record={distancia})")
+            return True
     except Exception as e:
         logger.error(f"Error registrando récord de escupitajo para {nombre}: {e}")
         return False
