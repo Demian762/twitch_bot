@@ -21,6 +21,7 @@ Version: 250927
 """
 
 import gspread
+import threading
 import time
 from random import choices
 from collections import defaultdict
@@ -32,6 +33,8 @@ from utils.logger import logger
 # Inicializar cliente de Google Sheets
 gc = gspread.service_account_from_dict(credenciales_gspread)
 sh = gc.open_by_url(file_puntitos_url)
+
+_sheet_lock = threading.Lock()
 
 def consulta_puntitos(nombre: str):
     """
@@ -172,9 +175,8 @@ def validar_puntitos_admin(receptor: str, donante: str = None) -> tuple[bool, st
     
     receptor_lower = receptor.lower().lstrip("@")
     donante_lower = donante.lower().lstrip("@")
-    admins_lower = [admin.lower() for admin in admins]
-    es_receptor_admin = receptor_lower in admins_lower
-    es_donante_admin = donante_lower in admins_lower
+    es_receptor_admin = receptor_lower in admins
+    es_donante_admin = donante_lower in admins
     
     # Ningún usuario puede darse puntitos a sí mismo
     if receptor_lower == donante_lower:
@@ -239,46 +241,48 @@ def funcion_puntitos(nombre: str, cant: int = 1, donante: str = None):
     puede_dar, mensaje_error = validar_puntitos_admin(nombre, donante)
     if not puede_dar:
         return (False, mensaje_error)
-    
+
     nombre = nombre.lower().lstrip("@")
-    hoja = sh.get_worksheet(0)
-    df = hoja.get_all_records()
-    
-    for idx, row in enumerate(df):
-        if row['nombre'] == nombre:
-            puntitos = row['puntos'] + cant
-            historicos = row['historico'] + cant
-            hoja.update_cell(idx + 2, 2, puntitos)
-            hoja.update_cell(idx + 2, 3, historicos)
-            if _bot_state is not None:
-                _bot_state.puntitos_netos_sesion += cant
-            return (True, "")
-    nuevo_nombre = [nombre, cant, cant]
-    hoja.append_row(nuevo_nombre)
-    if _bot_state is not None:
-        _bot_state.puntitos_netos_sesion += cant
-    return (True, "")
+    with _sheet_lock:
+        hoja = sh.get_worksheet(0)
+        df = hoja.get_all_records()
+
+        for idx, row in enumerate(df):
+            if row['nombre'] == nombre:
+                puntitos = row['puntos'] + cant
+                historicos = row['historico'] + cant
+                hoja.update_cell(idx + 2, 2, puntitos)
+                hoja.update_cell(idx + 2, 3, historicos)
+                if _bot_state is not None:
+                    _bot_state.puntitos_netos_sesion += cant
+                return (True, "")
+        nuevo_nombre = [nombre, cant, cant]
+        hoja.append_row(nuevo_nombre)
+        if _bot_state is not None:
+            _bot_state.puntitos_netos_sesion += cant
+        return (True, "")
 
 def _reiniciar_puntitos(nombre):
     """
     Reinicia los puntitos actuales de un usuario a 0 (función interna)
-    
+
     Utilizada internamente por el sistema de sorteos para resetear
     los puntitos del ganador a 0. No afecta el historial.
-    
+
     Args:
         nombre (str): Nombre del usuario a reiniciar
-        
+
     Note:
         - Solo reinicia puntitos actuales, no históricos
         - Es una función interna (prefijo _)
         - Principalmente usada por sorteo_puntitos()
     """
-    hoja = sh.get_worksheet(0)
-    df = hoja.get_all_records()
-    for idx, row in enumerate(df):
-        if row['nombre'] == nombre:
-            hoja.update_cell(idx + 2, 2, 0)
+    with _sheet_lock:
+        hoja = sh.get_worksheet(0)
+        df = hoja.get_all_records()
+        for idx, row in enumerate(df):
+            if row['nombre'].lower() == nombre.lower():
+                hoja.update_cell(idx + 2, 2, 0)
 
 def _realizar_sorteo_ponderado(nombres, puntos):
     """
@@ -349,9 +353,6 @@ def sorteo_puntitos():
         logger.warning("No hay datos para el sorteo")
         return "No hay participantes"
     
-    # Normalizar nombres de admins para comparación
-    admins_lower = [admin.lower() for admin in admins]
-    
     # Filtrar usuarios: deben tener puntitos > 0 y NO ser admins
     nombres = []
     puntos = []
@@ -362,7 +363,7 @@ def sorteo_puntitos():
             if not isinstance(nombre_raw, str):
                 continue
             nombre = nombre_raw.lower()
-            if nombre not in admins_lower:
+            if nombre not in admins:
                 nombres.append(nombre_raw)  # Usar nombre original del spreadsheet
                 puntos.append(row['puntos'])
     
@@ -419,15 +420,13 @@ def sorteo_puntitos_presentes(usuarios_activos, admins_list):
         return "No hay participantes"
     
     # Normalizar nombres de admins para comparación
-    admins_lower = [admin.lower() for admin in admins_list]
-    
     # Normalizar nombres de usuarios activos
     usuarios_activos_lower = {usuario.lower() for usuario in usuarios_activos}
-    
+
     # Filtrar usuarios: deben estar activos, no ser admins, y tener datos válidos
     nombres_filtrados = []
     puntos_filtrados = []
-    
+
     for row in df:
         if 'nombre' in row and 'puntos' in row:
             nombre_raw = row['nombre']
@@ -436,7 +435,7 @@ def sorteo_puntitos_presentes(usuarios_activos, admins_list):
                 continue
             nombre = nombre_raw.lower()
             # Incluir solo si está activo y no es admin
-            if nombre in usuarios_activos_lower and nombre not in admins_lower:
+            if nombre in usuarios_activos_lower and nombre not in admins_list:
                 nombres_filtrados.append(nombre_raw)  # Usar nombre original del spreadsheet
                 puntos_filtrados.append(row['puntos'])
     
@@ -684,117 +683,32 @@ def validar_restriccion_escupir(restricciones: list, dia_semana: str):
     # No hay restricciones activas
     return None
 
-def registrar_victoria_sorteo(nombre: str):
-    """
-    Registra una victoria en sorteo para un usuario en el spreadsheet
-    
-    Incrementa en 1 el contador de sorteos ganados por el usuario.
-    Si el usuario no existe en la hoja de registros, lo crea con valores iniciales.
-    Utiliza la quinta hoja (worksheet 4) del documento de Google Sheets.
-    
-    Args:
-        nombre (str): Nombre del usuario ganador (se normaliza automáticamente)
-        
-    Returns:
-        None
-        
-    Structure de la hoja:
-        - Columna 1: nombre
-        - Columna 2: sorteos_ganados
-        - Columna 3: torneos_ganados
-        - Columna 4: timbas_ganadas
-        - Columna 5: margaritas_ganadas
-        - Columna 6: escupitajo_record
-        
-    Example:
-        >>> registrar_victoria_sorteo("usuario1")  # Primera victoria en sorteo
-        >>> registrar_victoria_sorteo("usuario1")  # Segunda victoria en sorteo
-        
-    Note:
-        - Si el usuario no existe, se crea con: sorteos_ganados=1, torneos_ganados=0, timbas_ganadas=0, margaritas_ganadas=0, escupitajo_record=0
-        - Si el usuario existe, solo incrementa sorteos_ganados en 1
-        - La hoja debe existir previamente (worksheet 4)
-    """
-    nombre = nombre.lower().lstrip("@")
-    
+def _registrar_en_victorias(nombre: str, col: int, campo: str, cant: int = 1) -> bool:
+    """Helper interno: suma `cant` en la columna `col` del worksheet 4 para el usuario."""
     try:
-        hoja = sh.get_worksheet(4)
-        df = hoja.get_all_records()
-        
-        # Buscar si el usuario ya existe
-        for idx, row in enumerate(df):
-            if row.get('nombre') == nombre:
-                # Usuario existe, incrementar sorteos ganados
-                sorteos_actuales = row.get('sorteos_ganados', 0)
-                hoja.update_cell(idx + 2, 2, sorteos_actuales + 1)
-                logger.info(f"Victoria en sorteo registrada para {nombre}: {sorteos_actuales + 1} sorteos ganados")
-                return
-        
-        # Usuario no existe, crear nuevo registro
-        nuevo_registro = [nombre, 1, 0, 0, 0, 0]  # sorteos=1, torneos=0, timbas=0, margaritas=0, escupitajo_record=0
-        hoja.append_row(nuevo_registro)
-        logger.info(f"Nuevo usuario en registros de victorias: {nombre} con 1 sorteo ganado")
-        
+        with _sheet_lock:
+            hoja = sh.get_worksheet(4)
+            df = hoja.get_all_records()
+            for idx, row in enumerate(df):
+                if row.get('nombre') == nombre:
+                    actual = int(row.get(campo, 0) or 0)
+                    hoja.update_cell(idx + 2, col, actual + cant)
+                    logger.info(f"{campo} actualizado para {nombre}: {actual + cant}")
+                    return True
+            nuevo = [nombre, 0, 0, 0, 0, 0]
+            nuevo[col - 1] = cant
+            hoja.append_row(nuevo)
+            logger.info(f"Nuevo registro de victorias para {nombre} ({campo}={cant})")
+            return True
     except Exception as e:
-        logger.error(f"Error al registrar victoria en sorteo para {nombre}: {e}")
+        logger.error(f"Error registrando {campo} para {nombre}: {e}")
+        return False
+
+def registrar_victoria_sorteo(nombre: str):
+    _registrar_en_victorias(nombre.lower().lstrip("@"), col=2, campo='sorteos_ganados')
 
 def registrar_victoria_torneo(nombre: str, cant: int = 1):
-    """
-    Registra una victoria en torneo de escupitajos para un usuario en el spreadsheet
-    
-    Incrementa o decrementa el contador de torneos ganados por el usuario.
-    Si el usuario no existe en la hoja de registros, lo crea con valores iniciales.
-    Utiliza la quinta hoja (worksheet 4) del documento de Google Sheets.
-    
-    Args:
-        nombre (str): Nombre del usuario ganador (se normaliza automáticamente)
-        cant (int): Cantidad a modificar (default: 1). Puede ser negativo para restar
-        
-    Returns:
-        None
-        
-    Structure de la hoja:
-        - Columna 1: nombre
-        - Columna 2: sorteos_ganados
-        - Columna 3: torneos_ganados
-        - Columna 4: timbas_ganadas
-        - Columna 5: margaritas_ganadas
-        - Columna 6: escupitajo_record
-        
-    Example:
-        >>> registrar_victoria_torneo("usuario1")  # Suma 1 torneo ganado
-        >>> registrar_victoria_torneo("usuario1", cant=-1)  # Resta 1 torneo ganado
-        >>> registrar_victoria_torneo("usuario2", cant=1)  # Suma 1 torneo ganado
-        
-    Note:
-        - Si el usuario no existe, se crea con: sorteos_ganados=0, torneos_ganados=cant, timbas_ganadas=0, margaritas_ganadas=0, escupitajo_record=0
-        - Si el usuario existe, incrementa/decrementa torneos_ganados en cant
-        - Funciona igual que funcion_puntitos() pero para el contador de torneos
-        - La hoja debe existir previamente (worksheet 4)
-    """
-    nombre = nombre.lower().lstrip("@")
-    
-    try:
-        hoja = sh.get_worksheet(4)
-        df = hoja.get_all_records()
-        
-        # Buscar si el usuario ya existe
-        for idx, row in enumerate(df):
-            if row.get('nombre') == nombre:
-                # Usuario existe, modificar torneos ganados
-                torneos_actuales = row.get('torneos_ganados', 0)
-                nuevos_torneos = torneos_actuales + cant
-                hoja.update_cell(idx + 2, 3, nuevos_torneos)
-                logger.info(f"Victoria en torneo {'sumada' if cant > 0 else 'restada'} para {nombre}: {nuevos_torneos} torneos ganados")
-                return
-        
-        # Usuario no existe, crear nuevo registro
-        nuevo_registro = [nombre, 0, cant, 0, 0, 0]  # sorteos=0, torneos=cant, timbas=0, margaritas=0, escupitajo_record=0
-        hoja.append_row(nuevo_registro)
-        logger.info(f"Nuevo usuario en registros de victorias: {nombre} con {cant} torneo(s) ganado(s)")
-        
-    except Exception as e:
-        logger.error(f"Error al registrar victoria en torneo para {nombre}: {e}")
+    _registrar_en_victorias(nombre.lower().lstrip("@"), col=3, campo='torneos_ganados', cant=cant)
 
 def consulta_victorias(nombre: str):
     """
@@ -853,177 +767,31 @@ def consulta_victorias(nombre: str):
         }
 
 def registrar_victoria_timba(nombre: str):
-    """
-    Registra una victoria en timba para un usuario en el spreadsheet
-    
-    Incrementa en 1 el contador de timbas ganadas por el usuario.
-    Si el usuario no existe en la hoja de registros, lo crea con valores iniciales.
-    Utiliza la quinta hoja (worksheet 4) del documento de Google Sheets.
-    
-    Args:
-        nombre (str): Nombre del usuario ganador (se normaliza automáticamente)
-        
-    Returns:
-        None
-        
-    Structure de la hoja:
-        - Columna 1: nombre
-        - Columna 2: sorteos_ganados
-        - Columna 3: torneos_ganados
-        - Columna 4: timbas_ganadas
-        - Columna 5: margaritas_ganadas
-        - Columna 6: escupitajo_record
-        
-    Example:
-        >>> registrar_victoria_timba("usuario1")  # Primera victoria en timba
-        >>> registrar_victoria_timba("usuario1")  # Segunda victoria en timba
-        
-    Note:
-        - Si el usuario no existe, se crea con: sorteos_ganados=0, torneos_ganados=0, timbas_ganadas=1, margaritas_ganadas=0, escupitajo_record=0
-        - Si el usuario existe, solo incrementa timbas_ganadas en 1
-        - La hoja debe existir previamente (worksheet 4)
-    """
-    nombre = nombre.lower().lstrip("@")
-    
-    try:
-        hoja = sh.get_worksheet(4)
-        df = hoja.get_all_records()
-        
-        # Buscar si el usuario ya existe
-        for idx, row in enumerate(df):
-            if row.get('nombre') == nombre:
-                # Usuario existe, incrementar timbas ganadas
-                timbas_actuales = int(row.get('timbas_ganadas', 0) or 0)
-                hoja.update_cell(idx + 2, 4, timbas_actuales + 1)
-                logger.info(f"Victoria en timba registrada para {nombre}: {timbas_actuales + 1} timbas ganadas")
-                return
-        
-        # Usuario no existe, crear nuevo registro
-        nuevo_registro = [nombre, 0, 0, 1, 0, 0]  # sorteos=0, torneos=0, timbas=1, margaritas=0, escupitajo_record=0
-        hoja.append_row(nuevo_registro)
-        logger.info(f"Nuevo usuario en registros de victorias: {nombre} con 1 timba ganada")
-        
-    except Exception as e:
-        logger.error(f"Error al registrar victoria en timba para {nombre}: {e}")
+    _registrar_en_victorias(nombre.lower().lstrip("@"), col=4, campo='timbas_ganadas')
 
 def registrar_victoria_margarita(nombre: str):
-    """
-    Registra una victoria en margarita para un usuario en el spreadsheet
-    
-    Incrementa en 1 el contador de margaritas ganadas por el usuario.
-    Si el usuario no existe en la hoja de registros, lo crea con valores iniciales.
-    Utiliza la quinta hoja (worksheet 4) del documento de Google Sheets.
-    
-    Args:
-        nombre (str): Nombre del usuario ganador (se normaliza automáticamente)
-        
-    Returns:
-        None
-        
-    Structure de la hoja:
-        - Columna 1: nombre
-        - Columna 2: sorteos_ganados
-        - Columna 3: torneos_ganados
-        - Columna 4: timbas_ganadas
-        - Columna 5: margaritas_ganadas
-        - Columna 6: escupitajo_record
-        
-    Example:
-        >>> registrar_victoria_margarita("usuario1")  # Primera victoria en margarita
-        >>> registrar_victoria_margarita("usuario1")  # Segunda victoria en margarita
-        
-    Note:
-        - Si el usuario no existe, se crea con: sorteos_ganados=0, torneos_ganados=0, timbas_ganadas=0, margaritas_ganadas=1, escupitajo_record=0
-        - Si el usuario existe, solo incrementa margaritas_ganadas en 1
-        - La hoja debe existir previamente (worksheet 4)
-    """
-    nombre = nombre.lower().lstrip("@")
-    
-    try:
-        hoja = sh.get_worksheet(4)
-        df = hoja.get_all_records()
-        
-        # Buscar si el usuario ya existe
-        for idx, row in enumerate(df):
-            if row.get('nombre') == nombre:
-                # Usuario existe, incrementar margaritas ganadas
-                margaritas_actuales = int(row.get('margaritas_ganadas', 0) or 0)
-                hoja.update_cell(idx + 2, 5, margaritas_actuales + 1)
-                logger.info(f"Victoria en margarita registrada para {nombre}: {margaritas_actuales + 1} margaritas ganadas")
-                return
-        
-        # Usuario no existe, crear nuevo registro
-        nuevo_registro = [nombre, 0, 0, 0, 1, 0]  # sorteos=0, torneos=0, timbas=0, margaritas=1, escupitajo_record=0
-        hoja.append_row(nuevo_registro)
-        logger.info(f"Nuevo usuario en registros de victorias: {nombre} con 1 margarita ganada")
-        
-    except Exception as e:
-        logger.error(f"Error al registrar victoria en margarita para {nombre}: {e}")
+    _registrar_en_victorias(nombre.lower().lstrip("@"), col=5, campo='margaritas_ganadas')
 
-def registrar_record_escupitajo(nombre: str, distancia: int):
-    """
-    Registra o actualiza el récord de escupitajo de un usuario en el spreadsheet
-    
-    Solo actualiza el récord si la nueva distancia es mayor que la registrada.
-    Si el usuario no existe en la hoja de registros, lo crea con valores iniciales.
-    Utiliza la quinta hoja (worksheet 4) del documento de Google Sheets.
-    
-    Args:
-        nombre (str): Nombre del usuario (se normaliza automáticamente)
-        distancia (int): Distancia del escupitajo en centímetros
-        
-    Returns:
-        bool: True si se actualizó el récord, False si no
-        
-    Structure de la hoja:
-        - Columna 1: nombre
-        - Columna 2: sorteos_ganados
-        - Columna 3: torneos_ganados
-        - Columna 4: timbas_ganadas
-        - Columna 5: margaritas_ganadas
-        - Columna 6: escupitajo_record
-        
-    Example:
-        >>> registrar_record_escupitajo("usuario1", 150)  # Primer escupitajo, se guarda
-        True
-        >>> registrar_record_escupitajo("usuario1", 120)  # Menor que el récord, no se actualiza
-        False
-        >>> registrar_record_escupitajo("usuario1", 200)  # Nuevo récord!
-        True
-        
-    Note:
-        - Si el usuario no existe, se crea con: sorteos=0, torneos=0, timbas=0, margaritas=0, escupitajo_record=distancia
-        - Si el usuario existe, solo actualiza si la nueva distancia es mayor
-        - La hoja debe existir previamente (worksheet 4)
-    """
+def registrar_record_escupitajo(nombre: str, distancia: int) -> bool:
+    """Actualiza el récord de escupitajo solo si la nueva distancia es mayor. Retorna True si hubo nuevo récord."""
     nombre = nombre.lower().lstrip("@")
-    
     try:
-        hoja = sh.get_worksheet(4)
-        df = hoja.get_all_records()
-        
-        # Buscar si el usuario ya existe
-        for idx, row in enumerate(df):
-            if row.get('nombre') == nombre:
-                # Usuario existe, verificar si es un nuevo récord
-                record_actual = int(row.get('escupitajo_record', 0) or 0)
-                
-                if distancia > record_actual:
-                    hoja.update_cell(idx + 2, 6, distancia)
-                    logger.info(f"Nuevo récord de escupitajo para {nombre}: {distancia} cm (anterior: {record_actual} cm)")
-                    return True
-                else:
-                    logger.debug(f"Escupitajo de {nombre} ({distancia} cm) no supera su récord ({record_actual} cm)")
+        with _sheet_lock:
+            hoja = sh.get_worksheet(4)
+            df = hoja.get_all_records()
+            for idx, row in enumerate(df):
+                if row.get('nombre') == nombre:
+                    record_actual = int(row.get('escupitajo_record', 0) or 0)
+                    if distancia > record_actual:
+                        hoja.update_cell(idx + 2, 6, distancia)
+                        logger.info(f"Nuevo récord de escupitajo para {nombre}: {distancia} cm (anterior: {record_actual} cm)")
+                        return True
                     return False
-        
-        # Usuario no existe, crear nuevo registro con este escupitajo como récord
-        nuevo_registro = [nombre, 0, 0, 0, 0, distancia]  # sorteos=0, torneos=0, timbas=0, margaritas=0, escupitajo_record=distancia
-        hoja.append_row(nuevo_registro)
-        logger.info(f"Nuevo usuario en registros de victorias: {nombre} con récord de escupitajo de {distancia} cm")
-        return True
-        
+            hoja.append_row([nombre, 0, 0, 0, 0, distancia])
+            logger.info(f"Nuevo registro de victorias para {nombre} (escupitajo_record={distancia})")
+            return True
     except Exception as e:
-        logger.error(f"Error al registrar récord de escupitajo para {nombre}: {e}")
+        logger.error(f"Error registrando récord de escupitajo para {nombre}: {e}")
         return False
 
 def top_records_escupitajo(n: int = 3):

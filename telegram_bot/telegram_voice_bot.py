@@ -1,10 +1,11 @@
+import asyncio
 import os
 import tempfile
 import warnings
 from telegram import Update
 from telegram.ext import Application, MessageHandler, filters, ContextTypes
 
-from utils.utiles_general import play_sound, resource_path
+from utils.utiles_general import play_sounds_sequential, resource_path
 from telegram_bot.ffmpeg_manager import FFmpegManager
 from telegram_bot.audio_converter import AudioConverter
 
@@ -19,6 +20,7 @@ class TelegramVoiceBot:
         self.ffmpeg_manager = FFmpegManager()
         self.converter = AudioConverter(self.ffmpeg_manager.get_ffmpeg_path())
         self.temp_files = []
+        self._started = False
     
     async def handle_voice_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not update.message or not update.message.voice:
@@ -38,9 +40,13 @@ class TelegramVoiceBot:
             
             if wav_file:
                 self.temp_files.append(wav_file)
-                play_sound(resource_path("storage/suatencion.wav"), bypass_mute=True)
-                play_sound(wav_file, bypass_mute=True)
-        except:
+                await asyncio.to_thread(
+                    play_sounds_sequential,
+                    resource_path("storage/suatencion.wav"),
+                    wav_file,
+                    bypass_mute=True,
+                )
+        except Exception:
             pass
     
     async def start_async(self):
@@ -56,11 +62,25 @@ class TelegramVoiceBot:
         await self.app.initialize()
         await self.app.start()
         await self.app.updater.start_polling()
+        self._started = True
     
+    async def stop_async(self):
+        if not self._started:
+            self.cleanup()
+            return
+        try:
+            if self.app.updater.running:
+                await self.app.updater.stop()
+            await self.app.stop()
+            await self.app.shutdown()
+        except Exception:
+            pass
+        self.cleanup()
+
     def cleanup(self):
         for file_path in self.temp_files:
             try:
                 os.unlink(file_path)
-            except:
+            except Exception:
                 pass
         self.temp_files.clear()

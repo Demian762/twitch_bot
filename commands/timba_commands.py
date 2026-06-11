@@ -27,6 +27,7 @@ Version: 311025 (Nueva implementación)
 """
 
 from twitchio.ext import commands
+import asyncio
 from random import randint
 
 # Imports locales
@@ -167,11 +168,11 @@ class TimbaCommand(BaseCommand):
     async def _procesar_adivinanza(self, usuario: str, numero: int):
         """
         Procesa una adivinanza de número
-        
+
         Puede ser:
         - Aceptación de un reto (primera adivinanza)
         - Adivinanza durante un juego activo
-        
+
         Args:
             usuario (str): Usuario que adivina
             numero (int): Número adivinado
@@ -180,17 +181,17 @@ class TimbaCommand(BaseCommand):
         if numero < 1 or numero > 100:
             await mensaje(f"@{usuario}, el número debe estar entre 1 y 100.")
             return
-        
+
         # Si hay un reto pendiente y el usuario es el retado, aceptar el reto
         if self.reto_pendiente and self.reto_pendiente['retado'] == usuario:
             await self._aceptar_reto(usuario, numero)
             return
-        
+
         # Si hay un juego activo, procesar la adivinanza
         if self.juego_activo:
             await self._procesar_turno(usuario, numero)
             return
-        
+
         # No hay reto pendiente ni juego activo
         await mensaje(f"@{usuario}, no hay ningún juego activo. Usá !timba @usuario para retar a alguien.")
     
@@ -206,34 +207,31 @@ class TimbaCommand(BaseCommand):
             primer_numero (int): Primera adivinanza del retado
         """
         retador = self.reto_pendiente['retador']
-        
+        self.reto_pendiente = None  # Limpiar antes del primer await
+
         # Verificar si alguno es admin
         retador_es_admin = retador in admins
         retado_es_admin = retado in admins
         con_apuesta = not (retador_es_admin or retado_es_admin)
-        
+
         # Quitar puntos si no son admins
         if con_apuesta:
-            funcion_puntitos(retador, -5)
-            funcion_puntitos(retado, -5)
-        
+            await asyncio.to_thread(funcion_puntitos, retador, -5)
+            await asyncio.to_thread(funcion_puntitos, retado, -5)
+
         # Generar número secreto
         numero_secreto = randint(1, 100)
-        
+
         # Crear juego activo
         self.juego_activo = {
             'jugador1': retador,
             'jugador2': retado,
             'numero_secreto': numero_secreto,
             'turno_actual': retado,  # El retado juega primero
-            'con_apuesta': con_apuesta
+            'con_apuesta': con_apuesta,
         }
-        
-        # Log del número secreto para debugging
+
         logger.info(f"Timba iniciada: {retador} vs {retado} | Número secreto: {numero_secreto}")
-        
-        # Limpiar reto pendiente
-        self.reto_pendiente = None
         
         # Mensaje de inicio
         if con_apuesta:
@@ -241,7 +239,6 @@ class TimbaCommand(BaseCommand):
         else:
             await mensaje(f"¡Timba iniciada entre @{retador} y @{retado}! (Sin apuesta porque hay un admin jugando). ¡A adivinar un número del 1 al 100!")
         
-        # Evaluar la primera adivinanza
         await self._evaluar_numero(retado, primer_numero)
     
     async def _procesar_turno(self, usuario: str, numero: int):
@@ -321,15 +318,14 @@ class TimbaCommand(BaseCommand):
         # Registrar victoria en timba para el ganador
         registrar_victoria_timba(ganador)
         
-        # Otorgar puntos si fue con apuesta
-        if self.juego_activo['con_apuesta']:
-            funcion_puntitos(ganador, 10)
+        con_apuesta = self.juego_activo['con_apuesta']
+        self.juego_activo = None  # Limpiar antes del primer await
+
+        if con_apuesta:
+            await asyncio.to_thread(funcion_puntitos, ganador, 10)
             await mensaje(f"🎉 ¡@{ganador} adivinó el número {numero_secreto} y ganó 10 puntitos! @{perdedor} mejor suerte la próxima.")
         else:
             await mensaje(f"🎉 ¡@{ganador} adivinó el número {numero_secreto} y ganó el juego! @{perdedor} mejor suerte la próxima.")
-        
-        # Limpiar el juego
-        self.juego_activo = None
     
     async def _finalizar_juego(self, usuario: str):
         """

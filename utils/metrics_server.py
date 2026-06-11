@@ -152,7 +152,6 @@ class RTSSCollector:
 
                 if name not in RTSSCollector._vistos:
                     RTSSCollector._vistos.add(name)
-                    logger.info(f"[RTSS] Proceso detectado: '{basename}' (PID {pid})")
 
                 if basename.lower() in RTSSCollector._EXCLUIDOS:
                     continue

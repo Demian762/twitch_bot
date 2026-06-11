@@ -8,6 +8,7 @@ Author: Demian762
 Version: 250927
 """
 
+import asyncio
 from twitchio.ext import commands
 from random import choice
 
@@ -180,7 +181,7 @@ class PointsCommands(BaseCommand):
         # Obtener usuarios activos excluyendo admins
         usuarios_elegibles = [
             usuario for usuario in self.bot.state.usuarios_activos 
-            if usuario.lower() not in [admin.lower() for admin in admins]
+            if usuario.lower() not in admins
         ]
         
         # Verificar que haya al menos 3 usuarios elegibles
@@ -192,8 +193,8 @@ class PointsCommands(BaseCommand):
         ganador = choice(usuarios_elegibles)
         
         # Otorgar 3 puntitos
-        funcion_puntitos(ganador, 3)
-        
+        await asyncio.to_thread(funcion_puntitos, ganador, 3)
+
         # Marcar comando como usado
         self.bot.state.random_usado = True
         

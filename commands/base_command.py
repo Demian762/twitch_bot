@@ -40,6 +40,11 @@ class BaseCommand(commands.Component):
         self.bot = bot
         self.logger = logger
         
+    async def responder_con_claude(self, ctx, contexto: str):
+        claude_cog = self.bot.my_cogs.get("ClaudioCommands")
+        if claude_cog:
+            await claude_cog.claude_para_comando(ctx.author.name.lower(), contexto)
+
     async def check_coma_etilico(self):
         """
         Verifica si el bot está en coma etílico y responde apropiadamente

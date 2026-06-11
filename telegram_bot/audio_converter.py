@@ -22,5 +22,5 @@ class AudioConverter:
             if result.returncode == 0 and os.path.exists(wav_path):
                 return wav_path
             return None
-        except:
+        except Exception:
             return None

@@ -14,6 +14,7 @@ Author: Demian762
 Version: 250927
 """
 
+import asyncio
 from twitchio.ext import commands
 from utils.mensaje import mensaje
 from utils.puntitos_manager import funcion_puntitos
@@ -25,7 +26,7 @@ class BasicCommands(BaseCommand):
     Cog que maneja comandos básicos y funcionalidades esenciales
     
     Attributes:
-        puntitos_dados (list): Lista de usuarios que ya recibieron su puntito diario
+        puntitos_dados (set): Usuarios que ya recibieron su puntito diario
         proteccion_activa (bool): Estado del horario de protección al menor
     """
     
@@ -37,7 +38,7 @@ class BasicCommands(BaseCommand):
             bot: Instancia del bot principal
         """
         super().__init__(bot)
-        self.puntitos_dados = []
+        self.puntitos_dados = set()
         self.proteccion_activa = False
 
     @commands.command(aliases=("buenas",))
@@ -66,16 +67,15 @@ class BasicCommands(BaseCommand):
         if await self.check_coma_etilico():
             return
         nombre = ctx.author.name.lower()
-        await mensaje([f"hola {nombre}!"])
         if nombre in admins:
+            await self.responder_con_claude(ctx, f"{nombre} llegó al stream.")
             return
         if nombre not in self.puntitos_dados:
-            self.puntitos_dados.append(nombre)
-            # El comando !hola da puntitos automáticamente (el bot los da, no hay donante humano)
-            funcion_puntitos(nombre, 1)
-            await mensaje(f'@{nombre.lstrip("@")} acaba de sumar un puntito!')
+            self.puntitos_dados.add(nombre)
+            await asyncio.to_thread(funcion_puntitos, nombre, 1)
+            await self.responder_con_claude(ctx, f"{nombre} llegó al stream y recibió su puntito de bienvenida diario.")
         else:
-            await mensaje(f'Ya tenés tu puntito de hoy @{nombre.lstrip("@")}, no jodas....')
+            await self.responder_con_claude(ctx, f"{nombre} intentó saludar de nuevo pero ya recibió su puntito de hoy.")
 
     @commands.command(aliases=("salvar",))
     async def guardar(self, ctx: commands.Context):

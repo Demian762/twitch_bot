@@ -9,6 +9,7 @@ Author: Demian762
 Version: 250927
 """
 
+import asyncio
 from twitchio.ext import commands
 from random import choice
 from Levenshtein import distance as lev
@@ -70,9 +71,13 @@ class InsultsCommands(BaseCommand):
         enviar = []
 
         if not self.peleas.get(nombre):
+            # Primera vez en la sesión: crear entrada. Intencionalmente NO se borra
+            # al terminar — el score terminal actúa como bloqueo de re-uso (ver abajo).
             self.peleas[nombre] = {"hist":[], "score": [0, 0]}
             enviar.append(f"{nombre} retó al BOT a una pelea de insultos! Debe ganarle tres veces!")
 
+        # Bloqueo de re-uso: si la pelea ya terminó (score >= 3), la entrada sigue
+        # presente con el score final. No borrar self.peleas[nombre] al ganar/perder.
         if self.peleas[nombre]["score"][0] >= 3:
             await mensaje("La pelea terminó! Ya me ganaste!")
             return
@@ -96,7 +101,7 @@ class InsultsCommands(BaseCommand):
 
                 if self.peleas[nombre]["score"][0] >= 3:
                     enviar.append(f"{nombre} ganó la pelea de insultos!")
-                    funcion_puntitos(nombre, cant=5)
+                    await asyncio.to_thread(funcion_puntitos, nombre, 5)
                     enviar.append(f'{nombre} acaba de sumar cinco puntitos!')
                     await mensaje(enviar)
                     return

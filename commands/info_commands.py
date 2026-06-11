@@ -8,6 +8,7 @@ Author: Demian762
 Version: 250927
 """
 
+import asyncio
 from twitchio.ext import commands
 from utils.logger import logger
 from utils.mensaje import mensaje
@@ -143,8 +144,7 @@ class InfoCommands(BaseCommand):
             return
         
         try:
-            # Obtener dato aleatorio de Wikipedia
-            dato = obtener_dato_aleatorio()
+            dato = await asyncio.to_thread(obtener_dato_aleatorio)
             await mensaje(dato)
         except Exception as e:
             logger.error(f"Error en comando !dato: {e}")

@@ -65,7 +65,7 @@ class ExtraPointsCommands(BaseCommand):
             await mensaje(f'@{autor}, solo los admins pueden usar este comando!')
             return
             
-        exito, error = funcion_puntitos(nombre, 5, donante=autor)
+        exito, error = await asyncio.to_thread(funcion_puntitos, nombre, 5, donante=autor)
         if exito:
             await mensaje(f'@{nombre.lstrip("@")} acaba de sumar cinco puntitos de bienvenida!')
         else:
@@ -93,14 +93,14 @@ class ExtraPointsCommands(BaseCommand):
             return
             
         autor = ctx.author.name.lower()
-        exito, error = funcion_puntitos(nombre, 1, donante=autor)
+        exito, error = await asyncio.to_thread(funcion_puntitos, nombre, 1, donante=autor)
         if exito:
             await mensaje(f'@{nombre.lstrip("@")} acaba de sumar un puntito!')
         else:
             await mensaje(f'@{autor}, {error}')
 
     @commands.command()
-    async def top(self, ctx: commands.Context, n=3):
+    async def top(self, ctx: commands.Context, n: int = 3):
         if await self.check_coma_etilico():
             return
             
@@ -126,13 +126,10 @@ class ExtraPointsCommands(BaseCommand):
                 await mensaje(ganador)
                 return
             
-            texto = ["¡SORTEO INICIADO!","sorteando...."]
-            await mensaje(texto)
-            await asyncio.sleep(randint(1,30))
-            texto = ["AND THE WINNER IS:", ganador]
-            await mensaje(texto)
-            # Registrar la victoria del sorteo en el spreadsheet
+            await mensaje(["¡SORTEO INICIADO!", "sorteando...."])
+            await asyncio.sleep(randint(1, 30))
             registrar_victoria_sorteo(ganador)
+            await mensaje(["AND THE WINNER IS:", ganador])
 
     @commands.command()
     async def sorteopresentes(self, ctx: commands.Context):
@@ -156,13 +153,10 @@ class ExtraPointsCommands(BaseCommand):
                 await mensaje(ganador)
                 return
             
-            texto = ["¡SORTEO DE PRESENTES INICIADO!","sorteando...."]
-            await mensaje(texto)
-            await asyncio.sleep(randint(1,30))
-            texto = ["AND THE WINNER IS:", ganador]
-            await mensaje(texto)
-            # Registrar la victoria del sorteo en el spreadsheet (misma columna que !sorteo)
+            await mensaje(["¡SORTEO DE PRESENTES INICIADO!", "sorteando...."])
+            await asyncio.sleep(randint(1, 30))
             registrar_victoria_sorteo(ganador)
+            await mensaje(["AND THE WINNER IS:", ganador])
 
     @commands.command()
     async def admins(self, ctx: commands.Context):

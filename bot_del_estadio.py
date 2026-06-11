@@ -22,6 +22,7 @@ Repository: https://github.com/Demian762/twitch_bot
 import asyncio
 import os
 import sys
+import time
 from random import choice
 
 # Imports de terceros
@@ -78,6 +79,17 @@ def _token_file_path() -> str:
     return os.path.join(base, '.tio.tokens.json')
 
 
+_KEYWORDS_BOT = (
+    "botdelestadio", "bot del estadio", "claudio",
+    "está el bot", "esta el bot", "hay bot",
+    "bot activo", "bot presente", "bot online",
+    "bot dormido", "bot muerto",
+    "funciona el bot", "anda el bot",
+    "oye bot", "ey bot", "hey bot", "che bot",
+)
+_AUTO_RESPUESTA_COOLDOWN = 90  # segundos entre respuestas automáticas
+
+
 class Bot(commands.Bot):
     """
     Clase principal del BotDelEstadio que extiende twitchio.ext.commands.Bot (V3)
@@ -129,6 +141,9 @@ class Bot(commands.Bot):
         play_sound(audio_path)
         self.telegram_bot = TelegramVoiceBot(telegram_bot_token)
 
+        self._auto_respuesta_ts = 0.0
+        self._last_event_ts = time.monotonic()
+        self._chat_log_size = 0
         logger.info("Bot inicializado correctamente")
 
     async def load_tokens(self, **_) -> None:
@@ -180,12 +195,15 @@ class Bot(commands.Bot):
         )
         await self.subscribe_websocket(payload=payload)
 
-        # Suscribir a canjes de puntos del canal
+        # Suscribir a canjes de puntos del canal (requiere token del broadcaster con channel:read:redemptions)
         for reward_id in CAMBIO_CAMBIO_REWARDS:
-            await self.subscribe_websocket(payload=eventsub.ChannelPointsRedeemAddSubscription(
-                broadcaster_user_id=broadcaster.id,
-                reward_id=reward_id,
-            ))
+            await self.subscribe_websocket(
+                payload=eventsub.ChannelPointsRedeemAddSubscription(
+                    broadcaster_user_id=broadcaster.id,
+                    reward_id=reward_id,
+                ),
+                token_for=str(broadcaster.id),
+            )
 
         # Obtener conteos iniciales de followers y subscribers
         broadcaster_id_str = str(broadcaster.id)
@@ -266,9 +284,11 @@ class Bot(commands.Bot):
         logger.info(f'Logueado a Twitch como {self.user}')
         logger.info(f'Versión del bot: {BUILD_DATE}')
         await mensaje("Hace su entrada, EL BOT DEL ESTADIO!")
-        await mensaje(get_mensaje_diade())
+        if msg_diade := get_mensaje_diade(fallback=False):
+            await mensaje(msg_diade)
         asyncio.create_task(self._start_telegram_bot())
         asyncio.create_task(self._notificar_discord_si_en_vivo())
+        asyncio.create_task(self._eventsub_watchdog())
 
     async def _notificar_discord_si_en_vivo(self):
         try:
@@ -293,13 +313,47 @@ class Bot(commands.Bot):
           - payload.chatter.name → nombre del usuario
           - payload.text        → contenido del mensaje (antes .content)
         """
-        # Ignorar mensajes del propio bot (V3 no tiene .echo)
+        # Registrar respuestas del bot en chat_log antes de salir, para que Claude
+        # tenga contexto de los resultados (ej: "el escupitajo llegó a 87 cm").
         if payload.chatter.id == self.bot_id:
+            entry_size = len("bot") + len(payload.text) + 4
+            self.state.chat_log.append({"user": "bot", "msg": payload.text})
+            self._chat_log_size += entry_size
+            while self._chat_log_size > 5000:
+                removed = self.state.chat_log.pop(0)
+                self._chat_log_size -= len(removed["user"]) + len(removed["msg"]) + 4
             return
+        self._last_event_ts = time.monotonic()
+
+        username = payload.chatter.name.lower()
 
         if payload.text.startswith('!'):
-            username = payload.chatter.name.lower()
             self.state.usuarios_activos.add(username)
+
+        entry_size = len(username) + len(payload.text) + 4
+        self.state.chat_log.append({"user": username, "msg": payload.text})
+        self._chat_log_size += entry_size
+        while self._chat_log_size > 5000:
+            removed = self.state.chat_log.pop(0)
+            self._chat_log_size -= len(removed["user"]) + len(removed["msg"]) + 4
+
+        # Respuesta automática por keyword, con cooldown global
+        texto_lower = payload.text.lower()
+        if (
+            not payload.text.startswith('!')
+            and any(kw in texto_lower for kw in _KEYWORDS_BOT)
+            and time.monotonic() - self._auto_respuesta_ts >= _AUTO_RESPUESTA_COOLDOWN
+        ):
+            claude_cog = self.my_cogs.get("ClaudioCommands")
+            if claude_cog:
+                self._auto_respuesta_ts = time.monotonic()
+                asyncio.create_task(
+                    claude_cog.claude_para_comando(
+                        username,
+                        payload.text,
+                        sufijo=" — usá !bot para seguir charlando!",
+                    )
+                )
 
         await self.process_commands(payload)
 
@@ -336,6 +390,7 @@ class Bot(commands.Bot):
         await mensaje("Ya rompiste el bot con ese comando...")
 
     async def event_custom_redemption_add(self, payload) -> None:
+        self._last_event_ts = time.monotonic()
         puntitos = CAMBIO_CAMBIO_REWARDS.get(payload.reward.id)
         if puntitos is None:
             return
@@ -345,10 +400,12 @@ class Bot(commands.Bot):
         logger.info(f"Redemption '{payload.reward.title}': +{puntitos} puntito(s) para {username}")
 
     async def event_follow(self, payload) -> None:
+        self._last_event_ts = time.monotonic()
         self.metrics.followers += 1
         logger.info(f"Nuevo follower — Total: {self.metrics.followers}")
 
     async def event_subscription(self, payload) -> None:
+        self._last_event_ts = time.monotonic()
         self.metrics.subscribers += 1
         logger.info(f"Nuevo sub — Total: {self.metrics.subscribers}")
 
@@ -356,7 +413,33 @@ class Bot(commands.Bot):
         self.metrics.subscribers = max(0, self.metrics.subscribers - 1)
         logger.info(f"Sub expirado — Total: {self.metrics.subscribers}")
 
+    async def _eventsub_watchdog(self) -> None:
+        DEAD_THRESHOLD = 20 * 60   # 20 min sin eventos → sospechoso
+        CHECK_INTERVAL = 5 * 60    # Chequear cada 5 min
+        await asyncio.sleep(CHECK_INTERVAL)  # Dar tiempo al bot para arrancar
+        while True:
+            await asyncio.sleep(CHECK_INTERVAL)
+            elapsed = time.monotonic() - self._last_event_ts
+            if elapsed < DEAD_THRESHOLD:
+                continue
+            try:
+                stream = None
+                async for s in self.fetch_streams(user_ids=[self.broadcaster_id], max_results=1):
+                    stream = s
+                    break
+                if not stream:
+                    continue  # Stream offline, silencio esperado
+            except Exception:
+                continue
+            logger.critical(
+                f"Watchdog EventSub: stream en vivo pero sin eventos por {elapsed/60:.1f} min. Reiniciando proceso..."
+            )
+            import subprocess
+            subprocess.Popen([sys.executable] + sys.argv)
+            sys.exit(0)
+
     async def close(self) -> None:
+        await self.telegram_bot.stop_async()
         await self.metrics.stop()
         await super().close()
 

@@ -163,7 +163,7 @@ class Installer:
             if not self._pip_install(install_dir):
                 return
             self._copy_secretos(install_dir)
-            self._create_shortcut(install_dir)
+            self._create_shortcut(install_dir, python_exe)
             self._log("\n✓ ¡Instalación completa!")
             self.root.after(
                 0,
@@ -243,15 +243,29 @@ class Installer:
         dest = install_dir / "utils" / "secretos.py"
         shutil.copy(self.secretos_path, dest)  # type: ignore[arg-type]
 
-    def _create_shortcut(self, install_dir: Path):
+    def _find_pythonw(self, python_exe: str) -> str:
+        """Encuentra pythonw.exe del Python base del sistema (no del venv)."""
+        full = shutil.which("python") if python_exe == "python" else python_exe
+        if full:
+            candidate = os.path.join(os.path.dirname(os.path.abspath(full)), "pythonw.exe")
+            if os.path.exists(candidate):
+                return candidate
+        # Buscar en ubicaciones comunes de AppData
+        local = Path(os.environ.get("LOCALAPPDATA", ""))
+        for exe in sorted((local / "Programs" / "Python").glob("Python3*/pythonw.exe"), reverse=True):
+            if exe.exists():
+                return str(exe)
+        return "pythonw"  # último recurso: esperar que esté en PATH
+
+    def _create_shortcut(self, install_dir: Path, python_exe: str):
         self._log("→ Creando acceso directo en el escritorio...")
-        python_exe = install_dir / VENV_NAME / "Scripts" / "pythonw.exe"
-        launcher = install_dir / "bot_launcher.py"
+        pythonw = self._find_pythonw(python_exe)
+        launcher = install_dir / "bot_launcher.pyw"
         ps = (
             "$desktop = [System.Environment]::GetFolderPath('Desktop');"
             "$shortcut = Join-Path $desktop 'Bot del Estadio.lnk';"
             f"$s = (New-Object -COM WScript.Shell).CreateShortcut($shortcut);"
-            f"$s.TargetPath = '{python_exe}';"
+            f"$s.TargetPath = '{pythonw}';"
             f"$s.Arguments = '\"{launcher}\"';"
             f"$s.WorkingDirectory = '{install_dir}';"
             "$s.Save()"
@@ -260,7 +274,7 @@ class Installer:
         if result.returncode != 0:
             self._log(f"[!] No se pudo crear el acceso directo: {result.stderr.strip()}")
         else:
-            self._log("  Acceso directo creado OK")
+            self._log(f"  Acceso directo creado OK (python: {pythonw})")
 
     # ── Helpers ───────────────────────────────────────────────────────────────
 

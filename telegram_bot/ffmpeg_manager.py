@@ -26,7 +26,7 @@ class FFmpegManager:
     def _download_ffmpeg(self):
         try:
             url = "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip"
-            response = requests.get(url, stream=True)
+            response = requests.get(url, stream=True, timeout=60)
             zip_path = "ffmpeg.zip"
             
             with open(zip_path, 'wb') as f:
@@ -43,5 +43,5 @@ class FFmpegManager:
             
             os.unlink(zip_path)
             return self.ffmpeg_exe
-        except:
+        except Exception:
             return None
