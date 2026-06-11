@@ -269,7 +269,11 @@ class ClaudioCommands(BaseCommand):
 
         chat_log = self.bot.state.chat_log
         if chat_log:
-            lineas = ["CHAT RECIENTE DEL CANAL:"]
+            lineas = [
+                "CHAT RECIENTE DEL CANAL (esto es tu contexto real de lo que pasó — "
+                "si podés responder algo con esta información, respondé directo sin aclarar "
+                "que 'no tenés registro' o que 'no está en tu memoria'):"
+            ]
             acumulado = 0
             limite = 3000
             entradas = []
