@@ -284,7 +284,8 @@ class Bot(commands.Bot):
         logger.info(f'Logueado a Twitch como {self.user}')
         logger.info(f'Versión del bot: {BUILD_DATE}')
         await mensaje("Hace su entrada, EL BOT DEL ESTADIO!")
-        await mensaje(get_mensaje_diade())
+        if msg_diade := get_mensaje_diade(fallback=False):
+            await mensaje(msg_diade)
         asyncio.create_task(self._start_telegram_bot())
         asyncio.create_task(self._notificar_discord_si_en_vivo())
         asyncio.create_task(self._eventsub_watchdog())

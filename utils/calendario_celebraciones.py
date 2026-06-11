@@ -356,12 +356,16 @@ def get_celebraciones(fecha: date) -> list[str]:
     return resultado
 
 
-def get_mensaje_diade(fecha: date | None = None) -> str:
-    """Devuelve el mensaje listo para el chat sobre las celebraciones del día."""
+def get_mensaje_diade(fecha: date | None = None, fallback: bool = True) -> str | None:
+    """Devuelve el mensaje listo para el chat sobre las celebraciones del día.
+
+    Si fallback=False y no hay celebraciones, retorna None (útil al inicio del bot
+    para no enviar un mensaje vacío). Con fallback=True (default) siempre retorna str.
+    """
     if fecha is None:
         fecha = date.today()
     celebraciones = get_celebraciones(fecha)
     fecha_str = f"{fecha.day} de {_MESES[fecha.month]}"
     if not celebraciones:
-        return f"Hoy, {fecha_str}, no hay ninguna celebración registrada."
+        return f"Hoy, {fecha_str}, no hay ninguna celebración registrada." if fallback else None
     return f"Hoy, {fecha_str}: {' | '.join(celebraciones)}"
