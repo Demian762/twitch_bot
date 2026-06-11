@@ -99,7 +99,6 @@ class InsultsCommands(BaseCommand):
                     enviar.append(f"{nombre} ganó la pelea de insultos!")
                     await asyncio.to_thread(funcion_puntitos, nombre, 5)
                     enviar.append(f'{nombre} acaba de sumar cinco puntitos!')
-                    del self.peleas[nombre]
                     await mensaje(enviar)
                     return
 
@@ -110,7 +109,6 @@ class InsultsCommands(BaseCommand):
 
                 if self.peleas[nombre]["score"][1] >= 3:
                     enviar.append(f"{nombre} perdió la pelea de insultos!")
-                    del self.peleas[nombre]
                     await mensaje(enviar)
                     return
             
