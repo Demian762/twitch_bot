@@ -74,6 +74,7 @@ class BasicCommands(BaseCommand):
             self.puntitos_dados.add(nombre)
             await asyncio.to_thread(funcion_puntitos, nombre, 1)
             await self.responder_con_claude(ctx, f"{nombre} llegó al stream y recibió su puntito de bienvenida diario.")
+            await ctx.send(f"@{nombre} sumó 1 puntito! PogChamp")
         else:
             await self.responder_con_claude(ctx, f"{nombre} intentó saludar de nuevo pero ya recibió su puntito de hoy.")
 
