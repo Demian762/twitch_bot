@@ -249,10 +249,21 @@ class BotLauncher:
             return
         self.btn.config(state=tk.DISABLED, text="Deteniendo...")
         self._append("--- deteniendo bot ---\n")
+        threading.Thread(target=self._kill_tree, args=(proc,), daemon=True).start()
+
+    def _kill_tree(self, proc):
+        """Mata el proceso y todos sus hijos (para liberar el pipe de stdout)."""
         try:
-            proc.terminate()
+            subprocess.run(
+                ["taskkill", "/F", "/T", "/PID", str(proc.pid)],
+                capture_output=True,
+                creationflags=NO_WINDOW,
+            )
         except OSError:
-            pass
+            try:
+                proc.kill()
+            except OSError:
+                pass
 
     def _read_output(self):
         proc = self.process
