@@ -142,7 +142,7 @@ class Bot(commands.Bot):
         self.telegram_bot = TelegramVoiceBot(telegram_bot_token)
 
         self._auto_respuesta_ts = 0.0
-        self._last_event_ts = time.monotonic()
+        self._last_chat_ts = time.monotonic()
         self._chat_log_size = 0
         logger.info("Bot inicializado correctamente")
 
@@ -323,7 +323,7 @@ class Bot(commands.Bot):
                 removed = self.state.chat_log.pop(0)
                 self._chat_log_size -= len(removed["user"]) + len(removed["msg"]) + 4
             return
-        self._last_event_ts = time.monotonic()
+        self._last_chat_ts = time.monotonic()
 
         username = payload.chatter.name.lower()
 
@@ -390,7 +390,6 @@ class Bot(commands.Bot):
         await mensaje("Ya rompiste el bot con ese comando...")
 
     async def event_custom_redemption_add(self, payload) -> None:
-        self._last_event_ts = time.monotonic()
         puntitos = CAMBIO_CAMBIO_REWARDS.get(payload.reward.id)
         if puntitos is None:
             return
@@ -400,12 +399,10 @@ class Bot(commands.Bot):
         logger.info(f"Redemption '{payload.reward.title}': +{puntitos} puntito(s) para {username}")
 
     async def event_follow(self, payload) -> None:
-        self._last_event_ts = time.monotonic()
         self.metrics.followers += 1
         logger.info(f"Nuevo follower — Total: {self.metrics.followers}")
 
     async def event_subscription(self, payload) -> None:
-        self._last_event_ts = time.monotonic()
         self.metrics.subscribers += 1
         logger.info(f"Nuevo sub — Total: {self.metrics.subscribers}")
 
@@ -414,12 +411,12 @@ class Bot(commands.Bot):
         logger.info(f"Sub expirado — Total: {self.metrics.subscribers}")
 
     async def _eventsub_watchdog(self) -> None:
-        DEAD_THRESHOLD = 20 * 60   # 20 min sin eventos → sospechoso
+        DEAD_THRESHOLD = 45 * 60   # 45 min sin mensajes de chat → conexión IRC probablemente caída
         CHECK_INTERVAL = 5 * 60    # Chequear cada 5 min
         await asyncio.sleep(CHECK_INTERVAL)  # Dar tiempo al bot para arrancar
         while True:
             await asyncio.sleep(CHECK_INTERVAL)
-            elapsed = time.monotonic() - self._last_event_ts
+            elapsed = time.monotonic() - self._last_chat_ts
             if elapsed < DEAD_THRESHOLD:
                 continue
             try:
@@ -432,7 +429,7 @@ class Bot(commands.Bot):
             except Exception:
                 continue
             logger.critical(
-                f"Watchdog EventSub: stream en vivo pero sin eventos por {elapsed/60:.1f} min. Reiniciando proceso..."
+                f"Watchdog: stream en vivo pero sin mensajes de chat por {elapsed/60:.1f} min. Reiniciando proceso..."
             )
             import subprocess
             subprocess.Popen([sys.executable] + sys.argv)
