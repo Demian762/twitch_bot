@@ -7,9 +7,10 @@ from tkinter import scrolledtext
 
 BOT_DIR = os.path.dirname(os.path.abspath(__file__))
 BOT_SCRIPT = os.path.join(BOT_DIR, "bot_del_estadio.py")
-AUDIO_MUTED_FLAG    = os.path.join(BOT_DIR, ".audio_muted")
-TTS_MUTED_FLAG      = os.path.join(BOT_DIR, ".tts_muted")
-METRICS_DISABLED_FLAG = os.path.join(BOT_DIR, ".metrics_disabled")
+AUDIO_MUTED_FLAG          = os.path.join(BOT_DIR, ".audio_muted")
+TTS_MUTED_FLAG            = os.path.join(BOT_DIR, ".tts_muted")
+METRICS_DISABLED_FLAG     = os.path.join(BOT_DIR, ".metrics_disabled")
+EMOJI_OVERLAY_DISABLED_FLAG = os.path.join(BOT_DIR, ".emoji_overlay_disabled")
 BOT_PID_FILE          = os.path.join(BOT_DIR, ".bot.pid")
 VENV_PYTHON = os.path.join(BOT_DIR, "bot-env", "Scripts", "python.exe")
 NO_WINDOW = subprocess.CREATE_NO_WINDOW
@@ -107,6 +108,7 @@ class BotLauncher:
         self.audio_var   = tk.BooleanVar(value=not os.path.exists(AUDIO_MUTED_FLAG))
         self.tts_var     = tk.BooleanVar(value=not os.path.exists(TTS_MUTED_FLAG))
         self.metrics_var = tk.BooleanVar(value=not os.path.exists(METRICS_DISABLED_FLAG))
+        self.emoji_var   = tk.BooleanVar(value=not os.path.exists(EMOJI_OVERLAY_DISABLED_FLAG))
         if not self._build_ui():
             return
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
@@ -175,6 +177,14 @@ class BotLauncher:
             text="Métricas",
             variable=self.metrics_var,
             command=self._toggle_metrics,
+            font=("Segoe UI", 10),
+        ).pack(side=tk.LEFT, padx=(10, 0))
+
+        tk.Checkbutton(
+            bar,
+            text="Emojis",
+            variable=self.emoji_var,
+            command=self._toggle_emoji_overlay,
             font=("Segoe UI", 10),
         ).pack(side=tk.LEFT, padx=(10, 0))
 
@@ -320,6 +330,13 @@ class BotLauncher:
                 os.remove(METRICS_DISABLED_FLAG)
         else:
             open(METRICS_DISABLED_FLAG, "w").close()
+
+    def _toggle_emoji_overlay(self):
+        if self.emoji_var.get():
+            if os.path.exists(EMOJI_OVERLAY_DISABLED_FLAG):
+                os.remove(EMOJI_OVERLAY_DISABLED_FLAG)
+        else:
+            open(EMOJI_OVERLAY_DISABLED_FLAG, "w").close()
 
     def _on_close(self):
         if self.process:

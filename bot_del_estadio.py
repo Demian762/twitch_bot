@@ -89,6 +89,10 @@ _KEYWORDS_BOT = (
 )
 _AUTO_RESPUESTA_COOLDOWN = 90  # segundos entre respuestas automáticas
 
+_EMOJI_OVERLAY_FLAG = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".emoji_overlay_disabled")
+_emoji_overlay_enabled: bool = True
+_emoji_overlay_cache_ts: float = 0.0
+
 
 class Bot(commands.Bot):
     """
@@ -137,7 +141,7 @@ class Bot(commands.Bot):
             self.rutina_lista[-1] = self.api.ultimo_video
         self.state.rutinas_counter["total"] = len(self.rutina_lista) - 1
 
-        audio_path = resource_path("storage/holis.wav")
+        audio_path = resource_path("storage/audios/holis.wav")
         play_sound(audio_path)
         self.telegram_bot = TelegramVoiceBot(telegram_bot_token)
 
@@ -336,6 +340,22 @@ class Bot(commands.Bot):
         while self._chat_log_size > 5000:
             removed = self.state.chat_log.pop(0)
             self._chat_log_size -= len(removed["user"]) + len(removed["msg"]) + 4
+
+        global _emoji_overlay_enabled, _emoji_overlay_cache_ts
+        now = time.monotonic()
+        if now - _emoji_overlay_cache_ts >= 2.0:
+            _emoji_overlay_enabled = not os.path.exists(_EMOJI_OVERLAY_FLAG)
+            _emoji_overlay_cache_ts = now
+
+        if _emoji_overlay_enabled and payload.emotes:
+            urls = []
+            for emote in payload.emotes[:100]:
+                fmt = "animated" if emote.format and "animated" in emote.format else "static"
+                urls.append(f"https://static-cdn.jtvnw.net/emoticons/v2/{emote.id}/{fmt}/dark/3.0")
+            # data debe contener solo tipos serializables (str, int, list) — excepciones en create_task se pierden silenciosamente
+            asyncio.create_task(
+                self.metrics.push_overlay({"type": "twitch_emote", "urls": urls})
+            )
 
         # Respuesta automática por keyword, con cooldown global
         texto_lower = payload.text.lower()

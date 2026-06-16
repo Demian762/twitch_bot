@@ -2,13 +2,107 @@ import asyncio
 import ctypes
 import ctypes.wintypes
 import json
+import os
 import struct
+import sys
 import time
 
 import aiohttp
 import psutil
 import pynvml
 from aiohttp import web
+
+_OVERLAY_HTML = """\
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+* { margin:0; padding:0; }
+body {
+  background: transparent;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  font-family: "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif;
+}
+.emote-item {
+  position: fixed;
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  pointer-events: none;
+  animation: up 3s ease-out forwards;
+}
+@keyframes up {
+  0%   { transform:translateY(0);      opacity:1;   }
+  75%  { transform:translateY(-180px); opacity:0.9; }
+  100% { transform:translateY(-260px); opacity:0;   }
+}
+.gif-item {
+  position: fixed;
+  object-fit: contain;
+  animation: gifShow 5s ease forwards;
+}
+@keyframes gifShow {
+  0%   { opacity:0; transform:scale(0.85); }
+  10%  { opacity:1; transform:scale(1);    }
+  80%  { opacity:1; transform:scale(1);    }
+  100% { opacity:0; transform:scale(0.95); }
+}
+</style>
+</head>
+<body>
+<script>
+function spawnEmote(url, delay) {
+  setTimeout(function() {
+    var img = document.createElement('img');
+    img.className = 'emote-item';
+    img.src = url;
+    img.style.left = (5 + Math.random() * 82) + '%';
+    img.style.bottom = '12%';
+    document.body.appendChild(img);
+    setTimeout(function(){ img.remove(); }, 3200);
+  }, delay);
+}
+function spawnGif(name) {
+  var size = Math.round(300 + Math.random() * 600);
+  var img = document.createElement('img');
+  img.className = 'gif-item';
+  img.onload = function() {
+    if (!img.naturalWidth || !img.naturalHeight) return;
+    var rw, rh;
+    if (img.naturalWidth >= img.naturalHeight) {
+      rw = size; rh = Math.round(size * img.naturalHeight / img.naturalWidth);
+      img.style.width = size + 'px'; img.style.height = 'auto';
+    } else {
+      rh = size; rw = Math.round(size * img.naturalWidth / img.naturalHeight);
+      img.style.height = size + 'px'; img.style.width = 'auto';
+    }
+    img.style.left = Math.random() * Math.max(0, window.innerWidth  - rw) + 'px';
+    img.style.top  = Math.random() * Math.max(0, window.innerHeight * 0.8 - rh) + 'px';
+  };
+  img.src = '/images/' + name + '.gif';
+  document.body.appendChild(img);
+  setTimeout(function(){ img.remove(); }, 5200);
+}
+function connect() {
+  var ws = new WebSocket('ws://' + location.host + '/ws/overlay');
+  ws.onmessage = function(e) {
+    var data = JSON.parse(e.data);
+    if (data.type === 'twitch_emote') {
+      data.urls.forEach(function(url, i) { spawnEmote(url, i * 150); });
+    } else if (data.type === 'gif') {
+      spawnGif(data.name);
+    }
+  };
+  ws.onclose = function() { setTimeout(connect, 2000); };
+}
+connect();
+</script>
+</body>
+</html>
+"""
 
 from utils.logger import logger
 
@@ -179,11 +273,43 @@ class MetricsServer:
         self.cpu = CPUCollector()
         self.rtss = RTSSCollector()
         self._clients: set[web.WebSocketResponse] = set()
+        self._overlay_clients: set[web.WebSocketResponse] = set()
         self._runner: web.AppRunner | None = None
         self._broadcast_task: asyncio.Task | None = None
         self.followers: int = 0
         self.subscribers: int = 0
         self._bot_state = None
+
+    async def _overlay_html_handler(self, request: web.Request) -> web.Response:
+        return web.Response(text=_OVERLAY_HTML, content_type="text/html", charset="utf-8")
+
+    async def _overlay_ws_handler(self, request: web.Request) -> web.WebSocketResponse:
+        ws = web.WebSocketResponse()
+        await ws.prepare(request)
+        self._overlay_clients.add(ws)
+        try:
+            async for msg in ws:
+                if msg.type == aiohttp.WSMsgType.ERROR:
+                    break
+        finally:
+            self._overlay_clients.discard(ws)
+        return ws
+
+    async def push_overlay(self, data: dict) -> None:
+        # data debe contener solo str/int/list/dict — json.dumps falla con objetos Python arbitrarios
+        if not self._overlay_clients:
+            return
+        payload = json.dumps(data)
+        dead = set()
+        for ws in list(self._overlay_clients):
+            if ws.closed:
+                dead.add(ws)
+                continue
+            try:
+                await ws.send_str(payload)
+            except Exception:
+                dead.add(ws)
+        self._overlay_clients -= dead
 
     async def _ws_handler(self, request: web.Request) -> web.WebSocketResponse:
         ws = web.WebSocketResponse()
@@ -236,8 +362,18 @@ class MetricsServer:
             await asyncio.sleep(self.interval)
 
     async def start(self):
+        try:
+            _base = sys._MEIPASS
+        except AttributeError:
+            _base = os.path.abspath(".")
+        _images_dir = os.path.join(_base, "storage", "images")
+
         app = web.Application()
         app.router.add_get("/", self._ws_handler)
+        app.router.add_get("/overlay", self._overlay_html_handler)
+        app.router.add_get("/ws/overlay", self._overlay_ws_handler)
+        if os.path.isdir(_images_dir):
+            app.router.add_static("/images", _images_dir)
         self._runner = web.AppRunner(app)
         await self._runner.setup()
         site = web.TCPSite(self._runner, self.host, self.port, reuse_address=True)

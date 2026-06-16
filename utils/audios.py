@@ -41,6 +41,7 @@ comandos_audios = {
     'dificil':['dificil','diablos'],
     'suatencion':['suatencion'],
     'coronacion':['coronacion','gloria'],
+    'sierra':['sierra'],
 }
 
 comandos_mensajes = {

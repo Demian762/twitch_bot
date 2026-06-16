@@ -24,7 +24,7 @@ AUDIOS_SILLA = [
     "dificil", "distinta", "dross", "elisir", "elpollodiablo", "emilio",
     "emperor", "ernesto", "fumojuego", "gatito", "helldiver", "holis",
     "margarita_1", "margarita_2", "margarita_3", "mario", "milk", "nodenuevo",
-    "piripipi", "play", "presta", "quiereme", "repartidor", "sacrilegioso",
+    "piripipi", "play", "presta", "quiereme", "repartidor", "sacrilegioso", "sierra",
     "sadsong", "saran", "sega", "snake", "tose", "wansaia82", "win95",
     "win98", "yamete", "yeahbaby", "zazaraza", "zelda",
 ]
@@ -52,7 +52,7 @@ class SillaCommands(BaseCommand):
         try:
             while True:
                 audio = choice(AUDIOS_SILLA)
-                audio_path = resource_path(f"storage/{audio}.wav")
+                audio_path = resource_path(f"storage/audios/{audio}.wav")
                 await loop.run_in_executor(
                     None,
                     lambda p=audio_path: play_sound(p, winsound.SND_FILENAME | winsound.SND_NODEFAULT),
