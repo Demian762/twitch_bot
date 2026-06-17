@@ -8,6 +8,7 @@ Author: Demian762
 """
 
 import asyncio
+import os
 import winsound
 from random import choice
 
@@ -53,6 +54,11 @@ class SillaCommands(BaseCommand):
             while True:
                 audio = choice(AUDIOS_SILLA)
                 audio_path = resource_path(f"storage/audios/{audio}.wav")
+                gif_path = resource_path(f"storage/images/{audio}.gif")
+                if os.path.exists(gif_path):
+                    asyncio.create_task(
+                        self.bot.metrics.push_overlay({"type": "gif", "name": audio})
+                    )
                 await loop.run_in_executor(
                     None,
                     lambda p=audio_path: play_sound(p, winsound.SND_FILENAME | winsound.SND_NODEFAULT),

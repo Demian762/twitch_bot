@@ -46,7 +46,7 @@ comandos_audios = {
 
 comandos_mensajes = {
     'boca':["boooooca booooooca","boca boca booooooca","booooooca boca boca"],
-    'presta':["🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈"],
+    'presta':["GayPride GayPride GayPride GayPride GayPride GayPride GayPride"],
     'yamete':["yametekudasaaaaaaaai"],
 }
 

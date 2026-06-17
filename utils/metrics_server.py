@@ -28,16 +28,17 @@ body {
 }
 .emote-item {
   position: fixed;
-  width: 80px;
-  height: 80px;
+  width: 100px;
+  height: 100px;
   object-fit: contain;
   pointer-events: none;
-  animation: up 3s ease-out forwards;
+  animation: moveEmote 6s ease-in-out forwards;
 }
-@keyframes up {
-  0%   { transform:translateY(0);      opacity:1;   }
-  75%  { transform:translateY(-180px); opacity:0.9; }
-  100% { transform:translateY(-260px); opacity:0;   }
+@keyframes moveEmote {
+  0%   { transform:translate(0,0);                  opacity:0; }
+  8%   { transform:translate(0,0);                  opacity:1; }
+  85%  { transform:translate(var(--dx),var(--dy));  opacity:1; }
+  100% { transform:translate(var(--dx),var(--dy));  opacity:0; }
 }
 .gif-item {
   position: fixed;
@@ -59,16 +60,24 @@ function spawnEmote(url, delay) {
     var img = document.createElement('img');
     img.className = 'emote-item';
     img.src = url;
-    img.style.left = (5 + Math.random() * 82) + '%';
-    img.style.bottom = '12%';
+    var W = window.innerWidth, H = window.innerHeight, s = 100;
+    var x0 = Math.random() * (W - s);
+    var y0 = Math.random() * (H - s);
+    var x1 = Math.random() * (W - s);
+    var y1 = Math.random() * (H - s);
+    img.style.left = x0 + 'px';
+    img.style.top  = y0 + 'px';
+    img.style.setProperty('--dx', (x1 - x0) + 'px');
+    img.style.setProperty('--dy', (y1 - y0) + 'px');
     document.body.appendChild(img);
-    setTimeout(function(){ img.remove(); }, 3200);
+    setTimeout(function(){ img.remove(); }, 6400);
   }, delay);
 }
 function spawnGif(name) {
-  var size = Math.round(300 + Math.random() * 600);
+  var size = Math.round(300 + Math.random() * 400);
   var img = document.createElement('img');
   img.className = 'gif-item';
+  img.style.top = '-9999px';
   img.onload = function() {
     if (!img.naturalWidth || !img.naturalHeight) return;
     var rw, rh;
@@ -91,7 +100,9 @@ function connect() {
   ws.onmessage = function(e) {
     var data = JSON.parse(e.data);
     if (data.type === 'twitch_emote') {
-      data.urls.forEach(function(url, i) { spawnEmote(url, i * 150); });
+      data.urls.forEach(function(url, i) {
+        for (var j = 0; j < 5; j++) { spawnEmote(url, i * 150 + j * 60); }
+      });
     } else if (data.type === 'gif') {
       spawnGif(data.name);
     }

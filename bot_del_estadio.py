@@ -317,6 +317,12 @@ class Bot(commands.Bot):
           - payload.chatter.name → nombre del usuario
           - payload.text        → contenido del mensaje (antes .content)
         """
+        global _emoji_overlay_enabled, _emoji_overlay_cache_ts
+        now = time.monotonic()
+        if now - _emoji_overlay_cache_ts >= 2.0:
+            _emoji_overlay_enabled = not os.path.exists(_EMOJI_OVERLAY_FLAG)
+            _emoji_overlay_cache_ts = now
+
         # Registrar respuestas del bot en chat_log antes de salir, para que Claude
         # tenga contexto de los resultados (ej: "el escupitajo llegó a 87 cm").
         if payload.chatter.id == self.bot_id:
@@ -326,6 +332,15 @@ class Bot(commands.Bot):
             while self._chat_log_size > 5000:
                 removed = self.state.chat_log.pop(0)
                 self._chat_log_size -= len(removed["user"]) + len(removed["msg"]) + 4
+            if _emoji_overlay_enabled and payload.emotes:
+                urls = []
+                for emote in payload.emotes[:100]:
+                    fmt = "animated" if emote.format and "animated" in emote.format else "static"
+                    urls.append(f"https://static-cdn.jtvnw.net/emoticons/v2/{emote.id}/{fmt}/dark/3.0")
+                # data debe contener solo tipos serializables (str, int, list) — excepciones en create_task se pierden silenciosamente
+                asyncio.create_task(
+                    self.metrics.push_overlay({"type": "twitch_emote", "urls": urls})
+                )
             return
         self._last_chat_ts = time.monotonic()
 
@@ -340,12 +355,6 @@ class Bot(commands.Bot):
         while self._chat_log_size > 5000:
             removed = self.state.chat_log.pop(0)
             self._chat_log_size -= len(removed["user"]) + len(removed["msg"]) + 4
-
-        global _emoji_overlay_enabled, _emoji_overlay_cache_ts
-        now = time.monotonic()
-        if now - _emoji_overlay_cache_ts >= 2.0:
-            _emoji_overlay_enabled = not os.path.exists(_EMOJI_OVERLAY_FLAG)
-            _emoji_overlay_cache_ts = now
 
         if _emoji_overlay_enabled and payload.emotes:
             urls = []
