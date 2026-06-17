@@ -9,6 +9,7 @@ Version: 250927
 """
 
 import asyncio
+import os
 from datetime import timedelta
 
 from twitchio.ext import commands, routines
@@ -76,8 +77,14 @@ class InteractionCommands(BaseCommand):
                 break
 
         if comando_validado:
-            audio_path = resource_path(f"storage/{comando_validado}.wav")
+            audio_path = resource_path(f"storage/audios/{comando_validado}.wav")
             play_sound(audio_path)
+            gif_path = resource_path(f"storage/images/{comando_validado}.gif")
+            if os.path.exists(gif_path):
+                # data debe contener solo tipos serializables — excepciones en create_task se pierden silenciosamente
+                asyncio.create_task(
+                    self.bot.metrics.push_overlay({"type": "gif", "name": comando_validado})
+                )
             mensaje_string = comandos_mensajes.get(comando_validado, None)
         else:
             mensaje_string = comandos_mensajes.get(comando, None)

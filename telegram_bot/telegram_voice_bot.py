@@ -42,7 +42,7 @@ class TelegramVoiceBot:
                 self.temp_files.append(wav_file)
                 await asyncio.to_thread(
                     play_sounds_sequential,
-                    resource_path("storage/suatencion.wav"),
+                    resource_path("storage/audios/suatencion.wav"),
                     wav_file,
                     bypass_mute=True,
                 )

@@ -89,6 +89,9 @@ _KEYWORDS_BOT = (
 )
 _AUTO_RESPUESTA_COOLDOWN = 90  # segundos entre respuestas automáticas
 
+_EMOJI_OVERLAY_FLAG = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".emoji_overlay_disabled")
+_emoji_overlay_enabled: bool = True
+
 
 class Bot(commands.Bot):
     """
@@ -137,12 +140,12 @@ class Bot(commands.Bot):
             self.rutina_lista[-1] = self.api.ultimo_video
         self.state.rutinas_counter["total"] = len(self.rutina_lista) - 1
 
-        audio_path = resource_path("storage/holis.wav")
+        audio_path = resource_path("storage/audios/holis.wav")
         play_sound(audio_path)
         self.telegram_bot = TelegramVoiceBot(telegram_bot_token)
 
         self._auto_respuesta_ts = 0.0
-        self._last_event_ts = time.monotonic()
+        self._last_chat_ts = time.monotonic()
         self._chat_log_size = 0
         logger.info("Bot inicializado correctamente")
 
@@ -289,6 +292,7 @@ class Bot(commands.Bot):
         asyncio.create_task(self._start_telegram_bot())
         asyncio.create_task(self._notificar_discord_si_en_vivo())
         asyncio.create_task(self._eventsub_watchdog())
+        asyncio.create_task(self._poll_emoji_overlay())
 
     async def _notificar_discord_si_en_vivo(self):
         try:
@@ -303,6 +307,16 @@ class Bot(commands.Bot):
                 await notificar_titulo(discord_webhook_url, channel.title)
         except Exception as e:
             logger.error(f"Error al notificar Discord al arrancar: {e}")
+
+    def _push_emote_overlay(self, payload) -> None:
+        if _emoji_overlay_enabled and payload.emotes:
+            urls = []
+            for emote in payload.emotes[:100]:
+                fmt = "animated" if emote.format and "animated" in emote.format else "static"
+                urls.append(f"https://static-cdn.jtvnw.net/emoticons/v2/{emote.id}/{fmt}/dark/3.0")
+            asyncio.create_task(
+                self.metrics.push_overlay({"type": "twitch_emote", "urls": urls})
+            )
 
     async def event_message(self, payload) -> None:
         """
@@ -322,8 +336,9 @@ class Bot(commands.Bot):
             while self._chat_log_size > 5000:
                 removed = self.state.chat_log.pop(0)
                 self._chat_log_size -= len(removed["user"]) + len(removed["msg"]) + 4
+            self._push_emote_overlay(payload)
             return
-        self._last_event_ts = time.monotonic()
+        self._last_chat_ts = time.monotonic()
 
         username = payload.chatter.name.lower()
 
@@ -336,6 +351,8 @@ class Bot(commands.Bot):
         while self._chat_log_size > 5000:
             removed = self.state.chat_log.pop(0)
             self._chat_log_size -= len(removed["user"]) + len(removed["msg"]) + 4
+
+        self._push_emote_overlay(payload)
 
         # Respuesta automática por keyword, con cooldown global
         texto_lower = payload.text.lower()
@@ -390,7 +407,6 @@ class Bot(commands.Bot):
         await mensaje("Ya rompiste el bot con ese comando...")
 
     async def event_custom_redemption_add(self, payload) -> None:
-        self._last_event_ts = time.monotonic()
         puntitos = CAMBIO_CAMBIO_REWARDS.get(payload.reward.id)
         if puntitos is None:
             return
@@ -400,12 +416,10 @@ class Bot(commands.Bot):
         logger.info(f"Redemption '{payload.reward.title}': +{puntitos} puntito(s) para {username}")
 
     async def event_follow(self, payload) -> None:
-        self._last_event_ts = time.monotonic()
         self.metrics.followers += 1
         logger.info(f"Nuevo follower — Total: {self.metrics.followers}")
 
     async def event_subscription(self, payload) -> None:
-        self._last_event_ts = time.monotonic()
         self.metrics.subscribers += 1
         logger.info(f"Nuevo sub — Total: {self.metrics.subscribers}")
 
@@ -414,12 +428,12 @@ class Bot(commands.Bot):
         logger.info(f"Sub expirado — Total: {self.metrics.subscribers}")
 
     async def _eventsub_watchdog(self) -> None:
-        DEAD_THRESHOLD = 20 * 60   # 20 min sin eventos → sospechoso
+        DEAD_THRESHOLD = 45 * 60   # 45 min sin mensajes de chat → conexión IRC probablemente caída
         CHECK_INTERVAL = 5 * 60    # Chequear cada 5 min
         await asyncio.sleep(CHECK_INTERVAL)  # Dar tiempo al bot para arrancar
         while True:
             await asyncio.sleep(CHECK_INTERVAL)
-            elapsed = time.monotonic() - self._last_event_ts
+            elapsed = time.monotonic() - self._last_chat_ts
             if elapsed < DEAD_THRESHOLD:
                 continue
             try:
@@ -432,11 +446,17 @@ class Bot(commands.Bot):
             except Exception:
                 continue
             logger.critical(
-                f"Watchdog EventSub: stream en vivo pero sin eventos por {elapsed/60:.1f} min. Reiniciando proceso..."
+                f"Watchdog: stream en vivo pero sin mensajes de chat por {elapsed/60:.1f} min. Reiniciando proceso..."
             )
             import subprocess
             subprocess.Popen([sys.executable] + sys.argv)
-            sys.exit(0)
+            await self.close()
+
+    async def _poll_emoji_overlay(self) -> None:
+        global _emoji_overlay_enabled
+        while True:
+            _emoji_overlay_enabled = not os.path.exists(_EMOJI_OVERLAY_FLAG)
+            await asyncio.sleep(2)
 
     async def close(self) -> None:
         await self.telegram_bot.stop_async()

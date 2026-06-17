@@ -41,11 +41,12 @@ comandos_audios = {
     'dificil':['dificil','diablos'],
     'suatencion':['suatencion'],
     'coronacion':['coronacion','gloria'],
+    'sierra':['sierra'],
 }
 
 comandos_mensajes = {
     'boca':["boooooca booooooca","boca boca booooooca","booooooca boca boca"],
-    'presta':["🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈🏳️‍🌈"],
+    'presta':["GayPride GayPride GayPride GayPride GayPride GayPride GayPride"],
     'yamete':["yametekudasaaaaaaaai"],
 }
 

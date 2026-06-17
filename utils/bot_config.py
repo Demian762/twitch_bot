@@ -76,4 +76,6 @@ class BotState:
         self.claude_memoria_cache = {}         # {username: resumen} — cargado una vez por sesión desde el Sheet
         self.claude_canal_log = []             # [{"user":..., "q":..., "a":...}, ...] — log completo de la sesión
         self.chat_log = []                     # [{"user":..., "msg":...}, ...] — todos los mensajes del chat en orden
+                                               # INVARIANTE: bot._chat_log_size refleja el tamaño en bytes de esta lista.
+                                               # Todo código que modifique chat_log debe actualizar _chat_log_size en consecuencia.
         self.puntitos_netos_sesion = 0         # Suma neta de puntitos dados/restados en la sesión

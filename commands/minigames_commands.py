@@ -232,7 +232,7 @@ class MinigamesCommands(BaseCommand):
             
         nombre = ctx.author.name.lower()
         if nombre in admins:
-            audio_path = resource_path("storage/margarita_3.wav")
+            audio_path = resource_path("storage/audios/margarita_3.wav")
             play_sound(audio_path)
             await mensaje("Los admins están sobrados de margaritas.")
             return
@@ -247,7 +247,7 @@ class MinigamesCommands(BaseCommand):
 
         if self.margaritas >= self.cuantas_margaritas:
             self.cuantas_margaritas = None  # Reclamar la victoria antes del primer await
-            audio_path = resource_path("storage/margarita_2.wav")
+            audio_path = resource_path("storage/audios/margarita_2.wav")
             play_sound(audio_path)
             await asyncio.to_thread(funcion_puntitos, nombre, 2)
             registrar_victoria_margarita(nombre)
@@ -256,7 +256,7 @@ class MinigamesCommands(BaseCommand):
         else:
             await mensaje([f"{nombre} pregunta:", "¿Me regalas una margarita?"])
             if self.margaritas == 0:
-                audio_path = resource_path("storage/margarita_1.wav")
+                audio_path = resource_path("storage/audios/margarita_1.wav")
                 play_sound(audio_path)
             self.margaritas += 1
             self.ultima_margarita = nombre
