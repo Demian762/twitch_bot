@@ -34,6 +34,10 @@ from utils.logger import logger
 gc = gspread.service_account_from_dict(credenciales_gspread)
 sh = gc.open_by_url(file_puntitos_url)
 
+# threading.Lock (no asyncio.Lock) intencional: funcion_puntitos() corre en asyncio.to_thread()
+# y puede ejecutarse concurrentemente. Las demás funciones (sorteo_puntitos, registrar_victoria_*)
+# se llaman desde el event loop y bloquean brevemente (~1-3s de HTTP) al adquirir el lock
+# si un thread lo sostiene — aceptado, es infrecuente y la espera es acotada.
 _sheet_lock = threading.Lock()
 
 def consulta_puntitos(nombre: str):

@@ -91,7 +91,6 @@ _AUTO_RESPUESTA_COOLDOWN = 90  # segundos entre respuestas automáticas
 
 _EMOJI_OVERLAY_FLAG = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".emoji_overlay_disabled")
 _emoji_overlay_enabled: bool = True
-_emoji_overlay_cache_ts: float = 0.0
 
 
 class Bot(commands.Bot):
@@ -293,6 +292,7 @@ class Bot(commands.Bot):
         asyncio.create_task(self._start_telegram_bot())
         asyncio.create_task(self._notificar_discord_si_en_vivo())
         asyncio.create_task(self._eventsub_watchdog())
+        asyncio.create_task(self._poll_emoji_overlay())
 
     async def _notificar_discord_si_en_vivo(self):
         try:
@@ -308,6 +308,16 @@ class Bot(commands.Bot):
         except Exception as e:
             logger.error(f"Error al notificar Discord al arrancar: {e}")
 
+    def _push_emote_overlay(self, payload) -> None:
+        if _emoji_overlay_enabled and payload.emotes:
+            urls = []
+            for emote in payload.emotes[:100]:
+                fmt = "animated" if emote.format and "animated" in emote.format else "static"
+                urls.append(f"https://static-cdn.jtvnw.net/emoticons/v2/{emote.id}/{fmt}/dark/3.0")
+            asyncio.create_task(
+                self.metrics.push_overlay({"type": "twitch_emote", "urls": urls})
+            )
+
     async def event_message(self, payload) -> None:
         """
         Se ejecuta por cada mensaje del chat.
@@ -317,12 +327,6 @@ class Bot(commands.Bot):
           - payload.chatter.name → nombre del usuario
           - payload.text        → contenido del mensaje (antes .content)
         """
-        global _emoji_overlay_enabled, _emoji_overlay_cache_ts
-        now = time.monotonic()
-        if now - _emoji_overlay_cache_ts >= 2.0:
-            _emoji_overlay_enabled = not os.path.exists(_EMOJI_OVERLAY_FLAG)
-            _emoji_overlay_cache_ts = now
-
         # Registrar respuestas del bot en chat_log antes de salir, para que Claude
         # tenga contexto de los resultados (ej: "el escupitajo llegó a 87 cm").
         if payload.chatter.id == self.bot_id:
@@ -332,15 +336,7 @@ class Bot(commands.Bot):
             while self._chat_log_size > 5000:
                 removed = self.state.chat_log.pop(0)
                 self._chat_log_size -= len(removed["user"]) + len(removed["msg"]) + 4
-            if _emoji_overlay_enabled and payload.emotes:
-                urls = []
-                for emote in payload.emotes[:100]:
-                    fmt = "animated" if emote.format and "animated" in emote.format else "static"
-                    urls.append(f"https://static-cdn.jtvnw.net/emoticons/v2/{emote.id}/{fmt}/dark/3.0")
-                # data debe contener solo tipos serializables (str, int, list) — excepciones en create_task se pierden silenciosamente
-                asyncio.create_task(
-                    self.metrics.push_overlay({"type": "twitch_emote", "urls": urls})
-                )
+            self._push_emote_overlay(payload)
             return
         self._last_chat_ts = time.monotonic()
 
@@ -356,15 +352,7 @@ class Bot(commands.Bot):
             removed = self.state.chat_log.pop(0)
             self._chat_log_size -= len(removed["user"]) + len(removed["msg"]) + 4
 
-        if _emoji_overlay_enabled and payload.emotes:
-            urls = []
-            for emote in payload.emotes[:100]:
-                fmt = "animated" if emote.format and "animated" in emote.format else "static"
-                urls.append(f"https://static-cdn.jtvnw.net/emoticons/v2/{emote.id}/{fmt}/dark/3.0")
-            # data debe contener solo tipos serializables (str, int, list) — excepciones en create_task se pierden silenciosamente
-            asyncio.create_task(
-                self.metrics.push_overlay({"type": "twitch_emote", "urls": urls})
-            )
+        self._push_emote_overlay(payload)
 
         # Respuesta automática por keyword, con cooldown global
         texto_lower = payload.text.lower()
@@ -462,7 +450,13 @@ class Bot(commands.Bot):
             )
             import subprocess
             subprocess.Popen([sys.executable] + sys.argv)
-            sys.exit(0)
+            await self.close()
+
+    async def _poll_emoji_overlay(self) -> None:
+        global _emoji_overlay_enabled
+        while True:
+            _emoji_overlay_enabled = not os.path.exists(_EMOJI_OVERLAY_FLAG)
+            await asyncio.sleep(2)
 
     async def close(self) -> None:
         await self.telegram_bot.stop_async()

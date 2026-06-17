@@ -116,6 +116,7 @@ connect();
 """
 
 from utils.logger import logger
+from utils.utiles_general import resource_path
 
 # Tipos ctypes para Windows shared memory API (se configuran una vez al importar)
 _k32 = ctypes.windll.kernel32
@@ -373,11 +374,7 @@ class MetricsServer:
             await asyncio.sleep(self.interval)
 
     async def start(self):
-        try:
-            _base = sys._MEIPASS
-        except AttributeError:
-            _base = os.path.abspath(".")
-        _images_dir = os.path.join(_base, "storage", "images")
+        _images_dir = resource_path("storage/images")
 
         app = web.Application()
         app.router.add_get("/", self._ws_handler)
