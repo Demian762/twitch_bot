@@ -107,6 +107,7 @@ function connect() {
       spawnGif(data.name);
     }
   };
+  ws.onerror = function() { ws.close(); };
   ws.onclose = function() { setTimeout(connect, 2000); };
 }
 connect();

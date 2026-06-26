@@ -78,13 +78,12 @@ class InteractionCommands(BaseCommand):
 
         if comando_validado:
             audio_path = resource_path(f"storage/audios/{comando_validado}.wav")
-            play_sound(audio_path)
             gif_path = resource_path(f"storage/images/{comando_validado}.gif")
             if os.path.exists(gif_path):
-                # data debe contener solo tipos serializables — excepciones en create_task se pierden silenciosamente
                 asyncio.create_task(
                     self.bot.metrics.push_overlay({"type": "gif", "name": comando_validado})
                 )
+            asyncio.create_task(asyncio.to_thread(play_sound, audio_path))
             mensaje_string = comandos_mensajes.get(comando_validado, None)
         else:
             mensaje_string = comandos_mensajes.get(comando, None)
