@@ -78,6 +78,16 @@ def setup_logger():
     logging.getLogger('urllib3').setLevel(logging.WARNING)
     logging.getLogger('twitchio').setLevel(logging.ERROR)
     logging.getLogger('steam_web_api').setLevel(logging.WARNING)
+
+    # Filtrar errores transitorios de red de Telegram (Bad Gateway, etc.)
+    # que el retry loop maneja solo y no requieren atención
+    class _TelegramNetworkFilter(logging.Filter):
+        _transient = ('Bad Gateway', 'Timed out', 'Service Unavailable')
+        def filter(self, record):
+            return not any(msg in record.getMessage() for msg in self._transient)
+
+    telegram_logger = logging.getLogger('telegram')
+    telegram_logger.addFilter(_TelegramNetworkFilter())
     
     return bot_logger
 
