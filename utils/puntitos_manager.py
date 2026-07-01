@@ -285,7 +285,10 @@ def _reiniciar_puntitos(nombre):
         hoja = sh.get_worksheet(0)
         df = hoja.get_all_records()
         for idx, row in enumerate(df):
-            if row['nombre'].lower() == nombre.lower():
+            nombre_row = row.get('nombre')
+            if not isinstance(nombre_row, str):
+                continue
+            if nombre_row.lower() == nombre.lower():
                 hoja.update_cell(idx + 2, 2, 0)
 
 def _realizar_sorteo_ponderado(nombres, puntos):
