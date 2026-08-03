@@ -15,11 +15,14 @@ class rawg:
         self.test_connection()
 
     def test_connection(self):
-        response = requests.get(self.url, params=self.key, timeout=10)
-        if response.status_code != 200:
-            logger.error(f"Hubo un problema con la base de datos de RAWG.io, status code = {response.status_code}")
-        else:
-            logger.info("Conexión exitosa a rawg.io.")
+        try:
+            response = requests.get(self.url, params=self.key, timeout=10)
+            if response.status_code != 200:
+                logger.warning(f"Hubo un problema con la base de datos de RAWG.io, status code = {response.status_code}")
+            else:
+                logger.info("Conexión exitosa a rawg.io.")
+        except requests.exceptions.RequestException as e:
+            logger.warning(f"No se pudo verificar la conexión a RAWG.io: {e}")
     
     def info(self, juego: str):
         """
