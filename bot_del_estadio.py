@@ -70,6 +70,19 @@ from utils.configuracion import (
 from commands import COGS
 
 
+def _silenciar_connreset_proactor(loop: asyncio.AbstractEventLoop, context: dict) -> None:
+    """Silencia el ConnectionResetError (WinError 10054) que ProactorEventLoop loguea
+    como excepción no manejada cuando un cliente WS (ej: overlay de OBS) cierra la
+    conexión de golpe en vez de hacer el cierre prolijo. Es un bug conocido de asyncio
+    en Windows (bpo-39010) sin impacto real en el bot; cualquier otra excepción se
+    delega al manejador por defecto para no ocultar errores genuinos.
+    """
+    exc = context.get("exception")
+    if isinstance(exc, ConnectionResetError) and getattr(exc, "winerror", None) == 10054:
+        return
+    loop.default_exception_handler(context)
+
+
 def _token_file_path() -> str:
     """Retorna la ruta del archivo de tokens junto al exe (o al script en desarrollo)."""
     if getattr(sys, 'frozen', False):
@@ -165,6 +178,8 @@ class Bot(commands.Bot):
         2. Suscribe al EventSub de chat del canal
         3. Carga todos los components (antes llamados cogs)
         """
+        asyncio.get_running_loop().set_exception_handler(_silenciar_connreset_proactor)
+
         _metrics_flag = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".metrics_disabled")
         if os.path.exists(_metrics_flag):
             logger.info("[metrics] Deshabilitado por flag — WebSocket no iniciado")

@@ -42,6 +42,8 @@ comandos_audios = {
     'suatencion':['suatencion'],
     'coronacion':['coronacion','gloria'],
     'sierra':['sierra'],
+    'aiseigudbai':['aiseigudbai'],
+    'endai':['endai'],
 }
 
 comandos_mensajes = {
