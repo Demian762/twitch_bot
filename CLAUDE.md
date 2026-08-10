@@ -63,9 +63,9 @@ Known gaps vs. Twitch: no raid-equivalent event on Kick, no Kick emote overlay, 
 
 Beyond the normal environment setup, each machine that will run the Kick bot needs:
 
-1. `utils/secretos.py` (gitignored) with `kick_client_id` / `kick_client_secret` / `kick_redirect_uri` — same values as the other machines, it's the same registered Kick app.
+1. `utils/secretos.py` (gitignored) with `kick_client_id` / `kick_client_secret` / `kick_redirect_uri` / `kick_cloudflare_cert_pem` / `kick_cloudflare_tunnel_credentials` — same values as the other machines, it's the same registered Kick app and the same Cloudflare Tunnel identity.
 2. `cloudflared` — no need to install it by hand: `bot_launcher.pyw` detects it's missing on startup and installs it via winget itself (`CloudflaredInstallWindow`), before opening the launcher.
-3. The **same Cloudflare Tunnel identity** copied into `%USERPROFILE%\.cloudflared\` on the new machine: `cert.pem`, `<tunnel-id>.json`, and `config.yml`. Without this the machine can't authenticate as the `kickbot` tunnel — copy the whole folder from a working machine rather than re-running `cloudflared tunnel login`/`create` (that would make a second, redundant tunnel).
+3. The Cloudflare Tunnel's local files (`~/.cloudflared/cert.pem`, `<tunnel-id>.json`, `config.yml`) — no need to copy that folder by hand either: `utils/kick/tunnel_setup.py` regenerates whichever of those three files are missing from the `kick_cloudflare_*` values in `secretos.py`, the first time `bot_del_estadio_kick.py` starts on that machine. Idempotent — leaves existing files alone.
 4. Either copy `.kick.tokens.json` from a working machine, or run `python -m utils.kick.authorize` again on the new one (same Kick account, fine to re-authorize).
 
 The Kick app's Webhook URL (`https://kickbot.hablemosdepavadas.com.ar/kick/webhook`, panel at kick.com/settings/developer) is configured once for the app as a whole — it doesn't need to change per machine, since the tunnel always forwards to whichever machine currently has `cloudflared tunnel run kickbot` running.
