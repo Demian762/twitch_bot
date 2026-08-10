@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 import threading
 import time
@@ -15,6 +16,23 @@ EMOJI_OVERLAY_DISABLED_FLAG = os.path.join(BOT_DIR, ".emoji_overlay_disabled")
 BOT_PID_FILE          = os.path.join(BOT_DIR, ".bot.pid")
 VENV_PYTHON = os.path.join(BOT_DIR, "bot-env", "Scripts", "python.exe")
 NO_WINDOW = subprocess.CREATE_NO_WINDOW
+
+# Ubicaciones típicas donde winget instala cloudflared en Windows — fallback
+# por si el PATH del proceso todavía no tiene la entrada nueva.
+CLOUDFLARED_FALLBACK_PATHS = (
+    r"C:\Program Files (x86)\cloudflared\cloudflared.exe",
+    r"C:\Program Files\cloudflared\cloudflared.exe",
+)
+
+
+def _find_cloudflared() -> str | None:
+    found = shutil.which("cloudflared")
+    if found:
+        return found
+    for path in CLOUDFLARED_FALLBACK_PATHS:
+        if os.path.exists(path):
+            return path
+    return None
 
 
 def _open_launcher(root: tk.Tk):
@@ -89,6 +107,84 @@ class UpdateWindow:
 
         time.sleep(1.5)
         self.root.after(0, _open_launcher, self.root)
+
+    def _log(self, text: str):
+        self.root.after(0, self._append, text)
+
+    def _append(self, text: str):
+        self.log.config(state=tk.NORMAL)
+        self.log.insert(tk.END, text)
+        self.log.see(tk.END)
+        self.log.config(state=tk.DISABLED)
+
+
+class CloudflaredInstallWindow:
+    """Se muestra solo si cloudflared no está instalado — lo instala con
+    winget (necesario para el túnel del bot de Kick) antes de abrir el
+    launcher normal. Si falla, avisa y sigue igual: el bot de Kick arranca
+    sin túnel público en vez de no arrancar."""
+
+    def __init__(self, root: tk.Tk, on_done):
+        self.root = root
+        self.on_done = on_done
+        self.root.title("Bot del Estadio — Preparando Kick")
+        self.root.resizable(False, False)
+        self.root.geometry("460x230")
+        self.root.protocol("WM_DELETE_WINDOW", lambda: None)
+        self._build_ui()
+        self.root.deiconify()
+        threading.Thread(target=self._do_install, daemon=True).start()
+
+    def _build_ui(self):
+        tk.Label(
+            self.root,
+            text="Instalando cloudflared (necesario para Kick)...",
+            font=("Segoe UI", 11, "bold"),
+            pady=12,
+            wraplength=430,
+        ).pack()
+        tk.Label(
+            self.root,
+            text="Si Windows pide confirmación, aceptala para continuar.",
+            font=("Segoe UI", 9),
+            fg="#666666",
+        ).pack()
+        self.log = scrolledtext.ScrolledText(
+            self.root,
+            state=tk.DISABLED,
+            height=7,
+            font=("Consolas", 8),
+            bg="#1e1e1e",
+            fg="#d4d4d4",
+            wrap=tk.WORD,
+            padx=6,
+            pady=4,
+        )
+        self.log.pack(fill=tk.BOTH, expand=True, padx=10, pady=(6, 10))
+
+    def _do_install(self):
+        self._log("--- instalando cloudflared con winget ---\n")
+        try:
+            result = subprocess.run(
+                [
+                    "winget", "install", "--id", "Cloudflare.cloudflared", "-e",
+                    "--accept-source-agreements", "--accept-package-agreements",
+                ],
+                capture_output=True,
+                text=True,
+                creationflags=NO_WINDOW,
+                timeout=180,
+            )
+            self._log(result.stdout or result.stderr)
+            if result.returncode == 0 or _find_cloudflared():
+                self._log("--- listo ---\n")
+            else:
+                self._log("--- no se pudo instalar, seguimos igual ---\n")
+        except Exception as e:
+            self._log(f"--- error instalando cloudflared: {e} ---\n")
+
+        time.sleep(1)
+        self.root.after(0, self.on_done)
 
     def _log(self, text: str):
         self.root.after(0, self._append, text)
@@ -430,9 +526,15 @@ if __name__ == "__main__":
 
     root = tk.Tk()
 
-    if _branch != "master":
-        BotLauncher(root)
-    else:
+    def _after_cloudflared():
+        for widget in root.winfo_children():
+            widget.destroy()
+
+        if _branch != "master":
+            root.resizable(True, True)
+            BotLauncher(root)
+            return
+
         root.withdraw()
         root.title("Bot del Estadio")
         root.resizable(False, False)
@@ -472,5 +574,13 @@ if __name__ == "__main__":
             root.after(0, _on_fetch_done, update_needed)
 
         threading.Thread(target=_fetch, daemon=True).start()
+
+    # cloudflared hace falta para el túnel del bot de Kick — se detecta y,
+    # si falta, se instala una sola vez (por máquina) antes de abrir el
+    # launcher normal.
+    if _find_cloudflared():
+        _after_cloudflared()
+    else:
+        CloudflaredInstallWindow(root, _after_cloudflared)
 
     root.mainloop()
