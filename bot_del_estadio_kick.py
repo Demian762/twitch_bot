@@ -52,6 +52,19 @@ from utils.kick.dispatcher import KickCommandDispatcher
 
 from telegram_bot.telegram_voice_bot import TelegramVoiceBot
 
+# Duplicado a propósito desde bot_del_estadio.py (en vez de importarlo de ahí)
+# para no tocar el entrypoint de Twitch, que ya está en producción.
+_KEYWORDS_BOT = (
+    "botdelestadio", "bot del estadio", "claudio",
+    "está el bot", "esta el bot", "hay bot",
+    "bot activo", "bot presente", "bot online",
+    "bot dormido", "bot muerto",
+    "funciona el bot", "anda el bot",
+    "oye bot", "ey bot", "hey bot", "che bot",
+)
+_AUTO_RESPUESTA_COOLDOWN = 90  # segundos entre respuestas automáticas
+_CHAT_LOG_MAX_BYTES = 5000
+
 
 class _ChannelInfo:
     """Objeto mínimo con .title, para que fetch_channel() sea compatible con
@@ -107,6 +120,8 @@ class KickBot:
         self.webhook_server: KickWebhookServer | None = None
         self._tunnel_process: asyncio.subprocess.Process | None = None
         self._last_chat_ts = time.monotonic()
+        self._chat_log_size = 0
+        self._auto_respuesta_ts = 0.0
 
         logger.info("KickBot inicializado correctamente")
 
@@ -187,23 +202,59 @@ class KickBot:
 
     # ── Manejo de eventos entrantes ──────────────────────────────────────────
 
+    def _log_chat(self, username: str, text: str) -> None:
+        """Registra un mensaje en state.chat_log (usado por !claudio/!bot para
+        tener contexto de la conversación), con el mismo límite de tamaño de
+        5000 bytes que usa bot_del_estadio.py del lado de Twitch."""
+        entry_size = len(username) + len(text) + 4
+        self.state.chat_log.append({"user": username, "msg": text})
+        self._chat_log_size += entry_size
+        while self._chat_log_size > _CHAT_LOG_MAX_BYTES:
+            removed = self.state.chat_log.pop(0)
+            self._chat_log_size -= len(removed["user"]) + len(removed["msg"]) + 4
+
     async def _on_chat_message(self, username: str, text: str) -> None:
+        """Se llama por CADA mensaje del chat (no solo comandos): registra
+        contexto para Claude y evalúa la respuesta automática por palabra
+        clave, antes de intentar despachar un comando si corresponde."""
         self._last_chat_ts = time.monotonic()
+
         if text.startswith("!"):
             self.state.usuarios_activos.add(username)
+
+        self._log_chat(username, text)
+
+        texto_lower = text.lower()
+        if (
+            not text.startswith("!")
+            and any(kw in texto_lower for kw in _KEYWORDS_BOT)
+            and time.monotonic() - self._auto_respuesta_ts >= _AUTO_RESPUESTA_COOLDOWN
+        ):
+            claude_cog = self.my_cogs.get("ClaudioCommands")
+            if claude_cog:
+                self._auto_respuesta_ts = time.monotonic()
+                asyncio.create_task(
+                    claude_cog.claude_para_comando(
+                        username,
+                        text,
+                        sufijo=" — usá !bot para seguir charlando!",
+                    )
+                )
+
         await self.dispatcher.dispatch(username, text)
 
     async def _on_webhook_event(self, event_type: str, payload: dict) -> None:
         if event_type == "chat.message.sent":
             sender = payload.get("sender") or {}
+            content = payload.get("content", "")
             # Kick reenvía por webhook también los mensajes del propio bot
-            # (enviados con type="user" a nombre del canal) — filtrarlos,
-            # igual que event_message hace con payload.chatter.id == self.bot_id
-            # del lado de Twitch.
+            # (enviados con type="user" a nombre del canal). Se registran en
+            # chat_log igual que hace Twitch con los mensajes del bot_id,
+            # pero no se despachan como comando ni disparan auto-respuesta.
             if sender.get("user_id") == self.broadcaster_id:
+                self._log_chat("bot", content)
                 return
             username = (sender.get("username") or "").lower()
-            content = payload.get("content", "")
             if username:
                 await self._on_chat_message(username, content)
         elif event_type == "channel.followed":
