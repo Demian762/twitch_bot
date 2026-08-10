@@ -42,6 +42,7 @@ kick_config = {
         {"name": "channel.subscription.renewal", "version": 1},
     ],
     "cloudflare_tunnel_name": "kickbot",  # nombre del tunnel (cloudflared tunnel create kickbot)
+    "webhook_public_hostname": "kickbot.hablemosdepavadas.com.ar",  # hostname público ruteado al tunnel
 }
 
 # Configuración del comando !claudio

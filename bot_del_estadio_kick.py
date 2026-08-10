@@ -49,6 +49,7 @@ from utils.kick.auth import get_access_token
 from utils.kick.client import KickClient
 from utils.kick.webhook_server import KickWebhookServer
 from utils.kick.dispatcher import KickCommandDispatcher
+from utils.kick.tunnel_setup import ensure_tunnel_files
 
 from telegram_bot.telegram_voice_bot import TelegramVoiceBot
 
@@ -163,12 +164,14 @@ class KickBot:
         return None
 
     async def _start_tunnel(self) -> None:
-        """Levanta cloudflared (tunnel ya creado con `cloudflared tunnel create`,
-        con su ruta DNS y config.yml en ~/.cloudflared/) para que el webhook
-        server sea alcanzable públicamente. Se instala una vez por máquina con:
-        winget install --id Cloudflare.cloudflared
+        """Levanta cloudflared para que el webhook server sea alcanzable
+        públicamente. Antes reconstruye en ~/.cloudflared/ los archivos que
+        cloudflared necesita (cert.pem, credenciales del tunnel, config.yml)
+        a partir de utils/secretos.py si no existen en esta máquina — así no
+        hace falta copiar esa carpeta a mano a cada PC nueva. Se instala una
+        vez por máquina con: winget install --id Cloudflare.cloudflared
         """
-        tunnel_name = kick_config.get("cloudflare_tunnel_name")
+        tunnel_name = ensure_tunnel_files()
         if not tunnel_name:
             logger.info("[kick] cloudflare_tunnel_name no configurado — no se levanta ningún túnel")
             return
