@@ -132,6 +132,7 @@ class KickCommandDispatcher:
         try:
             args, kwargs = self._parse_arguments(cmd, rest)
             await cmd.callback(component, ctx, *args, **kwargs)
+            logger.info(f"[kick_dispatcher] Comando '{name}' ejecutado (usuario {username})")
         except MissingRequiredArgument as e:
             logger.info(f"[kick_dispatcher] Comando '{name}' — {e} (usuario {username})")
         except Exception as e:

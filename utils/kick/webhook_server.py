@@ -60,6 +60,8 @@ class KickWebhookServer:
         if not self._verify_signature(message_id, timestamp, raw_body, signature):
             return web.Response(status=401, text="Firma inválida")
 
+        logger.info(f"[kick_webhook] Evento recibido: {event_type} (message_id={message_id})")
+
         try:
             payload = await request.json()
         except Exception:

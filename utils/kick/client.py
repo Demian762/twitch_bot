@@ -37,11 +37,18 @@ class KickClient:
         return data
 
     async def send_chat_message(self, broadcaster_user_id: int, content: str) -> dict:
-        """Envía un mensaje al chat del canal, como bot."""
+        """Envía un mensaje al chat del canal.
+
+        Usa type="user": la autorización OAuth de este bot es la cuenta del
+        propio canal (no hay una cuenta de "bot" de Kick separada, a
+        diferencia de Twitch). type="bot" devolvía 500 desde la API de Kick
+        en pruebas — probablemente porque el concepto de "bot" ahí requiere
+        un registro de bot separado que no configuramos.
+        """
         payload = {
             "broadcaster_user_id": broadcaster_user_id,
             "content": content[:500],
-            "type": "bot",
+            "type": "user",
         }
         async with aiohttp.ClientSession() as session:
             async with session.post(f"{BASE_URL}/chat", json=payload, headers=await self._headers()) as resp:

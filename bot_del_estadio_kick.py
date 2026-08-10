@@ -29,6 +29,7 @@ Version: 260810 (integración Kick)
 
 import asyncio
 import os
+import shutil
 import sys
 import time
 from random import choice
@@ -104,6 +105,7 @@ class KickBot:
 
         self.broadcaster_id: int | None = None
         self.webhook_server: KickWebhookServer | None = None
+        self._tunnel_process: asyncio.subprocess.Process | None = None
         self._last_chat_ts = time.monotonic()
 
         logger.info("KickBot inicializado correctamente")
@@ -128,6 +130,61 @@ class KickBot:
             return None
         return _ChannelInfo(title=data.get("stream_title", ""))
 
+    # Ubicaciones típicas donde winget instala cloudflared en Windows — fallback
+    # por si el PATH del proceso todavía no tiene la entrada nueva (pasa si no
+    # se reinició la sesión/Explorer desde que se instaló).
+    _CLOUDFLARED_FALLBACK_PATHS = (
+        r"C:\Program Files (x86)\cloudflared\cloudflared.exe",
+        r"C:\Program Files\cloudflared\cloudflared.exe",
+    )
+
+    def _find_cloudflared(self) -> str | None:
+        found = shutil.which("cloudflared")
+        if found:
+            return found
+        for path in self._CLOUDFLARED_FALLBACK_PATHS:
+            if os.path.exists(path):
+                return path
+        return None
+
+    async def _start_tunnel(self) -> None:
+        """Levanta cloudflared (tunnel ya creado con `cloudflared tunnel create`,
+        con su ruta DNS y config.yml en ~/.cloudflared/) para que el webhook
+        server sea alcanzable públicamente. Se instala una vez por máquina con:
+        winget install --id Cloudflare.cloudflared
+        """
+        tunnel_name = kick_config.get("cloudflare_tunnel_name")
+        if not tunnel_name:
+            logger.info("[kick] cloudflare_tunnel_name no configurado — no se levanta ningún túnel")
+            return
+        cloudflared_bin = self._find_cloudflared()
+        if not cloudflared_bin:
+            logger.warning(
+                "[kick] cloudflared no encontrado — el webhook no será alcanzable "
+                "públicamente. Instalar con: winget install --id Cloudflare.cloudflared"
+            )
+            return
+        try:
+            self._tunnel_process = await asyncio.create_subprocess_exec(
+                cloudflared_bin, "tunnel", "run", tunnel_name,
+                stdout=asyncio.subprocess.DEVNULL,
+                stderr=asyncio.subprocess.DEVNULL,
+            )
+            logger.info(f"[kick] cloudflared iniciado (tunnel '{tunnel_name}', bin={cloudflared_bin})")
+        except OSError as e:
+            logger.warning(f"[kick] No se pudo iniciar cloudflared: {e}")
+            self._tunnel_process = None
+
+    async def _stop_tunnel(self) -> None:
+        if not self._tunnel_process:
+            return
+        self._tunnel_process.terminate()
+        try:
+            await asyncio.wait_for(self._tunnel_process.wait(), timeout=5)
+        except asyncio.TimeoutError:
+            self._tunnel_process.kill()
+        logger.info("[kick] cloudflared detenido")
+
     # ── Manejo de eventos entrantes ──────────────────────────────────────────
 
     async def _on_chat_message(self, username: str, text: str) -> None:
@@ -139,6 +196,12 @@ class KickBot:
     async def _on_webhook_event(self, event_type: str, payload: dict) -> None:
         if event_type == "chat.message.sent":
             sender = payload.get("sender") or {}
+            # Kick reenvía por webhook también los mensajes del propio bot
+            # (enviados con type="user" a nombre del canal) — filtrarlos,
+            # igual que event_message hace con payload.chatter.id == self.bot_id
+            # del lado de Twitch.
+            if sender.get("user_id") == self.broadcaster_id:
+                return
             username = (sender.get("username") or "").lower()
             content = payload.get("content", "")
             if username:
@@ -172,6 +235,7 @@ class KickBot:
             on_event=self._on_webhook_event,
         )
         await self.webhook_server.start()
+        await self._start_tunnel()
 
         await self.client.subscribe_events(self.broadcaster_id, kick_config["events"])
         logger.info(f"[kick] Suscripto a {len(kick_config['events'])} tipos de evento")
@@ -212,6 +276,7 @@ class KickBot:
     async def close(self) -> None:
         await self.telegram_bot.stop_async()
         await self.metrics.stop()
+        await self._stop_tunnel()
         if self.webhook_server:
             await self.webhook_server.stop()
 

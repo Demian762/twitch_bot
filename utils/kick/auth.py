@@ -37,11 +37,16 @@ _REFRESH_MARGIN_SECONDS = 60  # renovar un poco antes de que venza de verdad
 
 
 def _token_file_path() -> str:
-    """Ruta del archivo de tokens de Kick, junto al exe/script (igual que .tio.tokens.json)."""
+    """Ruta del archivo de tokens de Kick, junto al exe/script (igual que .tio.tokens.json).
+
+    Este archivo vive en utils/kick/auth.py, dos niveles bajo la raíz del
+    proyecto (utils/kick/), así que hacen falta 3 dirname() para llegar a la
+    raíz: utils/kick -> utils -> raíz.
+    """
     if getattr(sys, "frozen", False):
         base = os.path.dirname(sys.executable)
     else:
-        base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     return os.path.join(base, ".kick.tokens.json")
 
 

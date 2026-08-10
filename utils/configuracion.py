@@ -41,6 +41,7 @@ kick_config = {
         {"name": "channel.subscription.new", "version": 1},
         {"name": "channel.subscription.renewal", "version": 1},
     ],
+    "cloudflare_tunnel_name": "kickbot",  # nombre del tunnel (cloudflared tunnel create kickbot)
 }
 
 # Configuración del comando !claudio
