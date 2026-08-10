@@ -364,9 +364,8 @@ class BotLauncher:
 
     def _set_status(self, running: bool):
         if running:
-            plataforma = "KICK" if self.platform_var.get() == "kick" else "TWITCH"
             self.status_dot.config(fg="#22aa44")
-            self.status_label.config(text=f" EN VIVO ({plataforma})", fg="#22aa44")
+            self.status_label.config(text=" EN VIVO", fg="#22aa44")
             self.btn.config(text="Detener")
             self.platform_switch.set_enabled(False)
         else:
