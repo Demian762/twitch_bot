@@ -64,7 +64,7 @@ Known gaps vs. Twitch: no raid-equivalent event on Kick, no Kick emote overlay, 
 Beyond the normal environment setup, each machine that will run the Kick bot needs:
 
 1. `utils/secretos.py` (gitignored) with `kick_client_id` / `kick_client_secret` / `kick_redirect_uri` — same values as the other machines, it's the same registered Kick app.
-2. `cloudflared` installed: `winget install --id Cloudflare.cloudflared`.
+2. `cloudflared` — no need to install it by hand: `bot_launcher.pyw` detects it's missing on startup and installs it via winget itself (`CloudflaredInstallWindow`), before opening the launcher.
 3. The **same Cloudflare Tunnel identity** copied into `%USERPROFILE%\.cloudflared\` on the new machine: `cert.pem`, `<tunnel-id>.json`, and `config.yml`. Without this the machine can't authenticate as the `kickbot` tunnel — copy the whole folder from a working machine rather than re-running `cloudflared tunnel login`/`create` (that would make a second, redundant tunnel).
 4. Either copy `.kick.tokens.json` from a working machine, or run `python -m utils.kick.authorize` again on the new one (same Kick account, fine to re-authorize).
 
