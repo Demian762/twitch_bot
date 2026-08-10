@@ -15,6 +15,7 @@ Mecánica del juego:
     - Estadísticamente favorable al jugador: EV ≈ +18.7% por puntito apostado
     - Los no-admins tienen máximo 5 tiradas por sesión del bot (se resetea al reiniciar)
     - Exclusivo de Kick: en Twitch responde que los slots son solo de Kick
+    - Suena storage/audios/slots.wav la primera vez que se usa el comando en la sesión
 
 Commands:
     !slot [apuesta] - Tira los rodillos apostando 1-10 puntitos (default 1)
@@ -32,6 +33,7 @@ from twitchio.ext import commands
 from utils.mensaje import mensaje, es_kick
 from utils.configuracion import admins
 from utils.puntitos_manager import consulta_puntitos, funcion_puntitos, registrar_victoria_jackpot
+from utils.utiles_general import resource_path, play_sound
 from .base_command import BaseCommand
 
 # (emoji, peso, multiplicador si salen 3 iguales) - a menor peso, más raro y más multiplicador
@@ -74,6 +76,11 @@ class SlotCommands(BaseCommand):
         if not es_kick():
             await mensaje(f"@{ctx.author.name.lower()}, los slots son exclusivos de Kick.")
             return
+
+        if not self.bot.state.slot_audio_reproducido:
+            self.bot.state.slot_audio_reproducido = True
+            audio_path = resource_path("storage/audios/slots.wav")
+            play_sound(audio_path)
 
         handler = await self.handle_command(self._slot)
         await handler(ctx, *args)

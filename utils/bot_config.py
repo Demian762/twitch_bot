@@ -80,3 +80,4 @@ class BotState:
                                                # Todo código que modifique chat_log debe actualizar _chat_log_size en consecuencia.
         self.puntitos_netos_sesion = 0         # Suma neta de puntitos dados/restados en la sesión
         self.slot_jugadas = {}                 # {username: tiradas_usadas_en_sesion} — límite de !slot para no-admins
+        self.slot_audio_reproducido = False    # Si ya sonó slots.wav en esta sesión (solo la primera vez)
