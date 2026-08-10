@@ -79,3 +79,4 @@ class BotState:
                                                # INVARIANTE: bot._chat_log_size refleja el tamaño en bytes de esta lista.
                                                # Todo código que modifique chat_log debe actualizar _chat_log_size en consecuencia.
         self.puntitos_netos_sesion = 0         # Suma neta de puntitos dados/restados en la sesión
+        self.slot_jugadas = {}                 # {username: tiradas_usadas_en_sesion} — límite de !slot para no-admins

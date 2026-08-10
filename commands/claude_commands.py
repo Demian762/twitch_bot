@@ -454,7 +454,8 @@ class ClaudioCommands(BaseCommand):
                 f"torneos={victorias['torneos_ganados']}, "
                 f"timbas={victorias['timbas_ganadas']}, "
                 f"margaritas={victorias['margaritas_ganadas']}, "
-                f"récord escupitajo={victorias['escupitajo_record']}cm"
+                f"récord escupitajo={victorias['escupitajo_record']}cm, "
+                f"jackpots={victorias['jackpots_ganados']}"
             )
 
         elif tool_name == "recomendar_juego":
