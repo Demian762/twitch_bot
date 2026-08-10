@@ -29,6 +29,20 @@ configuracion_basica = {
     "rutina_timer": 15,     # Intervalo en minutos para rutinas automáticas
 }
 
+# Configuración de la integración con Kick (bot_del_estadio_kick.py)
+kick_config = {
+    "webhook_host": "127.0.0.1",     # Host donde escucha el servidor de webhooks (detrás del túnel/reverse proxy)
+    "webhook_port": 8935,             # Puerto local del servidor de webhooks de eventos de Kick
+    "oauth_callback_port": 8934,      # Puerto local temporal para capturar el redirect_uri durante la autorización OAuth
+    "scopes": "user:read channel:read chat:write events:subscribe",  # Scopes pedidos al autorizar la app
+    "events": [                       # Eventos a suscribir vía webhook (name, version) — ver docs.kick.com
+        {"name": "chat.message.sent", "version": 1},
+        {"name": "channel.followed", "version": 1},
+        {"name": "channel.subscription.new", "version": 1},
+        {"name": "channel.subscription.renewal", "version": 1},
+    ],
+}
+
 # Configuración del comando !claudio
 claude_config = {
     "modelo": "claude-haiku-4-5-20251001", # Modelo a usar — opciones: claude-haiku-4-5-20251001 | claude-sonnet-4-6 | claude-opus-4-6

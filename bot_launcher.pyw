@@ -6,7 +6,8 @@ import tkinter as tk
 from tkinter import scrolledtext
 
 BOT_DIR = os.path.dirname(os.path.abspath(__file__))
-BOT_SCRIPT = os.path.join(BOT_DIR, "bot_del_estadio.py")
+BOT_SCRIPT_TWITCH = os.path.join(BOT_DIR, "bot_del_estadio.py")
+BOT_SCRIPT_KICK = os.path.join(BOT_DIR, "bot_del_estadio_kick.py")
 AUDIO_MUTED_FLAG          = os.path.join(BOT_DIR, ".audio_muted")
 TTS_MUTED_FLAG            = os.path.join(BOT_DIR, ".tts_muted")
 METRICS_DISABLED_FLAG     = os.path.join(BOT_DIR, ".metrics_disabled")
@@ -99,12 +100,60 @@ class UpdateWindow:
         self.log.config(state=tk.DISABLED)
 
 
+class ToggleSwitch(tk.Canvas):
+    """Switch visual de dos posiciones (ej: Twitch/Kick). Click para alternar."""
+
+    def __init__(self, parent, variable: tk.StringVar, value_left: str, value_right: str,
+                 color_left="#9146FF", color_right="#53FC18",
+                 width=54, height=24, command=None):
+        super().__init__(parent, width=width, height=height, highlightthickness=0, bd=0)
+        self.variable = variable
+        self.value_left = value_left
+        self.value_right = value_right
+        self.color_left = color_left
+        self.color_right = color_right
+        self._sw_width = width
+        self._sw_height = height
+        self._enabled = True
+        self.command = command
+        self.bind("<Button-1>", self._on_click)
+        self._draw()
+
+    def set_enabled(self, enabled: bool):
+        self._enabled = enabled
+        self.config(cursor="hand2" if enabled else "arrow")
+        self._draw()
+
+    def _on_click(self, _event=None):
+        if not self._enabled:
+            return
+        self.variable.set(self.value_left if self.variable.get() == self.value_right else self.value_right)
+        self._draw()
+        if self.command:
+            self.command()
+
+    def _draw(self):
+        self.delete("all")
+        is_right = self.variable.get() == self.value_right
+        color = (self.color_right if is_right else self.color_left) if self._enabled else "#999999"
+        w, h = self._sw_width, self._sw_height
+        r = h / 2
+        self.create_oval(0, 0, h, h, fill=color, outline="")
+        self.create_oval(w - h, 0, w, h, fill=color, outline="")
+        self.create_rectangle(r, 0, w - r, h, fill=color, outline="")
+        pad = 3
+        d = h - 2 * pad
+        cx = (w - h + pad) if is_right else pad
+        self.create_oval(cx, pad, cx + d, pad + d, fill="white", outline="")
+
+
 class BotLauncher:
     def __init__(self, root: tk.Tk):
         self.root = root
         self.root.title("Bot del Estadio")
         self.root.minsize(700, 500)
         self.process: subprocess.Popen | None = None
+        self.platform_var = tk.StringVar(value="twitch")
         self.audio_var   = tk.BooleanVar(value=not os.path.exists(AUDIO_MUTED_FLAG))
         self.tts_var     = tk.BooleanVar(value=not os.path.exists(TTS_MUTED_FLAG))
         self.metrics_var = tk.BooleanVar(value=not os.path.exists(METRICS_DISABLED_FLAG))
@@ -155,6 +204,20 @@ class BotLauncher:
             command=self._toggle,
         )
         self.btn.pack(side=tk.LEFT)
+
+        platform_frame = tk.Frame(bar)
+        platform_frame.pack(side=tk.LEFT, padx=(20, 0))
+        tk.Label(
+            platform_frame, text="Twitch", font=("Segoe UI", 9, "bold"), fg="#9146FF",
+        ).pack(side=tk.LEFT, padx=(0, 5))
+        self.platform_switch = ToggleSwitch(
+            platform_frame, self.platform_var, "twitch", "kick",
+            command=self._on_platform_change,
+        )
+        self.platform_switch.pack(side=tk.LEFT)
+        tk.Label(
+            platform_frame, text="Kick", font=("Segoe UI", 9, "bold"), fg="#53FC18",
+        ).pack(side=tk.LEFT, padx=(5, 0))
 
         tk.Checkbutton(
             bar,
@@ -211,6 +274,10 @@ class BotLauncher:
         else:
             self._stop()
 
+    def _on_platform_change(self):
+        plataforma = "Kick" if self.platform_var.get() == "kick" else "Twitch"
+        self._append(f"--- plataforma seleccionada: {plataforma} ---\n")
+
     def _kill_leftover(self):
         """Mata cualquier proceso bot previo usando el PID guardado en .bot.pid."""
         if not os.path.exists(BOT_PID_FILE):
@@ -235,8 +302,9 @@ class BotLauncher:
 
     def _start(self):
         self._kill_leftover()
+        script = BOT_SCRIPT_KICK if self.platform_var.get() == "kick" else BOT_SCRIPT_TWITCH
         self.process = subprocess.Popen(
-            [VENV_PYTHON, "-u", BOT_SCRIPT],
+            [VENV_PYTHON, "-u", script],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             cwd=BOT_DIR,
@@ -296,13 +364,16 @@ class BotLauncher:
 
     def _set_status(self, running: bool):
         if running:
+            plataforma = "KICK" if self.platform_var.get() == "kick" else "TWITCH"
             self.status_dot.config(fg="#22aa44")
-            self.status_label.config(text=" EN VIVO", fg="#22aa44")
+            self.status_label.config(text=f" EN VIVO ({plataforma})", fg="#22aa44")
             self.btn.config(text="Detener")
+            self.platform_switch.set_enabled(False)
         else:
             self.status_dot.config(fg="#cc3333")
             self.status_label.config(text=" DETENIDO", fg="#cc3333")
             self.btn.config(state=tk.NORMAL, text="Iniciar")
+            self.platform_switch.set_enabled(True)
 
     def _append(self, text: str):
         self.log.config(state=tk.NORMAL)
