@@ -109,6 +109,8 @@ class MinigamesCommands(BaseCommand):
 
         if self.bot.state.ganador is None:
             self.bot.state.ganador = [nombre, escupida]
+            audio_path = resource_path("storage/audios/spit.wav")
+            play_sound(audio_path)
             await asyncio.to_thread(funcion_puntitos, nombre, 2)
             registrar_victoria_torneo(nombre)
             await mensaje(f"{nombre} inició el torneo de escupitajos con {escupida} cm!")
