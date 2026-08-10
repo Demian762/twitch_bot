@@ -14,6 +14,7 @@ Mecánica del juego:
     - Los admins juegan gratis, sin apostar puntos reales
     - Estadísticamente favorable al jugador: EV ≈ +18.7% por puntito apostado
     - Los no-admins tienen máximo 5 tiradas por sesión del bot (se resetea al reiniciar)
+    - Exclusivo de Kick: en Twitch responde que los slots son solo de Kick
 
 Commands:
     !slot [apuesta] - Tira los rodillos apostando 1-10 puntitos (default 1)
@@ -28,7 +29,7 @@ from random import choices
 from twitchio.ext import commands
 
 # Imports locales
-from utils.mensaje import mensaje
+from utils.mensaje import mensaje, es_kick
 from utils.configuracion import admins
 from utils.puntitos_manager import consulta_puntitos, funcion_puntitos, registrar_victoria_jackpot
 from .base_command import BaseCommand
@@ -68,6 +69,10 @@ class SlotCommands(BaseCommand):
             *args: Argumentos del comando (la apuesta, opcional)
         """
         if await self.check_coma_etilico():
+            return
+
+        if not es_kick():
+            await mensaje(f"@{ctx.author.name.lower()}, los slots son exclusivos de Kick.")
             return
 
         handler = await self.handle_command(self._slot)

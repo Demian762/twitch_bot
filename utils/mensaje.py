@@ -41,6 +41,11 @@ def set_kick_sender(client, broadcaster_user_id: int) -> None:
     _kick_broadcaster_user_id = broadcaster_user_id
 
 
+def es_kick() -> bool:
+    """True si la plataforma activa del proceso es Kick (vs. Twitch)."""
+    return _kick_client is not None
+
+
 async def _send_one(texto: str) -> None:
     if _broadcaster is not None:
         await _broadcaster.send_message(message=texto, sender=_bot_id)
