@@ -146,11 +146,11 @@ class SlotCommands(BaseCommand):
         # 2 iguales (cualquier par entre los 3)
         if tirada[0] == tirada[1] or tirada[1] == tirada[2] or tirada[0] == tirada[2]:
             if es_admin:
-                await mensaje(f"🎰 {resultado} — @{nombre} empató (los admins juegan gratis).")
+                await mensaje(f"🎰 {resultado} — @{nombre} sacó un par (los admins juegan gratis).")
             else:
-                ganancia = apuesta
+                ganancia = apuesta * 2
                 await asyncio.to_thread(funcion_puntitos, nombre, ganancia)
-                await mensaje(f"🎰 {resultado} — @{nombre} empató, ¡ganó {ganancia} puntitos (el doble de la apuesta)!")
+                await mensaje(f"🎰 {resultado} — @{nombre} sacó un par, ¡ganó {ganancia} puntitos (el doble de la apuesta)!")
             return
 
         # Sin coincidencias
