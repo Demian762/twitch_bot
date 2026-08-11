@@ -52,6 +52,13 @@ comandos_mensajes = {
     'yamete':["yametekudasaaaaaaaai"],
 }
 
+# Overrides de comandos_mensajes cuando corre en Kick, para las entradas que
+# usan emotes específicos de Twitch (que en Kick aparecerían como texto
+# literal). Si una clave no está acá, se usa la de comandos_mensajes de siempre.
+comandos_mensajes_kick = {
+    'presta':["ppJedi ppJedi ppJedi ppJedi ppJedi ppJedi ppJedi"],
+}
+
 autores_exclusivos = {
     'marit887':['yeahbaby'],
     'theredfallen':['presta'],
