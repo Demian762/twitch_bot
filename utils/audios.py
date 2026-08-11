@@ -57,6 +57,7 @@ comandos_mensajes = {
 # literal). Si una clave no está acá, se usa la de comandos_mensajes de siempre.
 comandos_mensajes_kick = {
     'presta':["ppJedi ppJedi ppJedi ppJedi ppJedi ppJedi ppJedi"],
+    'yamete':["SenpaiWhoo SenpaiWhoo SenpaiWhoo SenpaiWhoo SenpaiWhoo"],
 }
 
 autores_exclusivos = {
