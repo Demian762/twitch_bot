@@ -21,6 +21,7 @@ Repository: https://github.com/Demian762/twitch_bot
 # Imports estándar
 import asyncio
 import os
+import socket
 import sys
 import time
 from random import choice
@@ -464,7 +465,13 @@ class Bot(commands.Bot):
                 f"Watchdog: stream en vivo pero sin mensajes de chat por {elapsed/60:.1f} min. Reiniciando proceso..."
             )
             import subprocess
-            subprocess.Popen([sys.executable] + sys.argv)
+            # --restarted-by-watchdog le dice al proceso nuevo que espere antes
+            # de arrancar (ver bottom del módulo) — el nuevo proceso arranca
+            # casi al instante, mientras este todavía está cerrando conexiones
+            # (metrics, telegram, twitchio), y pisarse los mismos puertos
+            # (ej. el server interno de twitchio en ::1:4343) tira OSError y
+            # el reinicio falla en vez de arreglar nada.
+            subprocess.Popen([sys.executable] + sys.argv + ["--restarted-by-watchdog"])
             await self.close()
 
     async def _poll_emoji_overlay(self) -> None:
@@ -498,6 +505,32 @@ class Bot(commands.Bot):
         self.state.usuarios_activos.clear()
         logger.info("Registro de usuarios activos limpiado")
 
+
+def _esperar_puerto_libre(host: str, port: int, family, timeout: float = 60.0) -> None:
+    """Sondea (host, port) hasta que nadie responda ahí (o se cumpla el timeout).
+
+    Usado solo en el reinicio del watchdog: el proceso anterior puede tardar
+    en soltar sus puertos (metrics, el server interno de twitchio) mientras
+    todavía está cerrando telegram/metrics/twitchio en paralelo.
+    """
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        s = socket.socket(family, socket.SOCK_STREAM)
+        s.settimeout(0.5)
+        try:
+            s.connect((host, port))
+        except OSError:
+            return  # nadie escuchando ahí -> puerto libre
+        else:
+            s.close()
+            time.sleep(1)
+    logger.warning(f"[watchdog] El puerto {port} sigue ocupado después de {timeout}s, arranco igual")
+
+
+if "--restarted-by-watchdog" in sys.argv:
+    logger.info("Reinicio por watchdog detectado — esperando a que el proceso anterior libere sus puertos...")
+    _esperar_puerto_libre("::1", 4343, socket.AF_INET6)
+    _esperar_puerto_libre("127.0.0.1", 47200, socket.AF_INET)
 
 bot = Bot()
 bot.run()
