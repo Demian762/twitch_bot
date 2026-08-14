@@ -15,3 +15,6 @@ ffmpeg/
 ffmpeg-master-latest-win64-gpl/
 logs/
 docs/
+cloudflare/worker/node_modules/
+cloudflare/worker/.wrangler/
+cloudflare/worker/seed.sql
