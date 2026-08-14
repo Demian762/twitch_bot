@@ -44,6 +44,7 @@ comandos_audios = {
     'sierra':['sierra'],
     'aiseigudbai':['aiseigudbai'],
     'endai':['endai'],
+    'peron':['peron'],
 }
 
 comandos_mensajes = {

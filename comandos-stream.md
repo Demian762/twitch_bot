@@ -3,7 +3,7 @@
 ## 🎵 **Audios** | 🎮 **Gaming** | 💰 **Puntitos** | 🎪 **Minijuegos** | 📺 **Canal** | 🛠️ **Utilidades**
 
 ### 🎵 **Comandos de Audio**
-`!holis` `!helldiver` `!cuervo` `!zazaraza` `!piripipi` `!dark` `!quiereme` `!sacrilegioso` `!sadsong` `!boca` `!yeahbaby` `!wansaia82` `!presta` `!distinta` `!sega` `!play` `!mario` `!zelda` `!alert` `!ernesto` `!yamete` `!bija` `!fumojuego` `!repartidor` `!emperor` `!tose` `!emilio` `!saran` `!win95` `!win98` `!allahu` `!arrugadito` `!dross` `!elisir` `!elpollodiablo` `!milk` `!nodenuevo` `!snake` `!gatito` `!dificil` `!suatencion` `!coronacion` `!sierra` `!aiseigudbai` `!endai`
+`!holis` `!helldiver` `!cuervo` `!zazaraza` `!piripipi` `!dark` `!quiereme` `!sacrilegioso` `!sadsong` `!boca` `!yeahbaby` `!wansaia82` `!presta` `!distinta` `!sega` `!play` `!mario` `!zelda` `!alert` `!ernesto` `!yamete` `!bija` `!fumojuego` `!repartidor` `!emperor` `!tose` `!emilio` `!saran` `!win95` `!win98` `!allahu` `!arrugadito` `!dross` `!elisir` `!elpollodiablo` `!milk` `!nodenuevo` `!snake` `!gatito` `!dificil` `!suatencion` `!coronacion` `!sierra` `!aiseigudbai` `!endai` `!peron`
 
 ### 🎮 **Gaming**
 `!info [juego]` - Info de videojuegos | `!lanzamientos` - Próximos lanzamientos
