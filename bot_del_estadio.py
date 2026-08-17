@@ -25,6 +25,11 @@ import sys
 import time
 from random import choice
 
+# Secretos remotos: tiene que correr antes de cualquier import de utils/ que
+# dependa de utils/secretos.py (bot_config, d1_client, etc.)
+from utils.secrets_bootstrap import ensure_secretos
+ensure_secretos()
+
 # Imports de terceros
 from twitchio import eventsub
 from twitchio.ext import commands
