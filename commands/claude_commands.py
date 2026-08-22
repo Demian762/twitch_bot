@@ -17,7 +17,7 @@ import datetime
 from twitchio.ext import commands
 import anthropic
 
-from utils.mensaje import mensaje
+from utils.mensaje import mensaje, es_kick
 from utils.audios import comandos_audios
 from utils.detroit_data import DETROIT_INFO, RESPUESTAS_INSISTENTES
 from utils.puntitos_manager import (
@@ -245,6 +245,10 @@ class ClaudioCommands(BaseCommand):
             base = PROMPT_ADMIN
         else:
             base = PROMPT_BASE
+        if es_kick():
+            base = base.replace("bot oficial de Twitch", "bot oficial de Kick").replace(
+                "chat de Twitch", "chat de Kick"
+            )
         ctx = self.bot.state.claude_contexto
         bloques = [{"type": "text", "text": base}]
         admins_str = "Admins del canal: " + ", ".join(admins)
@@ -454,7 +458,8 @@ class ClaudioCommands(BaseCommand):
                 f"torneos={victorias['torneos_ganados']}, "
                 f"timbas={victorias['timbas_ganadas']}, "
                 f"margaritas={victorias['margaritas_ganadas']}, "
-                f"récord escupitajo={victorias['escupitajo_record']}cm"
+                f"récord escupitajo={victorias['escupitajo_record']}cm, "
+                f"jackpots={victorias['jackpots_ganados']}"
             )
 
         elif tool_name == "recomendar_juego":

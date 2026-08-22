@@ -57,6 +57,7 @@ class PointsCommands(BaseCommand):
         timbas = victorias['timbas_ganadas']
         margaritas = victorias['margaritas_ganadas']
         escupitajo_record = victorias['escupitajo_record']
+        jackpots = victorias['jackpots_ganados']
         
         # Construir el mensaje con manejo gramatical
         if puntitos == 0:
@@ -100,6 +101,13 @@ class PointsCommands(BaseCommand):
         # Agregar récord de escupitajo solo si > 0
         if escupitajo_record > 0:
             estadisticas.append(f'récord de escupitajo: {escupitajo_record} cm')
+
+        # Agregar información de jackpots solo si > 0
+        if jackpots > 0:
+            if jackpots == 1:
+                estadisticas.append(f'{jackpots} jackpot')
+            else:
+                estadisticas.append(f'{jackpots} jackpots')
         
         # Construir mensaje completo
         if len(estadisticas) == 0:

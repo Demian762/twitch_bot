@@ -46,6 +46,7 @@ from .interaction_commands import InteractionCommands
 from .timba_commands import TimbaCommand
 from .silla_commands import SillaCommands
 from .claude_commands import ClaudioCommands
+from .slot_commands import SlotCommands
 
 # Lista maestra de todos los cogs a cargar
 # Esta lista determina qué funcionalidades están activas en el bot
@@ -65,4 +66,5 @@ COGS = [
     TimbaCommand,
     SillaCommands,
     ClaudioCommands,
+    SlotCommands,
 ]

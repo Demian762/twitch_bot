@@ -1,10 +1,12 @@
 import aiohttp
 from utils.logger import logger
-from utils.configuracion import discord_titulo_template
+from utils.configuracion import discord_titulo_template_twitch, discord_titulo_template_kick
+from utils.mensaje import es_kick
 
 
 def _build_titulo_msg(titulo: str) -> str:
-    return discord_titulo_template.format(titulo=titulo)
+    template = discord_titulo_template_kick if es_kick() else discord_titulo_template_twitch
+    return template.format(titulo=titulo)
 
 
 async def send_discord_message(webhook_url: str, content: str) -> bool:
