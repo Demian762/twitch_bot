@@ -23,6 +23,7 @@ import asyncio
 import os
 import socket
 import sys
+import threading
 import time
 from random import choice
 
@@ -515,12 +516,12 @@ def _esperar_puerto_libre(host: str, port: int, family, timeout: float = 60.0) -
     """
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
-        s = socket.socket(family, socket.SOCK_STREAM)
-        s.settimeout(0.5)
         try:
+            s = socket.socket(family, socket.SOCK_STREAM)
+            s.settimeout(0.5)
             s.connect((host, port))
         except OSError:
-            return  # nadie escuchando ahí -> puerto libre
+            return  # nadie escuchando ahí (o la familia no está disponible) -> seguimos
         else:
             s.close()
             time.sleep(1)
@@ -529,8 +530,16 @@ def _esperar_puerto_libre(host: str, port: int, family, timeout: float = 60.0) -
 
 if "--restarted-by-watchdog" in sys.argv:
     logger.info("Reinicio por watchdog detectado — esperando a que el proceso anterior libere sus puertos...")
-    _esperar_puerto_libre("::1", 4343, socket.AF_INET6)
-    _esperar_puerto_libre("127.0.0.1", 47200, socket.AF_INET)
+    # En threads separados: son sondeos independientes (IPv6 4343 vs IPv4
+    # 47200), y encadenarlos secuencial podía sumar hasta 2x el timeout.
+    _hilos_espera = [
+        threading.Thread(target=_esperar_puerto_libre, args=("::1", 4343, socket.AF_INET6)),
+        threading.Thread(target=_esperar_puerto_libre, args=("127.0.0.1", 47200, socket.AF_INET)),
+    ]
+    for _h in _hilos_espera:
+        _h.start()
+    for _h in _hilos_espera:
+        _h.join()
 
 bot = Bot()
 bot.run()

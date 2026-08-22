@@ -108,54 +108,56 @@ class SlotCommands(BaseCommand):
             await mensaje(f"@{nombre}, la apuesta tiene que ser un número entre 1 y 10.")
             return
 
-        es_admin = nombre in admins
-        if not es_admin:
-            jugadas_usadas = self.bot.state.slot_jugadas.get(nombre, 0)
-            if jugadas_usadas >= SLOT_MAX_JUGADAS:
-                await mensaje(f"@{nombre}, ya usaste tus {SLOT_MAX_JUGADAS} tiradas de !slot en esta sesión. ¡Probá de nuevo en el próximo stream!")
+        lock = self.bot.state.slot_locks.setdefault(nombre, asyncio.Lock())
+        async with lock:
+            es_admin = nombre in admins
+            if not es_admin:
+                jugadas_usadas = self.bot.state.slot_jugadas.get(nombre, 0)
+                if jugadas_usadas >= SLOT_MAX_JUGADAS:
+                    await mensaje(f"@{nombre}, ya usaste tus {SLOT_MAX_JUGADAS} tiradas de !slot en esta sesión. ¡Probá de nuevo en el próximo stream!")
+                    return
+
+                puntos_actuales = consulta_puntitos(nombre)
+                if puntos_actuales < apuesta:
+                    await mensaje(f"@{nombre}, no tenés suficientes puntitos para apostar {apuesta} (tenés {puntos_actuales}).")
+                    return
+
+                self.bot.state.slot_jugadas[nombre] = jugadas_usadas + 1
+
+            tirada = choices(SLOT_EMOJIS, weights=SLOT_PESOS, k=3)
+            resultado = " ".join(tirada)
+
+            # 3 iguales
+            if tirada[0] == tirada[1] == tirada[2]:
+                simbolo = tirada[0]
+                multiplicador = SLOT_MULTIPLICADORES[simbolo]
+                ganancia = apuesta * multiplicador
+                es_jackpot = simbolo == SLOT_JACKPOT
+
+                if es_jackpot:
+                    await asyncio.to_thread(registrar_victoria_jackpot, nombre)
+
+                prefijo = "🌟 ¡JACKPOT! " if es_jackpot else ""
+                if es_admin:
+                    await mensaje(f"🎰 {resultado} — {prefijo}@{nombre} sacó 3 {simbolo} (los admins juegan gratis, sin puntitos en juego).")
+                else:
+                    await asyncio.to_thread(funcion_puntitos, nombre, ganancia)
+                    await mensaje(f"🎰 {resultado} — {prefijo}¡@{nombre} ganó {ganancia} puntitos!")
                 return
 
-            puntos_actuales = consulta_puntitos(nombre)
-            if puntos_actuales < apuesta:
-                await mensaje(f"@{nombre}, no tenés suficientes puntitos para apostar {apuesta} (tenés {puntos_actuales}).")
+            # 2 iguales (cualquier par entre los 3)
+            if tirada[0] == tirada[1] or tirada[1] == tirada[2] or tirada[0] == tirada[2]:
+                if es_admin:
+                    await mensaje(f"🎰 {resultado} — @{nombre} sacó un par (los admins juegan gratis).")
+                else:
+                    ganancia = apuesta * 2
+                    await asyncio.to_thread(funcion_puntitos, nombre, ganancia)
+                    await mensaje(f"🎰 {resultado} — @{nombre} sacó un par, ¡ganó {ganancia} puntitos (el doble de la apuesta)!")
                 return
 
-            self.bot.state.slot_jugadas[nombre] = jugadas_usadas + 1
-
-        tirada = choices(SLOT_EMOJIS, weights=SLOT_PESOS, k=3)
-        resultado = " ".join(tirada)
-
-        # 3 iguales
-        if tirada[0] == tirada[1] == tirada[2]:
-            simbolo = tirada[0]
-            multiplicador = SLOT_MULTIPLICADORES[simbolo]
-            ganancia = apuesta * multiplicador
-            es_jackpot = simbolo == SLOT_JACKPOT
-
-            if es_jackpot:
-                registrar_victoria_jackpot(nombre)
-
-            prefijo = "🌟 ¡JACKPOT! " if es_jackpot else ""
+            # Sin coincidencias
             if es_admin:
-                await mensaje(f"🎰 {resultado} — {prefijo}@{nombre} sacó 3 {simbolo} (los admins juegan gratis, sin puntitos en juego).")
+                await mensaje(f"🎰 {resultado} — @{nombre} no tuvo suerte (los admins juegan gratis, sin puntitos en juego).")
             else:
-                await asyncio.to_thread(funcion_puntitos, nombre, ganancia)
-                await mensaje(f"🎰 {resultado} — {prefijo}¡@{nombre} ganó {ganancia} puntitos!")
-            return
-
-        # 2 iguales (cualquier par entre los 3)
-        if tirada[0] == tirada[1] or tirada[1] == tirada[2] or tirada[0] == tirada[2]:
-            if es_admin:
-                await mensaje(f"🎰 {resultado} — @{nombre} sacó un par (los admins juegan gratis).")
-            else:
-                ganancia = apuesta * 2
-                await asyncio.to_thread(funcion_puntitos, nombre, ganancia)
-                await mensaje(f"🎰 {resultado} — @{nombre} sacó un par, ¡ganó {ganancia} puntitos (el doble de la apuesta)!")
-            return
-
-        # Sin coincidencias
-        if es_admin:
-            await mensaje(f"🎰 {resultado} — @{nombre} no tuvo suerte (los admins juegan gratis, sin puntitos en juego).")
-        else:
-            await asyncio.to_thread(funcion_puntitos, nombre, -apuesta)
-            await mensaje(f"🎰 {resultado} — @{nombre} perdió {apuesta} puntitos.")
+                await asyncio.to_thread(funcion_puntitos, nombre, -apuesta)
+                await mensaje(f"🎰 {resultado} — @{nombre} perdió {apuesta} puntitos.")

@@ -25,7 +25,7 @@ from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
 
 from utils.logger import logger
 
-EventCallback = Callable[[str, dict], Awaitable[None]]
+EventCallback = Callable[[str, str, dict], Awaitable[None]]
 
 
 class KickWebhookServer:
@@ -68,7 +68,7 @@ class KickWebhookServer:
             return web.Response(status=400, text="Body inválido")
 
         try:
-            await self._on_event(event_type, payload)
+            await self._on_event(event_type, message_id, payload)
         except Exception as e:
             logger.error(f"[kick_webhook] Error procesando evento '{event_type}': {e}", exc_info=e)
 

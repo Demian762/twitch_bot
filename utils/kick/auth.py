@@ -35,6 +35,14 @@ TOKEN_URL = "https://id.kick.com/oauth/token"
 
 _REFRESH_MARGIN_SECONDS = 60  # renovar un poco antes de que venza de verdad
 
+# Cache en memoria de los tokens del proceso del bot, para no releer y
+# reparsear .kick.tokens.json en cada request REST (get_access_token() se
+# llama antes de cada una). Solo se actualiza al cargar por primera vez o al
+# refrescar — si se re-corre `python -m utils.kick.authorize` con el bot ya
+# corriendo, no lo va a notar hasta el próximo reinicio.
+_cached_tokens: dict | None = None
+_refresh_lock = asyncio.Lock()
+
 
 def _token_file_path() -> str:
     """Ruta del archivo de tokens de Kick, junto al exe/script (igual que .tio.tokens.json).
@@ -70,12 +78,21 @@ def _load_tokens() -> dict | None:
 
 
 def _save_tokens(data: dict) -> None:
+    global _cached_tokens
     path = _token_file_path()
     try:
         with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
     except OSError as e:
         logger.error(f"[kick_auth] No se pudo guardar {path}: {e}")
+    _cached_tokens = data
+
+
+def _get_cached_tokens() -> dict | None:
+    global _cached_tokens
+    if _cached_tokens is None:
+        _cached_tokens = _load_tokens()
+    return _cached_tokens
 
 
 class _CallbackHandler(http.server.BaseHTTPRequestHandler):
@@ -202,7 +219,7 @@ async def get_access_token() -> str:
     Raises:
         RuntimeError: si todavía no se corrió run_authorization_flow() al menos una vez.
     """
-    tokens = _load_tokens()
+    tokens = _get_cached_tokens()
     if tokens is None:
         raise RuntimeError(
             "No hay tokens de Kick guardados. Corré primero: "
@@ -213,10 +230,20 @@ async def get_access_token() -> str:
     if time.time() < expires_at - _REFRESH_MARGIN_SECONDS:
         return tokens["access_token"]
 
-    logger.info("[kick_auth] access_token vencido, refrescando...")
-    refreshed = await _refresh(tokens["refresh_token"])
-    refreshed["obtained_at"] = time.time()
-    # Kick puede no devolver un refresh_token nuevo en cada refresh; conservar el viejo si falta
-    refreshed.setdefault("refresh_token", tokens["refresh_token"])
-    _save_tokens(refreshed)
-    return refreshed["access_token"]
+    # Lock + doble chequeo: si dos requests pisan el vencimiento casi juntas,
+    # solo la primera refresca de verdad; la segunda ve el token ya renovado
+    # al entrar al lock y no dispara un segundo refresh con el mismo
+    # refresh_token (Kick puede invalidarlo al usarlo una vez).
+    async with _refresh_lock:
+        tokens = _cached_tokens
+        expires_at = tokens.get("obtained_at", 0) + tokens.get("expires_in", 0)
+        if time.time() < expires_at - _REFRESH_MARGIN_SECONDS:
+            return tokens["access_token"]
+
+        logger.info("[kick_auth] access_token vencido, refrescando...")
+        refreshed = await _refresh(tokens["refresh_token"])
+        refreshed["obtained_at"] = time.time()
+        # Kick puede no devolver un refresh_token nuevo en cada refresh; conservar el viejo si falta
+        refreshed.setdefault("refresh_token", tokens["refresh_token"])
+        _save_tokens(refreshed)
+        return refreshed["access_token"]

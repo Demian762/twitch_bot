@@ -135,6 +135,8 @@ class KickCommandDispatcher:
             logger.info(f"[kick_dispatcher] Comando '{name}' ejecutado (usuario {username})")
         except MissingRequiredArgument as e:
             logger.info(f"[kick_dispatcher] Comando '{name}' — {e} (usuario {username})")
+            from utils.mensaje import mensaje
+            await mensaje("Ya rompiste el bot con ese comando...")
         except Exception as e:
             logger.error(f"[kick_dispatcher] Error en comando '{name}': {e}", exc_info=e)
             from utils.mensaje import mensaje

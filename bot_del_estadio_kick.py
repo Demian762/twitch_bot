@@ -28,6 +28,7 @@ Version: 260810 (integración Kick)
 """
 
 import asyncio
+import collections
 import os
 import shutil
 import sys
@@ -120,9 +121,13 @@ class KickBot:
         self.broadcaster_id: int | None = None
         self.webhook_server: KickWebhookServer | None = None
         self._tunnel_process: asyncio.subprocess.Process | None = None
-        self._last_chat_ts = time.monotonic()
         self._chat_log_size = 0
         self._auto_respuesta_ts = 0.0
+        # Kick puede reintentar la entrega del mismo webhook (timeout, respuesta
+        # lenta) — se descartan los message_id ya vistos para no duplicar
+        # contadores de followers/subs ni re-despachar el mismo comando de chat.
+        self._seen_event_ids: collections.deque[str] = collections.deque(maxlen=500)
+        self._seen_event_ids_set: set[str] = set()
 
         logger.info("KickBot inicializado correctamente")
 
@@ -220,8 +225,6 @@ class KickBot:
         """Se llama por CADA mensaje del chat (no solo comandos): registra
         contexto para Claude y evalúa la respuesta automática por palabra
         clave, antes de intentar despachar un comando si corresponde."""
-        self._last_chat_ts = time.monotonic()
-
         if text.startswith("!"):
             self.state.usuarios_activos.add(username)
 
@@ -246,7 +249,22 @@ class KickBot:
 
         await self.dispatcher.dispatch(username, text)
 
-    async def _on_webhook_event(self, event_type: str, payload: dict) -> None:
+    def _evento_ya_procesado(self, message_id: str) -> bool:
+        """True si este message_id ya se procesó (reintento de Kick). Registra
+        el id como visto si es la primera vez."""
+        if message_id in self._seen_event_ids_set:
+            return True
+        if len(self._seen_event_ids) == self._seen_event_ids.maxlen:
+            self._seen_event_ids_set.discard(self._seen_event_ids.popleft())
+        self._seen_event_ids.append(message_id)
+        self._seen_event_ids_set.add(message_id)
+        return False
+
+    async def _on_webhook_event(self, event_type: str, message_id: str, payload: dict) -> None:
+        if self._evento_ya_procesado(message_id):
+            logger.info(f"[kick] Evento '{event_type}' repetido (message_id={message_id}) — se ignora")
+            return
+
         if event_type == "chat.message.sent":
             sender = payload.get("sender") or {}
             content = payload.get("content", "")
@@ -333,18 +351,23 @@ class KickBot:
         await self._stop_tunnel()
         if self.webhook_server:
             await self.webhook_server.stop()
+        await self.client.close()
 
-    async def run_forever(self) -> None:
+    async def _start_metrics(self) -> None:
         metrics_flag = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".metrics_disabled")
         if os.path.exists(metrics_flag):
             logger.info("[metrics] Deshabilitado por flag — WebSocket no iniciado")
-        else:
-            try:
-                await self.metrics.start()
-            except OSError as e:
-                logger.warning(f"[metrics] No se pudo iniciar el WebSocket: {e} — el bot continúa sin métricas")
+            return
+        try:
+            await self.metrics.start()
+        except OSError as e:
+            logger.warning(f"[metrics] No se pudo iniciar el WebSocket: {e} — el bot continúa sin métricas")
 
-        await self.start()
+    async def run_forever(self) -> None:
+        # El websocket de métricas y la cadena de auth/webhook/túnel de Kick
+        # (self.start) no dependen entre sí — corren en paralelo para no
+        # sumar sus tiempos de arranque uno atrás del otro.
+        await asyncio.gather(self._start_metrics(), self.start())
         try:
             while True:
                 await asyncio.sleep(3600)

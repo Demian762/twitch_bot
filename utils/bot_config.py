@@ -81,3 +81,6 @@ class BotState:
         self.puntitos_netos_sesion = 0         # Suma neta de puntitos dados/restados en la sesión
         self.slot_jugadas = {}                 # {username: tiradas_usadas_en_sesion} — límite de !slot para no-admins
         self.slot_audio_reproducido = False    # Si ya sonó slots.wav en esta sesión (solo la primera vez)
+        self.slot_locks = {}                   # {username: asyncio.Lock} — serializa jugadas de !slot del mismo user
+                                               # para que un doble envío (retry de webhook, doble click) no lea el
+                                               # saldo de puntitos antes de que la jugada anterior termine de escribirlo.
