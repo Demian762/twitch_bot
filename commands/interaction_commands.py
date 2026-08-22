@@ -17,12 +17,26 @@ from random import choice
 
 # Imports locales
 from utils.logger import logger
-from utils.mensaje import mensaje
+from utils.mensaje import mensaje, es_kick
 from utils.utiles_general import resource_path, play_sound
 from utils.puntitos_manager import funcion_puntitos
 from utils.configuracion import admins, configuracion_basica
-from utils.audios import comandos_general, comandos_audios, comandos_mensajes, autores_exclusivos
+from utils.audios import (
+    comandos_general,
+    comandos_audios,
+    comandos_mensajes,
+    comandos_mensajes_kick,
+    autores_exclusivos,
+)
 from .base_command import BaseCommand
+
+
+def _mensaje_para(comando: str):
+    """Devuelve el mensaje de comandos_mensajes_kick si hay un override para
+    Kick y corresponde, si no el de comandos_mensajes de siempre."""
+    if es_kick() and comando in comandos_mensajes_kick:
+        return comandos_mensajes_kick[comando]
+    return comandos_mensajes.get(comando, None)
 
 class InteractionCommands(BaseCommand):
     """
@@ -84,9 +98,9 @@ class InteractionCommands(BaseCommand):
                     self.bot.metrics.push_overlay({"type": "gif", "name": comando_validado})
                 )
             asyncio.create_task(asyncio.to_thread(play_sound, audio_path))
-            mensaje_string = comandos_mensajes.get(comando_validado, None)
+            mensaje_string = _mensaje_para(comando_validado)
         else:
-            mensaje_string = comandos_mensajes.get(comando, None)
+            mensaje_string = _mensaje_para(comando)
 
         await mensaje(mensaje_string)
 

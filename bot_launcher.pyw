@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 import threading
 import time
@@ -6,7 +7,8 @@ import tkinter as tk
 from tkinter import scrolledtext
 
 BOT_DIR = os.path.dirname(os.path.abspath(__file__))
-BOT_SCRIPT = os.path.join(BOT_DIR, "bot_del_estadio.py")
+BOT_SCRIPT_TWITCH = os.path.join(BOT_DIR, "bot_del_estadio.py")
+BOT_SCRIPT_KICK = os.path.join(BOT_DIR, "bot_del_estadio_kick.py")
 AUDIO_MUTED_FLAG          = os.path.join(BOT_DIR, ".audio_muted")
 TTS_MUTED_FLAG            = os.path.join(BOT_DIR, ".tts_muted")
 METRICS_DISABLED_FLAG     = os.path.join(BOT_DIR, ".metrics_disabled")
@@ -14,6 +16,23 @@ EMOJI_OVERLAY_DISABLED_FLAG = os.path.join(BOT_DIR, ".emoji_overlay_disabled")
 BOT_PID_FILE          = os.path.join(BOT_DIR, ".bot.pid")
 VENV_PYTHON = os.path.join(BOT_DIR, "bot-env", "Scripts", "python.exe")
 NO_WINDOW = subprocess.CREATE_NO_WINDOW
+
+# Ubicaciones típicas donde winget instala cloudflared en Windows — fallback
+# por si el PATH del proceso todavía no tiene la entrada nueva.
+CLOUDFLARED_FALLBACK_PATHS = (
+    r"C:\Program Files (x86)\cloudflared\cloudflared.exe",
+    r"C:\Program Files\cloudflared\cloudflared.exe",
+)
+
+
+def _find_cloudflared() -> str | None:
+    found = shutil.which("cloudflared")
+    if found:
+        return found
+    for path in CLOUDFLARED_FALLBACK_PATHS:
+        if os.path.exists(path):
+            return path
+    return None
 
 
 def _open_launcher(root: tk.Tk):
@@ -99,12 +118,138 @@ class UpdateWindow:
         self.log.config(state=tk.DISABLED)
 
 
+class CloudflaredInstallWindow:
+    """Se muestra solo si cloudflared no está instalado — lo instala con
+    winget (necesario para el túnel del bot de Kick) antes de abrir el
+    launcher normal. Si falla, avisa y sigue igual: el bot de Kick arranca
+    sin túnel público en vez de no arrancar."""
+
+    def __init__(self, root: tk.Tk, on_done):
+        self.root = root
+        self.on_done = on_done
+        self.root.title("Bot del Estadio — Preparando Kick")
+        self.root.resizable(False, False)
+        self.root.geometry("460x230")
+        self.root.protocol("WM_DELETE_WINDOW", lambda: None)
+        self._build_ui()
+        self.root.deiconify()
+        threading.Thread(target=self._do_install, daemon=True).start()
+
+    def _build_ui(self):
+        tk.Label(
+            self.root,
+            text="Instalando cloudflared (necesario para Kick)...",
+            font=("Segoe UI", 11, "bold"),
+            pady=12,
+            wraplength=430,
+        ).pack()
+        tk.Label(
+            self.root,
+            text="Si Windows pide confirmación, aceptala para continuar.",
+            font=("Segoe UI", 9),
+            fg="#666666",
+        ).pack()
+        self.log = scrolledtext.ScrolledText(
+            self.root,
+            state=tk.DISABLED,
+            height=7,
+            font=("Consolas", 8),
+            bg="#1e1e1e",
+            fg="#d4d4d4",
+            wrap=tk.WORD,
+            padx=6,
+            pady=4,
+        )
+        self.log.pack(fill=tk.BOTH, expand=True, padx=10, pady=(6, 10))
+
+    def _do_install(self):
+        self._log("--- instalando cloudflared con winget ---\n")
+        try:
+            result = subprocess.run(
+                [
+                    "winget", "install", "--id", "Cloudflare.cloudflared", "-e",
+                    "--accept-source-agreements", "--accept-package-agreements",
+                ],
+                capture_output=True,
+                text=True,
+                creationflags=NO_WINDOW,
+                timeout=180,
+            )
+            self._log(result.stdout or result.stderr)
+            if result.returncode == 0 or _find_cloudflared():
+                self._log("--- listo ---\n")
+            else:
+                self._log("--- no se pudo instalar, seguimos igual ---\n")
+        except Exception as e:
+            self._log(f"--- error instalando cloudflared: {e} ---\n")
+
+        time.sleep(1)
+        self.root.after(0, self.on_done)
+
+    def _log(self, text: str):
+        self.root.after(0, self._append, text)
+
+    def _append(self, text: str):
+        self.log.config(state=tk.NORMAL)
+        self.log.insert(tk.END, text)
+        self.log.see(tk.END)
+        self.log.config(state=tk.DISABLED)
+
+
+class ToggleSwitch(tk.Canvas):
+    """Switch visual de dos posiciones (ej: Twitch/Kick). Click para alternar."""
+
+    def __init__(self, parent, variable: tk.StringVar, value_left: str, value_right: str,
+                 color_left="#9146FF", color_right="#53FC18",
+                 width=54, height=24, command=None):
+        super().__init__(parent, width=width, height=height, highlightthickness=0, bd=0)
+        self.variable = variable
+        self.value_left = value_left
+        self.value_right = value_right
+        self.color_left = color_left
+        self.color_right = color_right
+        self._sw_width = width
+        self._sw_height = height
+        self._enabled = True
+        self.command = command
+        self.bind("<Button-1>", self._on_click)
+        self._draw()
+
+    def set_enabled(self, enabled: bool):
+        self._enabled = enabled
+        self.config(cursor="hand2" if enabled else "arrow")
+        self._draw()
+
+    def _on_click(self, _event=None):
+        if not self._enabled:
+            return
+        self.variable.set(self.value_left if self.variable.get() == self.value_right else self.value_right)
+        self._draw()
+        if self.command:
+            self.command()
+
+    def _draw(self):
+        self.delete("all")
+        is_right = self.variable.get() == self.value_right
+        color = (self.color_right if is_right else self.color_left) if self._enabled else "#999999"
+        w, h = self._sw_width, self._sw_height
+        r = h / 2
+        self.create_oval(0, 0, h, h, fill=color, outline="")
+        self.create_oval(w - h, 0, w, h, fill=color, outline="")
+        self.create_rectangle(r, 0, w - r, h, fill=color, outline="")
+        pad = 3
+        d = h - 2 * pad
+        cx = (w - h + pad) if is_right else pad
+        self.create_oval(cx, pad, cx + d, pad + d, fill="white", outline="")
+
+
 class BotLauncher:
     def __init__(self, root: tk.Tk):
         self.root = root
         self.root.title("Bot del Estadio")
         self.root.minsize(700, 500)
         self.process: subprocess.Popen | None = None
+        self.platform_var = tk.StringVar(value="twitch")
         self.audio_var   = tk.BooleanVar(value=not os.path.exists(AUDIO_MUTED_FLAG))
         self.tts_var     = tk.BooleanVar(value=not os.path.exists(TTS_MUTED_FLAG))
         self.metrics_var = tk.BooleanVar(value=not os.path.exists(METRICS_DISABLED_FLAG))
@@ -155,6 +300,20 @@ class BotLauncher:
             command=self._toggle,
         )
         self.btn.pack(side=tk.LEFT)
+
+        platform_frame = tk.Frame(bar)
+        platform_frame.pack(side=tk.LEFT, padx=(20, 0))
+        tk.Label(
+            platform_frame, text="Twitch", font=("Segoe UI", 9, "bold"), fg="#9146FF",
+        ).pack(side=tk.LEFT, padx=(0, 5))
+        self.platform_switch = ToggleSwitch(
+            platform_frame, self.platform_var, "twitch", "kick",
+            command=self._on_platform_change,
+        )
+        self.platform_switch.pack(side=tk.LEFT)
+        tk.Label(
+            platform_frame, text="Kick", font=("Segoe UI", 9, "bold"), fg="#53FC18",
+        ).pack(side=tk.LEFT, padx=(5, 0))
 
         tk.Checkbutton(
             bar,
@@ -211,6 +370,10 @@ class BotLauncher:
         else:
             self._stop()
 
+    def _on_platform_change(self):
+        plataforma = "Kick" if self.platform_var.get() == "kick" else "Twitch"
+        self._append(f"--- plataforma seleccionada: {plataforma} ---\n")
+
     def _kill_leftover(self):
         """Mata cualquier proceso bot previo usando el PID guardado en .bot.pid."""
         if not os.path.exists(BOT_PID_FILE):
@@ -235,8 +398,9 @@ class BotLauncher:
 
     def _start(self):
         self._kill_leftover()
+        script = BOT_SCRIPT_KICK if self.platform_var.get() == "kick" else BOT_SCRIPT_TWITCH
         self.process = subprocess.Popen(
-            [VENV_PYTHON, "-u", BOT_SCRIPT],
+            [VENV_PYTHON, "-u", script],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             cwd=BOT_DIR,
@@ -299,10 +463,12 @@ class BotLauncher:
             self.status_dot.config(fg="#22aa44")
             self.status_label.config(text=" EN VIVO", fg="#22aa44")
             self.btn.config(text="Detener")
+            self.platform_switch.set_enabled(False)
         else:
             self.status_dot.config(fg="#cc3333")
             self.status_label.config(text=" DETENIDO", fg="#cc3333")
             self.btn.config(state=tk.NORMAL, text="Iniciar")
+            self.platform_switch.set_enabled(True)
 
     def _append(self, text: str):
         self.log.config(state=tk.NORMAL)
@@ -360,9 +526,15 @@ if __name__ == "__main__":
 
     root = tk.Tk()
 
-    if _branch != "master":
-        BotLauncher(root)
-    else:
+    def _after_cloudflared():
+        for widget in root.winfo_children():
+            widget.destroy()
+
+        if _branch != "master":
+            root.resizable(True, True)
+            BotLauncher(root)
+            return
+
         root.withdraw()
         root.title("Bot del Estadio")
         root.resizable(False, False)
@@ -402,5 +574,13 @@ if __name__ == "__main__":
             root.after(0, _on_fetch_done, update_needed)
 
         threading.Thread(target=_fetch, daemon=True).start()
+
+    # cloudflared hace falta para el túnel del bot de Kick — se detecta y,
+    # si falta, se instala una sola vez (por máquina) antes de abrir el
+    # launcher normal.
+    if _find_cloudflared():
+        _after_cloudflared()
+    else:
+        CloudflaredInstallWindow(root, _after_cloudflared)
 
     root.mainloop()

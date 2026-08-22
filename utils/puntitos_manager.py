@@ -702,7 +702,7 @@ def _registrar_en_victorias(nombre: str, col: int, campo: str, cant: int = 1) ->
                     hoja.update_cell(idx + 2, col, actual + cant)
                     logger.info(f"{campo} actualizado para {nombre}: {actual + cant}")
                     return True
-            nuevo = [nombre, 0, 0, 0, 0, 0]
+            nuevo = [nombre, 0, 0, 0, 0, 0, 0]
             nuevo[col - 1] = cant
             hoja.append_row(nuevo)
             logger.info(f"Nuevo registro de victorias para {nombre} ({campo}={cant})")
@@ -728,21 +728,22 @@ def consulta_victorias(nombre: str):
         nombre (str): Nombre del usuario (se normaliza automáticamente)
         
     Returns:
-        dict: Diccionario con 'sorteos_ganados', 'torneos_ganados', 'timbas_ganadas', 'margaritas_ganadas' y 'escupitajo_record'
+        dict: Diccionario con 'sorteos_ganados', 'torneos_ganados', 'timbas_ganadas', 'margaritas_ganadas',
+              'escupitajo_record' y 'jackpots_ganados'
               Retorna todos los valores en 0 si no existe
-        
+
     Example:
         >>> consulta_victorias("usuario1")
-        {'sorteos_ganados': 3, 'torneos_ganados': 5, 'timbas_ganadas': 2, 'margaritas_ganadas': 4, 'escupitajo_record': 450}
+        {'sorteos_ganados': 3, 'torneos_ganados': 5, 'timbas_ganadas': 2, 'margaritas_ganadas': 4, 'escupitajo_record': 450, 'jackpots_ganados': 1}
         >>> consulta_victorias("usuario_nuevo")
-        {'sorteos_ganados': 0, 'torneos_ganados': 0, 'timbas_ganadas': 0, 'margaritas_ganadas': 0, 'escupitajo_record': 0}
+        {'sorteos_ganados': 0, 'torneos_ganados': 0, 'timbas_ganadas': 0, 'margaritas_ganadas': 0, 'escupitajo_record': 0, 'jackpots_ganados': 0}
     """
     nombre = nombre.lower().lstrip("@")
-    
+
     try:
         hoja = sh.get_worksheet(4)
         df = hoja.get_all_records()
-        
+
         for row in df:
             if row.get('nombre') == nombre:
                 # Convertir todos los valores a int ya que pueden venir como string del spreadsheet
@@ -751,26 +752,29 @@ def consulta_victorias(nombre: str):
                     'torneos_ganados': int(row.get('torneos_ganados', 0) or 0),
                     'timbas_ganadas': int(row.get('timbas_ganadas', 0) or 0),
                     'margaritas_ganadas': int(row.get('margaritas_ganadas', 0) or 0),
-                    'escupitajo_record': int(row.get('escupitajo_record', 0) or 0)
+                    'escupitajo_record': int(row.get('escupitajo_record', 0) or 0),
+                    'jackpots_ganados': int(row.get('jackpots_ganados', 0) or 0)
                 }
-        
+
         # Usuario no existe, retornar ceros
         return {
-            'sorteos_ganados': 0, 
+            'sorteos_ganados': 0,
             'torneos_ganados': 0,
             'timbas_ganadas': 0,
             'margaritas_ganadas': 0,
-            'escupitajo_record': 0
+            'escupitajo_record': 0,
+            'jackpots_ganados': 0
         }
-        
+
     except Exception as e:
         logger.error(f"Error al consultar victorias para {nombre}: {e}")
         return {
-            'sorteos_ganados': 0, 
+            'sorteos_ganados': 0,
             'torneos_ganados': 0,
             'timbas_ganadas': 0,
             'margaritas_ganadas': 0,
-            'escupitajo_record': 0
+            'escupitajo_record': 0,
+            'jackpots_ganados': 0
         }
 
 def registrar_victoria_timba(nombre: str):
@@ -778,6 +782,9 @@ def registrar_victoria_timba(nombre: str):
 
 def registrar_victoria_margarita(nombre: str):
     _registrar_en_victorias(nombre.lower().lstrip("@"), col=5, campo='margaritas_ganadas')
+
+def registrar_victoria_jackpot(nombre: str):
+    _registrar_en_victorias(nombre.lower().lstrip("@"), col=7, campo='jackpots_ganados')
 
 def registrar_record_escupitajo(nombre: str, distancia: int) -> bool:
     """Actualiza el récord de escupitajo solo si la nueva distancia es mayor. Retorna True si hubo nuevo récord."""
@@ -794,7 +801,7 @@ def registrar_record_escupitajo(nombre: str, distancia: int) -> bool:
                         logger.info(f"Nuevo récord de escupitajo para {nombre}: {distancia} cm (anterior: {record_actual} cm)")
                         return True
                     return False
-            hoja.append_row([nombre, 0, 0, 0, 0, distancia])
+            hoja.append_row([nombre, 0, 0, 0, 0, distancia, 0])
             logger.info(f"Nuevo registro de victorias para {nombre} (escupitajo_record={distancia})")
             return True
     except Exception as e:
