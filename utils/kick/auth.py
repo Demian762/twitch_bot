@@ -2,12 +2,16 @@
 Autenticación OAuth 2.1 + PKCE contra la API de Kick.
 
 Flujo:
-  1. run_authorization_flow() — se corre UNA VEZ de forma interactiva
-     (python -m utils.kick.authorize): abre el navegador, el usuario loguea
-     y autoriza la app, un servidor HTTP local efímero captura el ?code=...
-     del redirect_uri, se canjea por tokens y se guardan en disco.
+  1. run_authorization_flow() / get_access_token() — abren el navegador, el
+     usuario loguea y autoriza la app, un servidor HTTP local efímero
+     captura el ?code=... del redirect_uri, se canjea por tokens y se
+     guardan en disco. Se puede disparar a mano una vez por máquina
+     (python -m utils.kick.authorize) o queda a cargo del propio
+     get_access_token() la primera vez que el bot arranca sin
+     .kick.tokens.json en una máquina que ya tiene secretos.py cargado.
   2. get_access_token() — usado por el bot en cada arranque; devuelve un
-     access_token válido, refrescándolo contra la API si venció.
+     access_token válido, refrescándolo contra la API si venció, o
+     corriendo la autorización de cero si todavía no hay tokens guardados.
 
 Referencia: https://github.com/KickEngineering/KickDevDocs
 """
@@ -162,15 +166,13 @@ async def _refresh(refresh_token: str) -> dict:
             return await resp.json()
 
 
-def run_authorization_flow() -> None:
+async def _run_authorization_flow_async() -> None:
     """
-    Flujo interactivo de autorización — correr UNA VEZ:
-        bot-env\\Scripts\\python.exe -m utils.kick.authorize
-
-    Abre el navegador para que el usuario loguee en Kick y autorice la app,
-    captura el code con un servidor HTTP local efímero en kick_redirect_uri,
-    lo canjea por tokens y los guarda en disco. No requiere un event loop
-    corriendo de antes (lo crea internamente para el canje).
+    Flujo interactivo de autorización: abre el navegador para que el usuario
+    loguee en Kick y autorice la app, captura el code con un servidor HTTP
+    local efímero en kick_redirect_uri, lo canjea por tokens y los guarda en
+    disco. La espera del callback corre en un executor para no bloquear el
+    event loop del bot mientras el usuario autoriza en el navegador.
     """
     if not kick_client_id or not kick_client_secret:
         raise RuntimeError(
@@ -195,9 +197,11 @@ def run_authorization_flow() -> None:
     port = urllib.parse.urlparse(kick_redirect_uri).port or kick_config["oauth_callback_port"]
 
     print(f"Abriendo el navegador para autorizar la app de Kick...\n{url}")
+    logger.info("[kick_auth] No hay tokens de Kick guardados, iniciando autorización interactiva...")
     webbrowser.open(url)
 
-    code, returned_state, error = _wait_for_callback(port)
+    loop = asyncio.get_running_loop()
+    code, returned_state, error = await loop.run_in_executor(None, _wait_for_callback, port)
 
     if error:
         raise RuntimeError(f"Kick rechazó la autorización: {error}")
@@ -206,25 +210,37 @@ def run_authorization_flow() -> None:
     if returned_state != state:
         raise RuntimeError("El 'state' devuelto no coincide con el enviado — abortando por seguridad.")
 
-    token_data = asyncio.run(_exchange_code(code, verifier))
+    token_data = await _exchange_code(code, verifier)
     token_data["obtained_at"] = time.time()
     _save_tokens(token_data)
     print("Cuenta de Kick conectada y tokens guardados correctamente.")
+
+
+def run_authorization_flow() -> None:
+    """
+    Flujo interactivo de autorización — correr UNA VEZ de forma manual:
+        bot-env\\Scripts\\python.exe -m utils.kick.authorize
+
+    No requiere un event loop corriendo de antes (lo crea acá). get_access_token()
+    también puede disparar este mismo flujo solo, la primera vez que el bot
+    arranca en una máquina nueva (ver más abajo).
+    """
+    asyncio.run(_run_authorization_flow_async())
 
 
 async def get_access_token() -> str:
     """
     Devuelve un access_token válido, refrescándolo si venció.
 
-    Raises:
-        RuntimeError: si todavía no se corrió run_authorization_flow() al menos una vez.
+    Si todavía no existe .kick.tokens.json (máquina nueva con secretos.py ya
+    cargado), dispara la autorización interactiva sola en vez de fallar —
+    abre el navegador y espera a que el usuario autorice, igual que
+    `python -m utils.kick.authorize` pero automático en el primer arranque.
     """
     tokens = _get_cached_tokens()
     if tokens is None:
-        raise RuntimeError(
-            "No hay tokens de Kick guardados. Corré primero: "
-            "bot-env\\Scripts\\python.exe -m utils.kick.authorize"
-        )
+        await _run_authorization_flow_async()
+        tokens = _get_cached_tokens()
 
     expires_at = tokens.get("obtained_at", 0) + tokens.get("expires_in", 0)
     if time.time() < expires_at - _REFRESH_MARGIN_SECONDS:
