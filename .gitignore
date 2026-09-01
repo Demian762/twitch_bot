@@ -16,3 +16,10 @@ ffmpeg/
 ffmpeg-master-latest-win64-gpl/
 logs/
 docs/
+cloudflare/worker/node_modules/
+cloudflare/worker/.wrangler/
+cloudflare/worker/seed.sql
+cloudflare/secrets-worker/node_modules/
+cloudflare/secrets-worker/.wrangler/
+cloudflare/secrets-worker/seed.sql
+.remote_key

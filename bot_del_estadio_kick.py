@@ -35,6 +35,11 @@ import sys
 import time
 from random import choice
 
+# Secretos remotos: tiene que correr antes de cualquier import de utils/ que
+# dependa de utils/secretos.py (bot_config, d1_client, etc.)
+from utils.secrets_bootstrap import ensure_secretos
+ensure_secretos()
+
 from utils.logger import logger
 from utils import mensaje as mensaje_module
 from utils.calendario_celebraciones import get_mensaje_diade

@@ -8,6 +8,9 @@ Abre el navegador para loguear y autorizar la app de Kick, y guarda los
 tokens en .kick.tokens.json junto al script/exe.
 """
 
+from utils.secrets_bootstrap import ensure_secretos
+ensure_secretos()
+
 from utils.kick.auth import run_authorization_flow
 
 if __name__ == "__main__":
