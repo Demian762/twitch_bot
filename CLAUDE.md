@@ -92,7 +92,7 @@ The Kick app's Webhook URL (`https://kickbot.hablemosdepavadas.com.ar/kick/webho
 
 Points ("puntitos") live in a Cloudflare D1 database (`botdelestadio_db`), accessed through `cloudflare/worker/` (`utils/d1_client.py` is the Python HTTP client). Tables: `puntitos` (`nombre`, `puntos` current, `historico` lifetime), `victorias`, `programacion`, `restricciones_escupir`, `daddy_points`, `claude_memoria`. Relevant commands: `!consulta`, `!puntos`, `!top`, `!sorteo`.
 
-The Google Sheet that originally backed this is now only a convenience editing surface for manual corrections — it is not read at runtime. After editing it, run `python cloudflare/migrate_from_sheets.py` and apply the generated `cloudflare/worker/seed.sql` with `wrangler d1 execute botdelestadio_db --remote --file=seed.sql` to push the changes into D1.
+The Google Sheet that originally backed this is retired — D1 is the only source of truth, read and written directly by the Worker.
 
 ## Remote secrets
 
@@ -109,7 +109,7 @@ Populated remotely (see "Remote secrets" above). Variables it must contain:
 - RAWG API key, Steam API key
 - YouTube API key and channel ID
 - Telegram bot token
-- Google Sheets service account JSON credentials (still used by `cloudflare/migrate_from_sheets.py` to read manual corrections)
+- Google Sheets service account JSON credentials (legacy, kept for now but no longer read by any script)
 - Cloudflare D1 worker URL/token (`d1_worker_url`, `d1_worker_token`)
 - Kick app credentials: `kick_client_id`, `kick_client_secret`, `kick_redirect_uri` (from kick.com/settings/developer — see "Kick integration" above)
 
