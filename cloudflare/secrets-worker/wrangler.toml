@@ -1,0 +1,13 @@
+name = "botdelestadio-secrets"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+# database_id se completa después de correr:
+#   npx wrangler d1 create botdelestadio_secrets
+[[d1_databases]]
+binding = "DB"
+database_name = "botdelestadio_secrets"
+database_id = "38a8db43-0e33-432c-9632-6cc08feadccb"
+
+# READ_KEY NO va acá (este archivo se commitea). Se setea aparte con:
+#   npx wrangler secret put READ_KEY

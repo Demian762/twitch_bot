@@ -1,0 +1,10 @@
+name = "botdelestadio-db"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+# database_id se completa después de correr:
+#   npx wrangler d1 create botdelestadio_db
+[[d1_databases]]
+binding = "DB"
+database_name = "botdelestadio_db"
+database_id = "cf0411ec-ea66-4520-83d2-de68d24810bd"

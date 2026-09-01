@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**BotDelEstadio** is a Twitch chatbot for the "Hablemos de Pavadas" channel, built with `twitchio`. It includes a points system backed by Google Sheets, minigames, audio playback, API integrations, and a parallel Telegram bot.
+**BotDelEstadio** is a Twitch chatbot for the "Hablemos de Pavadas" channel, built with `twitchio`. It includes a points system backed by Cloudflare D1, minigames, audio playback, API integrations, and a parallel Telegram bot.
 
 ## Running the Bot
 
@@ -63,10 +63,10 @@ Known gaps vs. Twitch: no raid-equivalent event on Kick, no Kick emote overlay, 
 
 Beyond the normal environment setup, each machine that will run the Kick bot needs:
 
-1. `utils/secretos.py` (gitignored) with `kick_client_id` / `kick_client_secret` / `kick_redirect_uri` / `kick_cloudflare_cert_pem` / `kick_cloudflare_tunnel_credentials` — same values as the other machines, it's the same registered Kick app and the same Cloudflare Tunnel identity.
+1. `.remote_key` (gitignored, repo root) — same as any other machine (see "Remote secrets" above). Once set, `utils/secretos.py` gets `kick_client_id` / `kick_client_secret` / `kick_redirect_uri` / `kick_cloudflare_cert_pem` / `kick_cloudflare_tunnel_credentials` from the secrets worker automatically — same values everywhere, since it's the same registered Kick app and the same Cloudflare Tunnel identity.
 2. `cloudflared` — no need to install it by hand: `bot_launcher.pyw` detects it's missing on startup and installs it via winget itself (`CloudflaredInstallWindow`), before opening the launcher.
 3. The Cloudflare Tunnel's local files (`~/.cloudflared/cert.pem`, `<tunnel-id>.json`, `config.yml`) — no need to copy that folder by hand either: `utils/kick/tunnel_setup.py` regenerates whichever of those three files are missing from the `kick_cloudflare_*` values in `secretos.py`, the first time `bot_del_estadio_kick.py` starts on that machine. Idempotent — leaves existing files alone.
-4. Tokens: either copy `.kick.tokens.json` from a working machine, or do nothing — `get_access_token()` (`utils/kick/auth.py`) opens the browser and runs the authorization flow itself the first time the bot starts without that file (same as running `python -m utils.kick.authorize` manually, just automatic). Either way requires `secretos.py` to already have the Kick credentials.
+4. Tokens: either copy `.kick.tokens.json` from a working machine, or do nothing — `get_access_token()` (`utils/kick/auth.py`) opens the browser and runs the authorization flow itself the first time the bot starts without that file (same as running `python -m utils.kick.authorize` manually, just automatic). Either way requires `.remote_key` to already be in place so `secretos.py` gets generated with the Kick credentials.
 
 The Kick app's Webhook URL (`https://kickbot.hablemosdepavadas.com.ar/kick/webhook`, panel at kick.com/settings/developer) is configured once for the app as a whole — it doesn't need to change per machine, since the tunnel always forwards to whichever machine currently has `cloudflared tunnel run kickbot` running.
 
@@ -75,9 +75,12 @@ The Kick app's Webhook URL (`https://kickbot.hablemosdepavadas.com.ar/kick/webho
 | File | Role |
 |------|------|
 | [utils/configuracion.py](utils/configuracion.py) | Central config: admins, social links, spam messages, grog texts, insult dictionary, trivia questions, routine timers |
-| [utils/secretos.py](utils/secretos.py) | All API credentials — **gitignored**, must exist locally |
+| [utils/secretos.py](utils/secretos.py) | All API credentials — **gitignored**, regenerated on every startup by `utils/secrets_bootstrap.py` (see "Remote secrets" below) |
+| [utils/secrets_bootstrap.py](utils/secrets_bootstrap.py) | Fetches secrets from the Cloudflare secrets worker using `.remote_key` and writes `utils/secretos.py` |
 | [utils/bot_config.py](utils/bot_config.py) | `BotConfig`, `APIManager`, `BotState` class definitions |
-| [utils/puntitos_manager.py](utils/puntitos_manager.py) | Google Sheets read/write for the points system |
+| [utils/puntitos_manager.py](utils/puntitos_manager.py) | Points system logic — reads/writes Cloudflare D1 via `utils/d1_client.py` |
+| [utils/d1_client.py](utils/d1_client.py) | HTTP client for the puntitos Cloudflare Worker (`cloudflare/worker/`) |
+| [cloudflare/](cloudflare/) | Two Cloudflare Workers: `worker/` (D1-backed puntitos/victorias/programación API) and `secrets-worker/` (remote secrets API) — see "Remote secrets" below |
 | [utils/api_games.py](utils/api_games.py) | RAWG.io and Steam API wrappers |
 | [utils/logger.py](utils/logger.py) | Logging setup (daily files in `/logs/`) |
 | [bot_del_estadio.spec](bot_del_estadio.spec) | PyInstaller spec: bundles ffmpeg.exe and `storage/` audio files |
@@ -87,16 +90,27 @@ The Kick app's Webhook URL (`https://kickbot.hablemosdepavadas.com.ar/kick/webho
 
 ## Points System
 
-Points ("puntitos") are stored in a Google Sheet. The spreadsheet columns are `nombre`, `puntos` (current), and `historico` (lifetime total). Access is via a service account defined in `secretos.py`. Relevant commands: `!consulta`, `!puntos`, `!top`, `!sorteo`.
+Points ("puntitos") live in a Cloudflare D1 database (`botdelestadio_db`), accessed through `cloudflare/worker/` (`utils/d1_client.py` is the Python HTTP client). Tables: `puntitos` (`nombre`, `puntos` current, `historico` lifetime), `victorias`, `programacion`, `restricciones_escupir`, `daddy_points`, `claude_memoria`. Relevant commands: `!consulta`, `!puntos`, `!top`, `!sorteo`.
+
+The Google Sheet that originally backed this is now only a convenience editing surface for manual corrections — it is not read at runtime. After editing it, run `python cloudflare/migrate_from_sheets.py` and apply the generated `cloudflare/worker/seed.sql` with `wrangler d1 execute botdelestadio_db --remote --file=seed.sql` to push the changes into D1.
+
+## Remote secrets
+
+`utils/secretos.py` is gitignored and **generated at every startup**, not hand-authored: `bot_del_estadio.py` / `bot_del_estadio_kick.py` / `utils/kick/authorize.py` all call `ensure_secretos()` (`utils/secrets_bootstrap.py`) before any other `utils` import. It reads a bearer token from `.remote_key` (gitignored, repo root), fetches all credentials as JSON from the dedicated `cloudflare/secrets-worker/` Worker, and writes them out as `utils/secretos.py`. No network/invalid key means the bot refuses to start — there's no offline fallback by design.
+
+To update a credential: edit `utils/secretos.py` locally, run `python cloudflare/push_secrets.py`, review the generated `cloudflare/secrets-worker/seed.sql`, then apply it with `wrangler d1 execute botdelestadio_secrets --remote --file=seed.sql`. Every machine picks up the change on its next start — no need to touch each install by hand.
+
+`installer.py` asks for `.remote_key` directly (pasted in) instead of a `secretos.py` file, since the repo is public and the key must never be committed.
 
 ## Credentials (`utils/secretos.py`)
 
-This file is gitignored. It must contain variables for:
+Populated remotely (see "Remote secrets" above). Variables it must contain:
 - Twitch OAuth token, client ID, bot user ID
 - RAWG API key, Steam API key
 - YouTube API key and channel ID
 - Telegram bot token
-- Google Sheets service account JSON credentials
+- Google Sheets service account JSON credentials (still used by `cloudflare/migrate_from_sheets.py` to read manual corrections)
+- Cloudflare D1 worker URL/token (`d1_worker_url`, `d1_worker_token`)
 - Kick app credentials: `kick_client_id`, `kick_client_secret`, `kick_redirect_uri` (from kick.com/settings/developer — see "Kick integration" above)
 
 ## Platform Notes

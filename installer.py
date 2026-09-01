@@ -49,7 +49,6 @@ class Installer:
         self.root = root
         self.root.title("Bot del Estadio — Instalador")
         self.root.minsize(640, 480)
-        self.secretos_path: str | None = None
         self._build_ui()
 
     def _build_ui(self):
@@ -75,16 +74,13 @@ class Installer:
         )
         tk.Button(form, text="...", font=("Segoe UI", 9), command=self._choose_folder).grid(row=0, column=2)
 
-        # Secretos row
-        tk.Label(form, text="Archivo secretos.py:", font=("Segoe UI", 10), width=22, anchor="w").grid(
+        # Clave remota row
+        tk.Label(form, text="Clave remota:", font=("Segoe UI", 10), width=22, anchor="w").grid(
             row=1, column=0, sticky="w", pady=4
         )
-        self.secretos_var = tk.StringVar(value="(no seleccionado)")
-        tk.Label(form, textvariable=self.secretos_var, font=("Segoe UI", 9), fg="#555", anchor="w").grid(
-            row=1, column=1, sticky="w", padx=(0, 6)
-        )
-        tk.Button(form, text="Seleccionar", font=("Segoe UI", 9), command=self._choose_secretos).grid(
-            row=1, column=2
+        self.remote_key_var = tk.StringVar(value="")
+        tk.Entry(form, textvariable=self.remote_key_var, font=("Segoe UI", 9), width=38, show="*").grid(
+            row=1, column=1, padx=(0, 6)
         )
 
         # Install button
@@ -123,20 +119,11 @@ class Installer:
         if path:
             self.folder_var.set(path)
 
-    def _choose_secretos(self):
-        path = filedialog.askopenfilename(
-            title="Seleccionar secretos.py",
-            filetypes=[("Python files", "*.py"), ("Todos los archivos", "*.*")],
-        )
-        if path:
-            self.secretos_path = path
-            self.secretos_var.set(Path(path).name)
-
     # ── Install flow ──────────────────────────────────────────────────────────
 
     def _start_install(self):
-        if not self.secretos_path:
-            messagebox.showwarning("Falta secretos.py", "Seleccioná el archivo secretos.py antes de instalar.")
+        if not self.remote_key_var.get().strip():
+            messagebox.showwarning("Falta la clave remota", "Pegá la clave remota antes de instalar.")
             return
         install_dir = Path(self.folder_var.get().strip())
         if install_dir.exists() and any(install_dir.iterdir()):
@@ -162,7 +149,7 @@ class Installer:
                 return
             if not self._pip_install(install_dir):
                 return
-            self._copy_secretos(install_dir)
+            self._write_remote_key(install_dir)
             self._create_shortcut(install_dir, python_exe)
             self._log("\n✓ ¡Instalación completa!")
             self.root.after(
@@ -238,10 +225,10 @@ class Installer:
         req = install_dir / "requirements.txt"
         return self._run(f'"{pip}" install -r "{req}"')
 
-    def _copy_secretos(self, install_dir: Path):
-        self._log("→ Copiando secretos.py...")
-        dest = install_dir / "utils" / "secretos.py"
-        shutil.copy(self.secretos_path, dest)  # type: ignore[arg-type]
+    def _write_remote_key(self, install_dir: Path):
+        self._log("→ Guardando clave remota...")
+        dest = install_dir / ".remote_key"
+        dest.write_text(self.remote_key_var.get().strip(), encoding="utf-8")
 
     def _find_pythonw(self, python_exe: str) -> str:
         """Encuentra pythonw.exe del Python base del sistema (no del venv)."""
