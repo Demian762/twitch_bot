@@ -14,6 +14,7 @@ TTS_MUTED_FLAG            = os.path.join(BOT_DIR, ".tts_muted")
 METRICS_DISABLED_FLAG     = os.path.join(BOT_DIR, ".metrics_disabled")
 EMOJI_OVERLAY_DISABLED_FLAG = os.path.join(BOT_DIR, ".emoji_overlay_disabled")
 BOT_PID_FILE          = os.path.join(BOT_DIR, ".bot.pid")
+REMOTE_KEY_PATH = os.path.join(BOT_DIR, ".remote_key")
 VENV_PYTHON = os.path.join(BOT_DIR, "bot-env", "Scripts", "python.exe")
 NO_WINDOW = subprocess.CREATE_NO_WINDOW
 
@@ -194,6 +195,72 @@ class CloudflaredInstallWindow:
         self.log.insert(tk.END, text)
         self.log.see(tk.END)
         self.log.config(state=tk.DISABLED)
+
+
+class RemoteKeyWindow:
+    """Se muestra si falta .remote_key — sin esa clave el bot no puede pedir
+    sus credenciales al worker de secretos y se niega a arrancar (ver
+    utils/secrets_bootstrap.py). La pide, la guarda y sigue con el flujo
+    normal (chequeo de cloudflared / actualización / launcher)."""
+
+    def __init__(self, root: tk.Tk, on_done):
+        self.root = root
+        self.on_done = on_done
+        self.root.title("Bot del Estadio — Clave remota")
+        self.root.resizable(False, False)
+        self.root.geometry("420x210")
+        self.root.protocol("WM_DELETE_WINDOW", lambda: None)
+        self._build_ui()
+        self.root.deiconify()
+
+    def _build_ui(self):
+        tk.Label(
+            self.root,
+            text="Falta la clave remota",
+            font=("Segoe UI", 12, "bold"),
+            pady=10,
+        ).pack()
+        tk.Label(
+            self.root,
+            text="Pegá la clave remota para que el bot pueda\nobtener sus credenciales.",
+            font=("Segoe UI", 9),
+            justify=tk.CENTER,
+        ).pack(pady=(0, 10))
+
+        self.key_var = tk.StringVar()
+        entry = tk.Entry(self.root, textvariable=self.key_var, font=("Segoe UI", 9), width=42, show="*")
+        entry.pack(pady=(0, 6))
+        entry.focus_set()
+        entry.bind("<Return>", lambda _e: self._save())
+
+        self.error_label = tk.Label(self.root, text="", font=("Segoe UI", 8), fg="#cc3333", wraplength=380)
+        self.error_label.pack()
+
+        tk.Button(
+            self.root,
+            text="Guardar y continuar",
+            font=("Segoe UI", 10, "bold"),
+            command=self._save,
+            bg="#0078d4",
+            fg="white",
+            relief=tk.FLAT,
+            cursor="hand2",
+        ).pack(pady=8)
+
+    def _save(self):
+        clave = self.key_var.get().strip()
+        if not clave:
+            self.error_label.config(text="Pegá la clave antes de continuar.")
+            return
+        try:
+            with open(REMOTE_KEY_PATH, "w", encoding="utf-8") as f:
+                f.write(clave)
+        except OSError as e:
+            self.error_label.config(text=f"No se pudo guardar el archivo: {e}")
+            return
+        for widget in self.root.winfo_children():
+            widget.destroy()
+        self.on_done()
 
 
 class ToggleSwitch(tk.Canvas):
@@ -575,12 +642,20 @@ if __name__ == "__main__":
 
         threading.Thread(target=_fetch, daemon=True).start()
 
-    # cloudflared hace falta para el túnel del bot de Kick — se detecta y,
-    # si falta, se instala una sola vez (por máquina) antes de abrir el
-    # launcher normal.
-    if _find_cloudflared():
-        _after_cloudflared()
+    def _after_remote_key():
+        # cloudflared hace falta para el túnel del bot de Kick — se detecta y,
+        # si falta, se instala una sola vez (por máquina) antes de abrir el
+        # launcher normal.
+        if _find_cloudflared():
+            _after_cloudflared()
+        else:
+            CloudflaredInstallWindow(root, _after_cloudflared)
+
+    # Sin .remote_key el bot no puede arrancar (ver ensure_secretos()) — se
+    # pide antes de cualquier otra cosa, una sola vez por máquina.
+    if os.path.exists(REMOTE_KEY_PATH):
+        _after_remote_key()
     else:
-        CloudflaredInstallWindow(root, _after_cloudflared)
+        RemoteKeyWindow(root, _after_remote_key)
 
     root.mainloop()
