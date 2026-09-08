@@ -560,7 +560,7 @@ class ClaudioCommands(BaseCommand):
             )
             response = await self.client.messages.create(
                 model=claude_config["modelo"],
-                max_tokens=350,
+                max_tokens=700,
                 system=PROMPT_MEMORIA,
                 messages=[{"role": "user", "content": prompt_memoria}]
             )
