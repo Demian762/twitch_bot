@@ -91,6 +91,8 @@ spam_messenges = [
 
 cafecito_texto = "Si les gusta nuestro contenido pueden ayudarnos con un cafecito a https://cafecito.app/hablemosdepavadas"
 
+web_texto = "¡Visitá nuestra web! https://hablemosdepavadas.com.ar"
+
 discord_titulo_template_twitch = "@everyone **Hablemos de Pavadas** en VIVO\n {titulo}\n https://www.twitch.tv/hablemosdepavadaspod"
 discord_titulo_template_kick = "@everyone **Hablemos de Pavadas** en VIVO\n {titulo}\n https://kick.com/hablemosdepavadas"
 
@@ -98,7 +100,7 @@ discord_titulo_template_kick = "@everyone **Hablemos de Pavadas** en VIVO\n {tit
 ultimos_n_videos = 5
 
 rutina_lista = lista_redes.copy()
-rutina_lista.extend([cafecito_texto])
+rutina_lista.extend([cafecito_texto, web_texto])
 rutina_lista.append(None)  # Placeholder para video aleatorio
 
 grog_list = [
