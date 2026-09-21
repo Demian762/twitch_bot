@@ -53,7 +53,7 @@ class InfoCommands(BaseCommand):
         """
         if await self.check_coma_etilico():
             return
-        await mensaje("¡Sumate a nuestro Discord! https://discord.gg/YDdPMDxFDd")
+        await mensaje("¡Sumate a nuestro Discord! https://discord.gg/fJGFyb6Be6")
         
     @commands.command(aliases=("programación",))
     async def programacion(self, ctx: commands.Context):
