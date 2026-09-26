@@ -21,9 +21,7 @@ Repository: https://github.com/Demian762/twitch_bot
 # Imports estándar
 import asyncio
 import os
-import socket
 import sys
-import threading
 import time
 from random import choice
 
@@ -167,6 +165,8 @@ class Bot(commands.Bot):
         self._auto_respuesta_ts = 0.0
         self._last_chat_ts = time.monotonic()
         self._chat_log_size = 0
+        self._closing_started = False
+        self.restart_requested = False
         logger.info("Bot inicializado correctamente")
 
     async def load_tokens(self, **_) -> None:
@@ -349,6 +349,11 @@ class Bot(commands.Bot):
           - payload.chatter.name → nombre del usuario
           - payload.text        → contenido del mensaje (antes .content)
         """
+        # Cualquier mensaje (incluido el eco de los propios, ej. las rutinas cada
+        # 15 min) prueba que la suscripción de chat sigue viva — es lo que mira
+        # el watchdog, no la actividad de la gente.
+        self._last_chat_ts = time.monotonic()
+
         # Registrar respuestas del bot en chat_log antes de salir, para que Claude
         # tenga contexto de los resultados (ej: "el escupitajo llegó a 87 cm").
         if payload.chatter.id == self.bot_id:
@@ -360,7 +365,6 @@ class Bot(commands.Bot):
                 self._chat_log_size -= len(removed["user"]) + len(removed["msg"]) + 4
             self._push_emote_overlay(payload)
             return
-        self._last_chat_ts = time.monotonic()
 
         username = payload.chatter.name.lower()
 
@@ -450,7 +454,9 @@ class Bot(commands.Bot):
         logger.info(f"Sub expirado — Total: {self.metrics.subscribers}")
 
     async def _eventsub_watchdog(self) -> None:
-        DEAD_THRESHOLD = 45 * 60   # 45 min sin mensajes de chat → conexión IRC probablemente caída
+        # Las rutinas publican cada 15 min y su eco vuelve por EventSub, así que
+        # 45 min sin ningún mensaje (ni propio) → suscripción de chat caída.
+        DEAD_THRESHOLD = 45 * 60
         CHECK_INTERVAL = 5 * 60    # Chequear cada 5 min
         await asyncio.sleep(CHECK_INTERVAL)  # Dar tiempo al bot para arrancar
         while True:
@@ -470,15 +476,14 @@ class Bot(commands.Bot):
             logger.critical(
                 f"Watchdog: stream en vivo pero sin mensajes de chat por {elapsed/60:.1f} min. Reiniciando proceso..."
             )
-            import subprocess
-            # --restarted-by-watchdog le dice al proceso nuevo que espere antes
-            # de arrancar (ver bottom del módulo) — el nuevo proceso arranca
-            # casi al instante, mientras este todavía está cerrando conexiones
-            # (metrics, telegram, twitchio), y pisarse los mismos puertos
-            # (ej. el server interno de twitchio en ::1:4343) tira OSError y
-            # el reinicio falla en vez de arreglar nada.
-            subprocess.Popen([sys.executable] + sys.argv + ["--restarted-by-watchdog"])
+            # No lanzamos el proceso nuevo desde acá: quedaría huérfano fuera
+            # del control del launcher (el botón Detener mataba al viejo y el
+            # nuevo seguía vivo) y además arrancaba antes de que este soltara
+            # sus puertos. Salimos con RESTART_EXIT_CODE y el launcher relanza
+            # recién cuando este proceso terminó del todo.
+            self.restart_requested = True
             await self.close()
+            return
 
     async def _poll_emoji_overlay(self) -> None:
         global _emoji_overlay_enabled
@@ -487,6 +492,10 @@ class Bot(commands.Bot):
             await asyncio.sleep(2)
 
     async def close(self) -> None:
+        # twitchio llama a close() otra vez desde start() y desde __aexit__.
+        if self._closing_started:
+            return
+        self._closing_started = True
         await self.telegram_bot.stop_async()
         await self.metrics.stop()
         await super().close()
@@ -512,39 +521,14 @@ class Bot(commands.Bot):
         logger.info("Registro de usuarios activos limpiado")
 
 
-def _esperar_puerto_libre(host: str, port: int, family, timeout: float = 60.0) -> None:
-    """Sondea (host, port) hasta que nadie responda ahí (o se cumpla el timeout).
-
-    Usado solo en el reinicio del watchdog: el proceso anterior puede tardar
-    en soltar sus puertos (metrics, el server interno de twitchio) mientras
-    todavía está cerrando telegram/metrics/twitchio en paralelo.
-    """
-    deadline = time.monotonic() + timeout
-    while time.monotonic() < deadline:
-        try:
-            s = socket.socket(family, socket.SOCK_STREAM)
-            s.settimeout(0.5)
-            s.connect((host, port))
-        except OSError:
-            return  # nadie escuchando ahí (o la familia no está disponible) -> seguimos
-        else:
-            s.close()
-            time.sleep(1)
-    logger.warning(f"[watchdog] El puerto {port} sigue ocupado después de {timeout}s, arranco igual")
-
-
-if "--restarted-by-watchdog" in sys.argv:
-    logger.info("Reinicio por watchdog detectado — esperando a que el proceso anterior libere sus puertos...")
-    # En threads separados: son sondeos independientes (IPv6 4343 vs IPv4
-    # 47200), y encadenarlos secuencial podía sumar hasta 2x el timeout.
-    _hilos_espera = [
-        threading.Thread(target=_esperar_puerto_libre, args=("::1", 4343, socket.AF_INET6)),
-        threading.Thread(target=_esperar_puerto_libre, args=("127.0.0.1", 47200, socket.AF_INET)),
-    ]
-    for _h in _hilos_espera:
-        _h.start()
-    for _h in _hilos_espera:
-        _h.join()
+# Acordado con bot_launcher.pyw: salir con este código le pide que relance el bot.
+RESTART_EXIT_CODE = 75
 
 bot = Bot()
 bot.run()
+
+if bot.restart_requested:
+    # os._exit y no sys.exit: algún thread no-daemon colgado (telegram, to_thread)
+    # podría mantener vivo el proceso y el launcher nunca relanzaría.
+    sys.stdout.flush()
+    os._exit(RESTART_EXIT_CODE)

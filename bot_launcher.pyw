@@ -17,6 +17,8 @@ BOT_PID_FILE          = os.path.join(BOT_DIR, ".bot.pid")
 REMOTE_KEY_PATH = os.path.join(BOT_DIR, ".remote_key")
 VENV_PYTHON = os.path.join(BOT_DIR, "bot-env", "Scripts", "python.exe")
 NO_WINDOW = subprocess.CREATE_NO_WINDOW
+# Código de salida con el que bot_del_estadio.py pide que lo relancen (watchdog).
+RESTART_EXIT_CODE = 75
 
 # Ubicaciones típicas donde winget instala cloudflared en Windows — fallback
 # por si el PATH del proceso todavía no tiene la entrada nueva.
@@ -316,6 +318,7 @@ class BotLauncher:
         self.root.title("Bot del Estadio")
         self.root.minsize(700, 500)
         self.process: subprocess.Popen | None = None
+        self._stop_requested = False
         self.platform_var = tk.StringVar(value="twitch")
         self.audio_var   = tk.BooleanVar(value=not os.path.exists(AUDIO_MUTED_FLAG))
         self.tts_var     = tk.BooleanVar(value=not os.path.exists(TTS_MUTED_FLAG))
@@ -464,6 +467,7 @@ class BotLauncher:
                 pass
 
     def _start(self):
+        self._stop_requested = False
         self._kill_leftover()
         script = BOT_SCRIPT_KICK if self.platform_var.get() == "kick" else BOT_SCRIPT_TWITCH
         self.process = subprocess.Popen(
@@ -488,6 +492,7 @@ class BotLauncher:
         proc = self.process
         if proc is None:
             return
+        self._stop_requested = True
         self.btn.config(state=tk.DISABLED, text="Deteniendo...")
         self._append("--- deteniendo bot ---\n")
         threading.Thread(target=self._kill_tree, args=(proc,), daemon=True).start()
@@ -521,6 +526,10 @@ class BotLauncher:
             os.remove(BOT_PID_FILE)
         except OSError:
             pass
+        if exit_code == RESTART_EXIT_CODE and not self._stop_requested:
+            self._append("--- reinicio pedido por el watchdog, relanzando ---\n")
+            self._start()
+            return
         self._set_status(running=False)
 
     # ── UI helpers ───────────────────────────────────────────────────────────
