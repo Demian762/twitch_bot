@@ -383,7 +383,7 @@ class MetricsServer:
         app.router.add_get("/ws/overlay", self._overlay_ws_handler)
         if os.path.isdir(_images_dir):
             app.router.add_static("/images", _images_dir)
-        self._runner = web.AppRunner(app)
+        self._runner = web.AppRunner(app, shutdown_timeout=5.0)
         await self._runner.setup()
         site = web.TCPSite(self._runner, self.host, self.port, reuse_address=True)
         await site.start()
@@ -397,6 +397,15 @@ class MetricsServer:
                 await self._broadcast_task
             except asyncio.CancelledError:
                 pass
+        # Los overlays de OBS quedan conectados indefinidamente; si no los
+        # cerramos, runner.cleanup() espera hasta shutdown_timeout a que sus
+        # handlers terminen y el puerto queda tomado todo ese tiempo.
+        clientes = list(self._clients | self._overlay_clients)
+        if clientes:
+            await asyncio.gather(
+                *(ws.close(code=aiohttp.WSCloseCode.GOING_AWAY) for ws in clientes),
+                return_exceptions=True,
+            )
         if self._runner:
             await self._runner.cleanup()
         logger.info("[metrics] WebSocket cerrado")
