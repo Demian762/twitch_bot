@@ -45,6 +45,8 @@ comandos_audios = {
     'aiseigudbai':['aiseigudbai'],
     'endai':['endai'],
     'peron':['peron'],
+    'cuatroveinte':['cuatroveinte','420'],
+    'aiuanalovio':['aiuanalovio'],
 }
 
 comandos_mensajes = {
