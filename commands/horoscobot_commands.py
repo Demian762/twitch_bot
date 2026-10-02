@@ -15,7 +15,7 @@ import asyncio
 import datetime
 from twitchio.ext import commands
 
-from utils.mensaje import mensaje
+from utils.mensaje import mensaje, es_kick
 from utils.puntitos_manager import (
     consulta_puntitos,
     consulta_victorias,
@@ -138,18 +138,32 @@ class HoroscoboCommands(BaseCommand):
 
         cobro_aplicado = False
         if not es_admin:
-            puntos = await asyncio.to_thread(consulta_puntitos, username)
+            try:
+                puntos = await asyncio.to_thread(consulta_puntitos, username)
+            except Exception as e:
+                logger.error(f"Horoscobot - No se pudieron consultar los puntitos de {username}: {e}")
+                state.horoscopo_usados.discard(username)
+                await mensaje(f"@{username} los astros no encuentran tus puntitos, probá de nuevo en un rato.")
+                return
             if puntos < costo:
                 state.horoscopo_usados.discard(username)
                 await mensaje(f"@{username} necesitás {costo} puntitos para consultar a los astros.")
                 return
-            await asyncio.to_thread(funcion_puntitos, username, -costo)
+            # funcion_puntitos no lanza: si D1 falla devuelve (False, error) y no se cobró nada
+            cobrado, _ = await asyncio.to_thread(funcion_puntitos, username, -costo)
+            if not cobrado:
+                state.horoscopo_usados.discard(username)
+                await mensaje(f"@{username} no pude cobrarte los puntitos, probá de nuevo en un rato.")
+                return
             cobro_aplicado = True
 
         try:
             memoria = await claude_cog._cargar_memoria(username)
+            prompt = PROMPT_HOROSCOPO
+            if es_kick():
+                prompt = prompt.replace("bot oficial de Twitch", "bot oficial de Kick")
             bloques = [
-                {"type": "text", "text": PROMPT_HOROSCOPO},
+                {"type": "text", "text": prompt},
                 {"type": "text", "text": await self._contexto_stream()},
             ]
             chat = self._contexto_chat(username)
@@ -174,10 +188,16 @@ class HoroscoboCommands(BaseCommand):
             if not texto:
                 raise ValueError(f"respuesta vacía (stop_reason={response.stop_reason})")
         except Exception as e:
-            logger.error(f"Horoscobot - Error en API para {username}: {e}")
+            # Red de último recurso, a propósito: atrapa cualquier falla de este bloque
+            # (sin saldo en la API, red, 529, memoria en D1, respuesta vacía) y en el chat
+            # siempre muestra el chiste de "no hay guita". La causa real queda en el log
+            # con el tipo de excepción; las fallas previsibles se manejan antes de llegar acá.
+            logger.error(f"Horoscobot - Error en API para {username}: {type(e).__name__}: {e}")
             state.horoscopo_usados.discard(username)
             if cobro_aplicado:
-                await asyncio.to_thread(funcion_puntitos, username, costo)
+                devuelto, _ = await asyncio.to_thread(funcion_puntitos, username, costo)
+                if not devuelto:
+                    logger.error(f"Horoscobot - No se pudieron devolver {costo} puntitos a {username}")
             await mensaje(f"@{username} Se acabó la guita de la API, compren cafecitos!")
             return
 
