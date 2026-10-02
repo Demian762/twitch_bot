@@ -630,10 +630,13 @@ class ClaudioCommands(BaseCommand):
             system = self._build_system_prompt(username, memoria_usuario, es_admin, grog_count)
             respuesta, tokens_nuevos = await self._call_claude(historial, system, username, es_admin)
         except Exception as e:
-            logger.error(f"Claudio - Error en API para {username}: {e}")
+            # Red de último recurso, a propósito: atrapa cualquier falla de este bloque
+            # (sin saldo en la API, red, 529, tools) y en el chat siempre muestra el chiste
+            # de "no hay guita". La causa real queda en el log con el tipo de excepción.
+            logger.error(f"Claudio - Error en API para {username}: {type(e).__name__}: {e}")
             if cobro_aplicado:
                 await asyncio.to_thread(funcion_puntitos, username, 1)
-            await mensaje(f"@{username} Claudio está en modo coma etílico, probá de nuevo.")
+            await mensaje(f"@{username} Se acabó la guita de la API, compren cafecitos!")
             return
 
         # Actualizar estado de sesión

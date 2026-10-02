@@ -8,11 +8,11 @@ funciona como multiplicador de la ganancia.
 Mecánica del juego:
     - !slot [apuesta] tira 3 emojis al azar (apuesta por defecto: 1)
     - 3 iguales: gana apuesta x multiplicador del símbolo (símbolo más raro = más multiplicador)
-    - 2 iguales: gana el doble de la apuesta
+    - 2 iguales: gana lo mismo que apostó
     - sin coincidencias: pierde la apuesta
     - El símbolo ⭐ es el jackpot (más raro, mayor multiplicador) y queda registrado
     - Los admins juegan gratis, sin apostar puntos reales
-    - Estadísticamente favorable al jugador: EV ≈ +18.7% por puntito apostado
+    - Juego parejo: RTP ≈ 100% (EV ≈ +0.03% por puntito apostado)
     - Los no-admins tienen máximo 5 tiradas por sesión del bot (se resetea al reiniciar)
     - Exclusivo de Kick: en Twitch responde que los slots son solo de Kick
     - Suena storage/audios/slots.wav la primera vez que se usa el comando en la sesión
@@ -39,6 +39,7 @@ from .base_command import BaseCommand
 # (emoji, peso, multiplicador si salen 3 iguales) - a menor peso, más raro y más multiplicador
 SLOT_SIMBOLOS = (
     ("🍒", 30, 2),
+    ("🍉", 28, 2),
     ("🍋", 26, 2),
     ("🍊", 20, 3),
     ("🍇", 14, 4),
@@ -139,25 +140,25 @@ class SlotCommands(BaseCommand):
 
                 prefijo = "🌟 ¡JACKPOT! " if es_jackpot else ""
                 if es_admin:
-                    await mensaje(f"🎰 {resultado} — {prefijo}@{nombre} sacó 3 {simbolo} (los admins juegan gratis, sin puntitos en juego).")
+                    await mensaje(f"{resultado} — {prefijo}@{nombre} sacó 3 {simbolo} (x{multiplicador}).")
                 else:
                     await asyncio.to_thread(funcion_puntitos, nombre, ganancia)
-                    await mensaje(f"🎰 {resultado} — {prefijo}¡@{nombre} ganó {ganancia} puntitos!")
+                    await mensaje(f"{resultado} — {prefijo}¡@{nombre} sacó 3 {simbolo} (x{multiplicador}) y ganó {ganancia} puntitos!")
                 return
 
             # 2 iguales (cualquier par entre los 3)
             if tirada[0] == tirada[1] or tirada[1] == tirada[2] or tirada[0] == tirada[2]:
                 if es_admin:
-                    await mensaje(f"🎰 {resultado} — @{nombre} sacó un par (los admins juegan gratis).")
+                    await mensaje(f"{resultado} — @{nombre} sacó un par.")
                 else:
-                    ganancia = apuesta * 2
+                    ganancia = apuesta
                     await asyncio.to_thread(funcion_puntitos, nombre, ganancia)
-                    await mensaje(f"🎰 {resultado} — @{nombre} sacó un par, ¡ganó {ganancia} puntitos (el doble de la apuesta)!")
+                    await mensaje(f"{resultado} — @{nombre} sacó un par, ¡ganó {ganancia} puntitos!")
                 return
 
             # Sin coincidencias
             if es_admin:
-                await mensaje(f"🎰 {resultado} — @{nombre} no tuvo suerte (los admins juegan gratis, sin puntitos en juego).")
+                await mensaje(f"{resultado} — @{nombre} no tuvo suerte.")
             else:
                 await asyncio.to_thread(funcion_puntitos, nombre, -apuesta)
-                await mensaje(f"🎰 {resultado} — @{nombre} perdió {apuesta} puntitos.")
+                await mensaje(f"{resultado} — @{nombre} perdió {apuesta} puntitos.")
