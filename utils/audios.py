@@ -47,6 +47,7 @@ comandos_audios = {
     'peron':['peron'],
     'cuatroveinte':['cuatroveinte','420'],
     'aiuanalovio':['aiuanalovio'],
+    'carlitox':['carlitox'],
 }
 
 comandos_mensajes = {
