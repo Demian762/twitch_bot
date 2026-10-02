@@ -633,7 +633,7 @@ class ClaudioCommands(BaseCommand):
             logger.error(f"Claudio - Error en API para {username}: {e}")
             if cobro_aplicado:
                 await asyncio.to_thread(funcion_puntitos, username, 1)
-            await mensaje(f"@{username} Claudio está en modo coma etílico, probá de nuevo.")
+            await mensaje(f"@{username} Se acabó la guita de la API, compren cafecitos!")
             return
 
         # Actualizar estado de sesión
