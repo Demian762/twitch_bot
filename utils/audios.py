@@ -48,6 +48,8 @@ comandos_audios = {
     'cuatroveinte':['cuatroveinte','420'],
     'aiuanalovio':['aiuanalovio'],
     'carlitox':['carlitox'],
+    'sape':['sape'],
+    'condor':['condor'],
 }
 
 comandos_mensajes = {
