@@ -161,15 +161,18 @@ class HoroscoboCommands(BaseCommand):
                 bloques.append({"type": "text", "text": previos})
             bloques.append({"type": "text", "text": claude_cog._ebriedad_prompt(state.grog_count)})
 
+            # Sonnet 5.5 piensa por defecto y el razonamiento se come max_tokens antes de
+            # escribir el texto; "between_tools" lo apaga (sin tools, no piensa nunca)
             response = await claude_cog.client.messages.create(
                 model=claude_config["modelo_horoscopo"],
-                max_tokens=300,
+                max_tokens=1000,
+                thinking={"type": "between_tools"},
                 system=bloques,
                 messages=[{"role": "user", "content": f"Tirale el horóscopo a {username}."}],
             )
-            texto = next((b.text for b in response.content if hasattr(b, "text")), "").strip()
+            texto = next((b.text for b in response.content if b.type == "text"), "").strip()
             if not texto:
-                raise ValueError("respuesta vacía")
+                raise ValueError(f"respuesta vacía (stop_reason={response.stop_reason})")
         except Exception as e:
             logger.error(f"Horoscobot - Error en API para {username}: {e}")
             state.horoscopo_usados.discard(username)
