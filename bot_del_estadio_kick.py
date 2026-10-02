@@ -74,11 +74,12 @@ _CHAT_LOG_MAX_BYTES = 5000
 
 
 class _ChannelInfo:
-    """Objeto mínimo con .title, para que fetch_channel() sea compatible con
-    lo que esperan !titulo / !notificar en commands/info_commands.py."""
+    """Objeto mínimo con .title / .game_name, para que fetch_channel() sea compatible
+    con lo que esperan !titulo / !notificar / !horoscobot en commands/."""
 
-    def __init__(self, title: str) -> None:
+    def __init__(self, title: str, game_name: str = "") -> None:
         self.title = title
+        self.game_name = game_name
 
 
 class KickBot:
@@ -154,7 +155,8 @@ class KickBot:
         data = await self.client.get_channel(broadcaster_id)
         if not data:
             return None
-        return _ChannelInfo(title=data.get("stream_title", ""))
+        categoria = data.get("category") or {}
+        return _ChannelInfo(title=data.get("stream_title", ""), game_name=categoria.get("name", ""))
 
     # Ubicaciones típicas donde winget instala cloudflared en Windows — fallback
     # por si el PATH del proceso todavía no tiene la entrada nueva (pasa si no

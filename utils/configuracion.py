@@ -51,6 +51,8 @@ claude_config = {
     "max_tokens_respuesta": 250,            # Máx tokens por respuesta (controla costo por llamada)
     "max_tokens_por_usuario_sesion": 30000, # Máx tokens totales por usuario por sesión (admins: 10x)
     "historial_max_pares": 5,              # Pares user/assistant a recordar por usuario
+    "modelo_horoscopo": "claude-sonnet-5-5", # Modelo de !horoscobot (independiente de "modelo" y de !setmodelo)
+    "costo_horoscopo": 5,                  # Puntitos que paga un no-admin por !horoscobot
 }
 
 # Lista de usuarios con permisos de administrador

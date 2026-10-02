@@ -46,6 +46,7 @@ from .interaction_commands import InteractionCommands
 from .timba_commands import TimbaCommand
 from .silla_commands import SillaCommands
 from .claude_commands import ClaudioCommands
+from .horoscobot_commands import HoroscoboCommands
 from .slot_commands import SlotCommands
 
 # Lista maestra de todos los cogs a cargar
@@ -66,5 +67,6 @@ COGS = [
     TimbaCommand,
     SillaCommands,
     ClaudioCommands,
+    HoroscoboCommands,
     SlotCommands,
 ]
