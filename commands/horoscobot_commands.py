@@ -5,14 +5,16 @@ Características:
     - Una predicción por usuario por sesión del bot (admins incluidos)
     - Cuesta puntitos a los no-admins (claude_config["costo_horoscopo"])
     - No consume el cupo de tokens de !bot ni toca su historial/memoria
-    - Contexto: memoria del usuario, puntitos/victorias, su chat reciente,
-      título/categoría del stream, programación y nivel de grog
+    - Un solo tema al azar por predicción: su suerte en puntitos/minijuegos, lo que
+      dijo en el chat, el stream/programación o la vida cotidiana en Argentina.
+      De fondo siempre: fecha, memoria del usuario (para el trato) y nivel de grog
 
 Author: Demian762
 """
 
 import asyncio
 import datetime
+import random
 from twitchio.ext import commands
 
 from utils.mensaje import mensaje, es_kick
@@ -31,17 +33,51 @@ from .base_command import BaseCommand
 _DIAS = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
 _MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio",
           "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
+_VICTORIAS = [
+    ("sorteos_ganados", "sorteos"),
+    ("torneos_ganados", "torneos"),
+    ("timbas_ganadas", "timbas"),
+    ("margaritas_ganadas", "margaritas"),
+    ("jackpots_ganados", "jackpots en el slot"),
+]
+
+
+def _cantidad(n: int) -> str:
+    if n == 1:
+        return "ganó una vez"
+    if n <= 4:
+        return "ganó varias veces"
+    return "ganó un montón de veces"
+
+
+def _franja_ranking(posicion: int, total: int) -> str:
+    if posicion <= 3:
+        return "está en el podio del ranking, de los que más tienen"
+    if posicion <= max(total * 0.25, 10):
+        return "anda por arriba en el ranking"
+    if posicion <= total * 0.75:
+        return "anda por la mitad de la tabla"
+    return "está de los últimos del ranking, casi sin puntitos"
 
 
 class HoroscoboCommands(BaseCommand):
 
-    async def _contexto_stream(self) -> str:
+    # Cada predicción recibe UN solo tema elegido al azar (más los datos de fondo: fecha,
+    # memoria, horóscopos previos). Con todo el contexto junto el modelo mezclaba tres
+    # referencias por predicción y no se entendía nada.
+
+    def _fecha(self) -> str:
         now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=-3)))
-        lineas = [
-            "[STREAM ACTUAL]",
-            f"Fecha y hora: {_DIAS[now.weekday()]} {now.day} de {_MESES[now.month - 1]} "
-            f"de {now.year}, {now.hour:02d}:{now.minute:02d}hs (Argentina)",
-        ]
+        return f"[HOY] {_DIAS[now.weekday()]} {now.day} de {_MESES[now.month - 1]} de {now.year} (Argentina)"
+
+    def _mensajes_propios(self, username: str) -> list[str]:
+        return [
+            e["msg"] for e in self.bot.state.chat_log
+            if e["user"].lower() == username and not e["msg"].startswith("!")
+        ][-8:]
+
+    async def _tema_stream(self) -> str:
+        lineas = ["el stream y el canal"]
         try:
             channel = await self.bot.fetch_channel(self.bot.broadcaster_id)
             if channel:
@@ -57,51 +93,56 @@ class HoroscoboCommands(BaseCommand):
         if programacion:
             lineas.append("Programación semanal:")
             lineas += [f"  - {p}" for p in programacion]
-        lineas.append(f"Grogs que tomó el bot en la sesión: {self.bot.state.grog_count}")
         return "\n".join(lineas)
 
-    def _contexto_chat(self, username: str) -> str | None:
-        chat_log = self.bot.state.chat_log
-        if not chat_log:
-            return None
-
-        entradas = []
-        acumulado = 0
-        for e in reversed(chat_log):
-            costo = len(e["user"]) + len(e["msg"]) + 4
-            if acumulado + costo > 1500:
-                break
-            entradas.append(e)
-            acumulado += costo
-
-        lineas = ["[CHAT RECIENTE DEL CANAL]"]
-        lineas += [f'- {e["user"]}: {e["msg"]}' for e in reversed(entradas)]
-
-        propios = [e["msg"] for e in chat_log if e["user"].lower() == username][-8:]
-        if propios:
-            lineas.append(f"\n[ÚLTIMOS MENSAJES DE {username}]")
-            lineas += [f"- {m}" for m in propios]
+    def _tema_chat(self, username: str) -> str:
+        lineas = [f"algo que dijo {username} en el chat (elegí UNO de estos mensajes)"]
+        lineas += [f"- {m}" for m in self._mensajes_propios(username)]
         return "\n".join(lineas)
 
-    async def _contexto_usuario(self, username: str, memoria: str) -> str:
-        lineas = [f"[USUARIO: {username}]"]
+    async def _tema_suerte(self, username: str) -> str:
+        # Todo en palabras, sin cifras: con números a la vista el modelo los recita en vez de inventar
+        lineas = [f"la suerte de {username} con los puntitos y los minijuegos (elegí UN aspecto)"]
         ranking = await asyncio.to_thread(posicion_ranking, username)
         if ranking:
-            lineas.append(
-                f"Puntitos: {ranking['puntos']} (puesto {ranking['posicion_actual']} de {ranking['total_jugadores']}), "
-                f"histórico: {ranking['historico']} (puesto {ranking['posicion_historica']})"
-            )
+            lineas.append(f"Puntitos: {_franja_ranking(ranking['posicion_actual'], ranking['total_jugadores'])}.")
+            if ranking["historico"] > 0 and ranking["puntos"] < ranking["historico"] * 0.25:
+                lineas.append("Ganó bastantes puntitos a lo largo del tiempo pero se le fueron casi todos.")
             v = await asyncio.to_thread(consulta_victorias, username)
+            logros = [
+                f"{_cantidad(v[campo])} {nombre}"
+                for campo, nombre in _VICTORIAS
+                if v[campo] > 0
+            ]
+            if v["escupitajo_record"] > 0:
+                logros.append("tiene marca registrada en la competencia de escupitajos")
             lineas.append(
-                f"Victorias: sorteos={v['sorteos_ganados']}, torneos={v['torneos_ganados']}, "
-                f"timbas={v['timbas_ganadas']}, margaritas={v['margaritas_ganadas']}, "
-                f"jackpots={v['jackpots_ganados']}, récord escupitajo={v['escupitajo_record']}cm"
+                "Logros: " + "; ".join(logros) + "." if logros else "Nunca ganó nada en los minijuegos."
             )
         else:
             lineas.append("No tiene puntitos registrados todavía (es nuevo o nunca jugó).")
-        if memoria:
-            lineas.append(f"\n{SECCION_MEMORIA_USUARIO}\n{memoria}")
         return "\n".join(lineas)
+
+    async def _tema(self, username: str) -> tuple[str, str]:
+        """Elige un tema al azar entre los disponibles y devuelve (nombre, bloque de contexto)."""
+        temas = ["suerte", "stream", "argentina"]
+        if self._mensajes_propios(username):
+            temas.append("chat")
+        tema = random.choice(temas)
+
+        if tema == "suerte":
+            texto = await self._tema_suerte(username)
+        elif tema == "stream":
+            texto = await self._tema_stream()
+        elif tema == "chat":
+            texto = self._tema_chat(username)
+        else:
+            texto = (
+                "la vida cotidiana en Argentina\n"
+                "Elegí vos UNA situación cotidiana (el colectivo, el dólar, el asado, el fútbol, "
+                "el clima, los trámites, el súper, etc.) y hacé la predicción sobre eso."
+            )
+        return tema, f"[TEMA DE ESTA PREDICCIÓN] {texto}"
 
     def _contexto_horoscopos_previos(self) -> str | None:
         previos = self.bot.state.horoscopos
@@ -162,14 +203,17 @@ class HoroscoboCommands(BaseCommand):
             prompt = PROMPT_HOROSCOPO
             if es_kick():
                 prompt = prompt.replace("bot oficial de Twitch", "bot oficial de Kick")
+            tema, bloque_tema = await self._tema(username)
             bloques = [
                 {"type": "text", "text": prompt},
-                {"type": "text", "text": await self._contexto_stream()},
+                {"type": "text", "text": self._fecha()},
+                {"type": "text", "text": bloque_tema},
             ]
-            chat = self._contexto_chat(username)
-            if chat:
-                bloques.append({"type": "text", "text": chat})
-            bloques.append({"type": "text", "text": await self._contexto_usuario(username, memoria)})
+            if memoria:
+                bloques.append({
+                    "type": "text",
+                    "text": f"{SECCION_MEMORIA_USUARIO} (solo para saber cómo tratarlo, NO es el tema)\n{memoria}",
+                })
             previos = self._contexto_horoscopos_previos()
             if previos:
                 bloques.append({"type": "text", "text": previos})
@@ -202,7 +246,7 @@ class HoroscoboCommands(BaseCommand):
             return
 
         logger.info(
-            f"Horoscobot - {username}{'[admin]' if es_admin else ''}: "
+            f"Horoscobot - {username}{'[admin]' if es_admin else ''} (tema: {tema}): "
             f"{response.usage.input_tokens} in / {response.usage.output_tokens} out ({claude_config['modelo_horoscopo']})"
         )
 
