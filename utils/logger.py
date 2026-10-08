@@ -80,14 +80,22 @@ def setup_logger():
     logging.getLogger('steam_web_api').setLevel(logging.WARNING)
 
     # Filtrar errores transitorios de red de Telegram (Bad Gateway, etc.)
-    # que el retry loop maneja solo y no requieren atención
+    # que el retry loop maneja solo y no requieren atención.
+    # Va en los handlers (no en el logger 'telegram') porque los filtros de un logger
+    # no se aplican a registros que propagan desde hijos como 'telegram.ext._updater',
+    # y el texto del error viene en exc_info, no en el mensaje.
     class _TelegramNetworkFilter(logging.Filter):
         _transient = ('Bad Gateway', 'Timed out', 'Service Unavailable')
         def filter(self, record):
-            return not any(msg in record.getMessage() for msg in self._transient)
+            if not record.name.startswith('telegram'):
+                return True
+            texto = record.getMessage()
+            if record.exc_info and record.exc_info[1] is not None:
+                texto += f" {record.exc_info[1]}"
+            return not any(msg in texto for msg in self._transient)
 
-    telegram_logger = logging.getLogger('telegram')
-    telegram_logger.addFilter(_TelegramNetworkFilter())
+    for handler in logging.getLogger().handlers:
+        handler.addFilter(_TelegramNetworkFilter())
     
     return bot_logger
 
