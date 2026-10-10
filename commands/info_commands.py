@@ -13,7 +13,7 @@ from twitchio.ext import commands
 from utils.logger import logger
 from utils.mensaje import mensaje
 from .base_command import BaseCommand
-from utils.configuracion import lista_redes, lista_amigos, cafecito_texto, admins
+from utils.configuracion import lista_redes, lista_amigos, cafecito_texto, web_texto, admins
 from utils.wikipedia_api import obtener_dato_aleatorio
 from utils.discord_notifier import notificar_titulo
 from utils.secretos import discord_webhook_url
@@ -90,6 +90,18 @@ class InfoCommands(BaseCommand):
         if await self.check_coma_etilico():
             return
         await mensaje(cafecito_texto)
+
+    @commands.command(aliases=("pagina", "página", "sitio"))
+    async def web(self, ctx: commands.Context):
+        """
+        Muestra el enlace al sitio web del canal
+
+        Args:
+            ctx: Contexto del comando de Twitch
+        """
+        if await self.check_coma_etilico():
+            return
+        await mensaje(web_texto)
 
     @commands.command(aliases=("notificacion",))
     async def notificar(self, ctx: commands.Context):
