@@ -15,7 +15,7 @@
 `!escupir` `!spit` - Competencia escupitajos | `!ganador` - Quién va ganando | `!record` - Top 3 récords (admin) | `!dado` `!dados` - Lanzar dados | `!insultos` `!pelea` - Batalla de insultos | `!trivia` - Trivia Monkey Island | `!margarita` - Pedir margarita | `!medimela` - Medir... algo | `!timba @usuario` - Reto de adivinanza (1-100) | `!timba [número]` - Adivinar en timba | `!horoscobot` - Tu horóscopo del stream (5 puntitos, 1 vez/sesión)
 
 ### 📺 **Canal**
-`!redes` - Links redes sociales | `!discord` - Info Discord | `!programacion` - Horarios HDP | `!amigos` - Streamers amigos | `!cafecito` - Apoyo | `!recomendame` - Video random | `!ultimo` - Último video | `!vot112` - Votación especial
+`!redes` - Links redes sociales | `!discord` - Info Discord | `!programacion` - Horarios HDP | `!amigos` - Streamers amigos | `!cafecito` - Apoyo | `!web` - Sitio web | `!recomendame` - Video random | `!ultimo` - Último video | `!vot112` - Votación especial
 
 ### 🛠️ **Utilidades**
 `!decidir [opciones]` - Elige al azar | `!dato` `!tip` - Datos curiosos Wikipedia | `!dolar` - Precio dólar | `!timer` - Cronómetro | `!guardar` - Recordar guardar | `!grog` - Emborrachar bot | `!agua` - Sobriedad bot | `!proteccion` - Toggle horario protección al menor (admin) | `!spam` - Mensajes spam (admin) | `!quiensos` - Identidad secreta bot | `!chiste` - Anti-chiste del bot
