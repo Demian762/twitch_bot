@@ -47,9 +47,9 @@ kick_config = {
 
 # Configuración del comando !claudio
 claude_config = {
-    "modelo": "claude-haiku-4-5-20251001", # Modelo a usar — opciones: claude-haiku-4-5-20251001 | claude-sonnet-4-6 | claude-opus-4-6
-    "max_tokens_respuesta": 250,            # Máx tokens por respuesta (controla costo por llamada)
-    "max_tokens_por_usuario_sesion": 30000, # Máx tokens totales por usuario por sesión (admins: 10x)
+    "modelo": "claude-haiku-5-5",          # Modelo a usar — opciones: claude-haiku-5-5 | claude-sonnet-5-5 | claude-opus-5-5
+    "max_tokens_respuesta": 325,            # Máx tokens por respuesta (controla costo por llamada; los 5.5 cuentan ~30% más tokens por el mismo texto)
+    "max_tokens_por_usuario_sesion": 39000, # Máx tokens totales por usuario por sesión (admins: 10x)
     "historial_max_pares": 5,              # Pares user/assistant a recordar por usuario
     "modelo_horoscopo": "claude-sonnet-5-5", # Modelo de !horoscobot (independiente de "modelo" y de !setmodelo)
     "costo_horoscopo": 5,                  # Puntitos que paga un no-admin por !horoscobot

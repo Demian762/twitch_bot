@@ -211,6 +211,19 @@ TOOLS = [
 ]
 
 
+def _params_modelo(modelo: str, max_tokens: int) -> dict:
+    """
+    Los modelos 5.5 piensan por defecto y el razonamiento se come max_tokens antes de
+    escribir el texto. Haiku acepta "disabled" y Sonnet "between_tools" (no piensa salvo
+    notas entre tools); Opus no se puede apagar: va con effort "low" y margen para pensar.
+    """
+    if modelo.startswith("claude-opus"):
+        return {"model": modelo, "max_tokens": max_tokens + 1000, "output_config": {"effort": "low"}}
+    if modelo.startswith("claude-sonnet"):
+        return {"model": modelo, "max_tokens": max_tokens, "thinking": {"type": "between_tools"}}
+    return {"model": modelo, "max_tokens": max_tokens, "thinking": {"type": "disabled"}}
+
+
 class ClaudioCommands(BaseCommand):
 
     def __init__(self, bot):
@@ -516,8 +529,7 @@ class ClaudioCommands(BaseCommand):
 
         for _ in range(5):  # máximo 5 rondas de tool use para evitar loops infinitos
             response = await self.client.messages.create(
-                model=claude_config["modelo"],
-                max_tokens=max_tokens,
+                **_params_modelo(claude_config["modelo"], max_tokens),
                 system=system,
                 tools=TOOLS,
                 messages=messages
@@ -529,7 +541,7 @@ class ClaudioCommands(BaseCommand):
                 logger.debug(f"Claudio cache — creación: {cache_creation}, lectura: {cache_read}")
 
             if response.stop_reason == "end_turn":
-                text = next((b.text for b in response.content if hasattr(b, "text")), "")
+                text = next((b.text for b in response.content if b.type == "text"), "")
                 return text.strip(), total_tokens
 
             if response.stop_reason == "tool_use":
@@ -571,12 +583,16 @@ class ClaudioCommands(BaseCommand):
                 "Actualizá el resumen del usuario incorporando la información de la conversación reciente."
             )
             response = await self.client.messages.create(
-                model=claude_config["modelo"],
-                max_tokens=700,
+                **_params_modelo(claude_config["modelo"], 900),
                 system=PROMPT_MEMORIA,
                 messages=[{"role": "user", "content": prompt_memoria}]
             )
-            nuevo_resumen = response.content[0].text.strip()
+            # La respuesta puede empezar con bloques "thinking": buscar el de texto
+            nuevo_resumen = next((b.text for b in response.content if b.type == "text"), "").strip()
+            if response.stop_reason != "end_turn" or not nuevo_resumen:
+                # Rechazo, corte por max_tokens o vacío: no pisar la memoria con basura
+                logger.warning(f"Claudio memoria - Resumen descartado para {username} (stop_reason={response.stop_reason})")
+                return
             await asyncio.to_thread(guardar_memoria_claude, username, nuevo_resumen)
             self.bot.state.claude_memoria_cache[username] = nuevo_resumen
         except Exception as e:
@@ -743,9 +759,9 @@ class ClaudioCommands(BaseCommand):
         if ctx.author.name.lower() != "demian762":
             return
         MODELOS = {
-            "haiku": "claude-haiku-4-5-20251001",
-            "sonnet": "claude-sonnet-4-6",
-            "opus": "claude-opus-4-7",
+            "haiku": "claude-haiku-5-5",
+            "sonnet": "claude-sonnet-5-5",
+            "opus": "claude-opus-5-5",
         }
         partes = ctx.message.text.split(maxsplit=1)
         arg = partes[1].lower() if len(partes) > 1 else ""
