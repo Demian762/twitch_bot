@@ -53,6 +53,7 @@ claude_config = {
     "historial_max_pares": 5,              # Pares user/assistant a recordar por usuario
     "modelo_horoscopo": "claude-sonnet-5-5", # Modelo de !horoscobot (independiente de "modelo" y de !setmodelo)
     "costo_horoscopo": 5,                  # Puntitos que paga un no-admin por !horoscobot
+    "modelo_aviso": "claude-haiku-5-5",    # Modelo de !avisar (interpreta el pedido y redacta el aviso)
 }
 
 # Lista de usuarios con permisos de administrador

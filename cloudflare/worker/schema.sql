@@ -43,3 +43,16 @@ CREATE TABLE IF NOT EXISTS claude_memoria (
   resumen              TEXT NOT NULL,
   ultima_actualizacion TEXT NOT NULL
 );
+
+-- Avisos de !avisar. Cada fila se borra en cuanto el aviso le llega a alguno de sus
+-- destinatarios. Fechas en hora argentina (UTC-3 fijo), formato 'YYYY-MM-DD HH:MM:SS'.
+CREATE TABLE IF NOT EXISTS recordatorios (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  creador       TEXT NOT NULL,   -- quién usó !avisar
+  destinatarios TEXT NOT NULL,   -- usuarios separados por coma, en minúscula y sin @
+  titulo        TEXT NOT NULL,   -- resumen corto, para !avisos
+  mensaje       TEXT NOT NULL,   -- texto del aviso ya redactado, sin las menciones
+  vence         TEXT NOT NULL,
+  creado        TEXT NOT NULL,
+  pedido        TEXT NOT NULL    -- texto original del comando
+);

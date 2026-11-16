@@ -65,6 +65,7 @@ CAMBIO_CAMBIO_REWARDS = {
 }
 from utils.discord_notifier import notificar_titulo
 from utils.metrics_server import MetricsServer
+from utils.recordatorios import RecordatoriosManager
 
 # Imports locales - otros
 from telegram_bot.telegram_voice_bot import TelegramVoiceBot
@@ -146,6 +147,7 @@ class Bot(commands.Bot):
             raise
 
         self.state = BotState()
+        self.recordatorios = RecordatoriosManager(self.state)
         self.metrics = MetricsServer()
         self.metrics._bot_state = self.state
         set_bot_state(self.state)
@@ -315,6 +317,7 @@ class Bot(commands.Bot):
         asyncio.create_task(self._notificar_discord_si_en_vivo())
         asyncio.create_task(self._eventsub_watchdog())
         asyncio.create_task(self._poll_emoji_overlay())
+        self.recordatorios.iniciar()
 
     async def _notificar_discord_si_en_vivo(self):
         try:
@@ -370,6 +373,9 @@ class Bot(commands.Bot):
 
         if payload.text.startswith('!'):
             self.state.usuarios_activos.add(username)
+
+        # Actividad para !avisar: entrega los avisos que esperaban a este usuario
+        self.recordatorios.registrar_mensaje(username)
 
         entry_size = len(username) + len(payload.text) + 4
         self.state.chat_log.append({"user": username, "msg": payload.text})
