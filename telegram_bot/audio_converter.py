@@ -1,6 +1,8 @@
 import os
 import subprocess
 
+from utils.utiles_general import LOUDNESS_OBJETIVO
+
 class AudioConverter:
     def __init__(self, ffmpeg_path):
         self.ffmpeg_path = ffmpeg_path
@@ -11,8 +13,11 @@ class AudioConverter:
         
         try:
             wav_path = ogg_path.replace('.ogg', '.wav')
+            # loudnorm: los audios de Telegram llegan con volúmenes muy distintos,
+            # se nivelan al mismo loudness que los audios del bot.
             cmd = [
                 self.ffmpeg_path, '-i', ogg_path,
+                '-af', f'loudnorm=I={LOUDNESS_OBJETIVO}:TP=-1.5:LRA=11',
                 '-ar', '44100', '-ac', '1', '-acodec', 'pcm_s16le',
                 '-y', wav_path
             ]

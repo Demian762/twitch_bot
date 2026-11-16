@@ -122,6 +122,12 @@ Populated remotely (see "Remote secrets" above). Variables it must contain:
 - Cloudflare D1 worker URL/token (`d1_worker_url`, `d1_worker_token`)
 - Kick app credentials: `kick_client_id`, `kick_client_secret`, `kick_redirect_uri` (from kick.com/settings/developer — see "Kick integration" above)
 
+## Audio levels
+
+All WAVs in `storage/audios/` are leveled to -18 LUFS (peak ≤ -1 dB, 16-bit/48 kHz). After adding or replacing an audio, run `python utils/normalizar_audios.py` (idempotent — skips files already leveled). TTS and Telegram voice messages are leveled to the same target at playback time (ffmpeg `loudnorm`).
+
+The launcher's 10-step volume slider writes `.audio_volume` (gitignored, absent = level 6). Level 6 plays files untouched; each step is ±3 dB, applied in `utils/utiles_general.py` by rendering through ffmpeg into an in-memory WAV (`SND_MEMORY`), cached per file+level.
+
 ## Platform Notes
 
 - Audio playback (`winsound`) is **Windows-only**
