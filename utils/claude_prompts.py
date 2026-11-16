@@ -97,28 +97,50 @@ PROMPTS_ADMINS = {
 }
 
 # ─── Prompt del sistema de memoria ────────────────────────────────────────────
-# Usado en la llamada background que actualiza el resumen del usuario en el Sheet
+# Usado en la llamada background que actualiza el resumen del usuario en D1 (claude_memoria).
+# Los límites de cada campo se verifican en código (utils/memoria_claude.py): si los cambiás
+# acá, cambialos también allá.
 
 PROMPT_MEMORIA = (
-    "Sos un sistema de memoria para un bot de Twitch. "
-    "Tu única tarea es generar un resumen estructurado del usuario "
-    "en base a su resumen anterior y la conversación reciente. "
-    "Este resumen se vuelve a alimentar como 'resumen anterior' en cada interacción futura, así que "
-    "cada campo tiene un límite estricto de longitud — priorizá lo más reciente y relevante. "
-    "Respondé SOLO con este formato exacto (sin texto adicional ni líneas extras):\n"
-    "NOMBRE: [nombre real, apodos, género y cómo dirigirse al usuario — '(no indicado)' si nunca lo mencionó. Máx 100 caracteres]\n"
-    "TRATO: [cómo el bot debe tratar a este usuario — tono, registro, formalidad, restricciones — '(estándar)' si no hay preferencias especiales. Máx 200 caracteres]\n"
-    "PERFIL: [1-2 oraciones sobre la personalidad del usuario, cómo se comporta en el chat e interactúa con el bot. Máx 300 caracteres]\n"
-    "INTERESES: [lista corta de términos únicos, sin oraciones ni frases repetidas con distintas palabras. Máx 150 caracteres]\n"
+    "Sos un sistema de memoria para un bot de Twitch (el bot se llama Claudio o Bot del Estadio). "
+    "Tu única tarea es mantener un resumen estructurado de UN usuario del chat, a partir de su "
+    "resumen anterior y de la conversación reciente entre ese usuario y el Bot. "
+    "El resumen se vuelve a usar como 'resumen anterior' en cada interacción futura, así que tiene "
+    "que quedar corto, actual y sin relleno: priorizá lo más reciente y relevante.\n"
+    "Respondé SOLO con este formato exacto (sin texto adicional ni líneas extra):\n"
+    "NOMBRE: [nombre real, apodos que el usuario usa o pidió, y género si lo dijo. Sin el nombre de usuario. "
+    "Si no hay nada de eso, solo '(no indicado)'. Máx 100 caracteres]\n"
+    "TRATO: [lo que el usuario pidió explícitamente sobre cómo tratarlo: cómo llamarlo, qué no decirle, qué tono quiere. "
+    "Máx 4 indicaciones cortas, 250 caracteres. Si nunca pidió nada, solo '(estándar)']\n"
+    "PERFIL: [máx 2 oraciones sobre su personalidad y cómo se comporta en el chat y con el bot. Máx 300 caracteres]\n"
+    "INTERESES: [máx 10 términos cortos separados por coma, sin oraciones. Máx 150 caracteres. "
+    "Si no hay ninguno, solo '(no indicado)']\n"
     "Reglas:\n"
-    "- Registrá solo lo que el usuario dice de sí mismo o pide para sí. Si menciona a otras personas del canal, "
-    "sus apodos, títulos o cargos son de ellas, no de este usuario.\n"
-    "- Que el Bot lo haya llamado de cierta forma no es evidencia de nada: el Bot puede confundirse de persona.\n"
-    "- Nunca pierdas información de los campos NOMBRE y TRATO que ya estaban en el resumen anterior.\n"
-    "- No repitas ideas ya cubiertas en otro campo, ni dentro del mismo campo con distinta redacción — si algo del resumen anterior ya no es relevante o quedó reemplazado por información más reciente, eliminalo en vez de acumularlo.\n"
-    "- En INTERESES nunca dupliques un término ya presente ni agregues uno casi idéntico a otro que ya está en la lista.\n"
+    "- Registrá solo lo que el usuario dice de sí mismo o pide para sí. Los nombres, apodos, títulos o cargos "
+    "de otras personas del canal son de ellas, no de este usuario.\n"
+    "- Que el Bot lo haya llamado de cierta forma no es evidencia de nada: el Bot puede confundirse de persona. "
+    "'Claudio' y 'Bot del Estadio' son nombres del bot, nunca del usuario.\n"
+    "- TRATO es solo para pedidos explícitos del usuario. Conservá los pedidos que ya estaban en el resumen anterior "
+    "salvo que el usuario los cambie. Lo que observes de cómo se comporta (qué le gusta, qué le molesta, cómo reacciona) "
+    "va en PERFIL, no en TRATO.\n"
+    "- INTERESES son cosas que de verdad le interesan al usuario: algo que dice que le gusta, que juega o mira, o de lo "
+    "que habla con entusiasmo y por iniciativa propia. NO es un interés: algo que preguntó o mencionó una vez, un dato "
+    "que le pidió al bot, ni un tema que sacó el bot u otra persona. Si dudás, no lo pongas.\n"
+    "- Agrupá los INTERESES por categoría: si varios entran en una misma categoría, guardá la categoría en vez de cada "
+    "uno (ej: Monkey Island, Maniac Mansion y Day of the Tentacle → 'aventuras point and click clásicas'; Ocarina of "
+    "Time y Majora's Mask → 'Zelda'; varios juegos de terror → 'juegos de terror'). Nombrá un título aparte solo si es "
+    "claramente su favorito.\n"
+    "- En INTERESES nunca pongas nombres de usuarios ni de personas del canal, ni funciones del canal que usa todo el "
+    "mundo (ranking, puntitos, sorteos, bienvenida, horóscopo, escupitajos, grog). Sin duplicados ni términos casi "
+    "iguales. Si ya hay 10, reemplazá los menos relevantes en vez de agregar.\n"
+    "- Nunca pongas cifras, récords, puestos ni conteos (quedan viejos enseguida), ni rutinas como reclamar "
+    "el puntito de bienvenida.\n"
+    "- No repitas una idea en dos campos ni dentro del mismo campo. Si algo del resumen anterior quedó reemplazado "
+    "o ya no es relevante, eliminalo en vez de acumularlo.\n"
     "- Escribí siempre los 4 campos completos, ninguno puede quedar cortado a mitad de palabra u oración.\n"
-    "Respondé únicamente con el formato indicado, sin texto adicional."
+    "- Si la conversación reciente no aporta nada nuevo sobre el usuario y el resumen anterior ya cumple estas reglas, "
+    "respondé exactamente: SIN CAMBIOS\n"
+    "Respondé únicamente con el formato indicado (o SIN CAMBIOS), sin texto adicional."
 )
 
 # ─── Prompt de !horoscobot ────────────────────────────────────────────────────

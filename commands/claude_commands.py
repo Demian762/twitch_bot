@@ -4,7 +4,7 @@ Comandos !claudio / !bot — Interacción con Claude AI personalizado como el Bo
 Características:
     - Personalidad argenta del Bot del Estadio
     - Contexto del canal cargado desde Google Sheets (programación, top puntitos)
-    - Memoria a largo plazo por usuario: guardada en la hoja "Claude" del Sheet
+    - Memoria a largo plazo por usuario: guardada en la tabla claude_memoria de D1
     - Tool use: RAWG.io y Steam para info de videojuegos en tiempo real
     - Límite de tokens por usuario por sesión (configurable en configuracion.py)
     - Historial de conversación por usuario en la sesión actual
@@ -35,6 +35,7 @@ from utils.configuracion import claude_config, admins
 from utils.secretos import anthropic_api_key
 from utils.logger import logger
 from utils.utiles_general import play_tts, tts_habilitado
+from utils import memoria_claude
 from utils.claude_prompts import (
     PROMPT_BASE,
     PROMPT_ADMIN,
@@ -565,34 +566,77 @@ class ClaudioCommands(BaseCommand):
 
         return "No pude procesar eso.", total_tokens
 
+    @staticmethod
+    def _historial_sin_eventos(historial: list) -> list:
+        """
+        Saca del historial los eventos de otros comandos (ej. la bienvenida) y la reacción
+        del bot a cada uno: no dicen nada del usuario y terminaban en su memoria como
+        "reclama su punto de bienvenida diario".
+        """
+        limpio, saltear_respuesta = [], False
+        for m in historial:
+            if m["role"] == "user" and isinstance(m["content"], str) and m["content"].startswith("[EVENTO"):
+                saltear_respuesta = True
+                continue
+            if saltear_respuesta and m["role"] == "assistant":
+                saltear_respuesta = False
+                continue
+            saltear_respuesta = False
+            limpio.append(m)
+        return limpio
+
+    async def _pedir_memoria(self, username: str, contenido: str) -> str | None:
+        """Una llamada al modelo de memoria. None si la respuesta vino vacía, cortada o rechazada."""
+        response = await self.client.messages.create(
+            **_params_modelo(claude_config["modelo_memoria"], 900),
+            system=PROMPT_MEMORIA,
+            messages=[{"role": "user", "content": contenido}]
+        )
+        # La respuesta puede empezar con bloques "thinking": buscar el de texto
+        texto = next((b.text for b in response.content if b.type == "text"), "").strip()
+        if response.stop_reason != "end_turn" or not texto:
+            logger.warning(f"Claudio memoria - Resumen descartado para {username} (stop_reason={response.stop_reason})")
+            return None
+        return texto
+
     async def _actualizar_memoria(self, username: str, historial: list, memoria_anterior: str) -> None:
         """
-        Tarea en background: le pide a Claude un resumen actualizado del usuario
-        y lo guarda en la hoja Claude del Sheet.
-        Corre después de cada interacción, sin bloquear la respuesta al chat.
+        Tarea en background: le pide al modelo un resumen actualizado del usuario
+        y lo guarda en D1 (claude_memoria). Corre después de cada !bot, sin bloquear
+        la respuesta al chat. Si el modelo responde SIN CAMBIOS no se escribe nada; si
+        el resumen se pasa de los límites se pide una compresión, y si vuelve a pasarse
+        se conserva la memoria anterior.
         """
         try:
-            # Construir contexto de la conversación reciente para el resumen
+            mensajes = self._historial_sin_eventos(historial)[-6:]  # últimos 3 intercambios
+            if not mensajes:
+                return
+            # El cache puede tener una versión más nueva que la que se cargó al empezar
+            # la interacción, si otra actualización terminó mientras tanto
+            memoria_anterior = self.bot.state.claude_memoria_cache.get(username) or memoria_anterior
             fragmento = "\n".join(
                 f"{username if m['role'] == 'user' else 'Bot'}: {m['content'] if isinstance(m['content'], str) else '[tool use]'}"
-                for m in historial[-6:]  # últimos 3 intercambios
+                for m in mensajes
             )
             prompt_memoria = (
                 f"Resumen anterior del usuario '{username}':\n{memoria_anterior or '(ninguno)'}\n\n"
                 f"Conversación reciente:\n{fragmento}\n\n"
                 "Actualizá el resumen del usuario incorporando la información de la conversación reciente."
             )
-            response = await self.client.messages.create(
-                **_params_modelo(claude_config["modelo"], 900),
-                system=PROMPT_MEMORIA,
-                messages=[{"role": "user", "content": prompt_memoria}]
-            )
-            # La respuesta puede empezar con bloques "thinking": buscar el de texto
-            nuevo_resumen = next((b.text for b in response.content if b.type == "text"), "").strip()
-            if response.stop_reason != "end_turn" or not nuevo_resumen:
-                # Rechazo, corte por max_tokens o vacío: no pisar la memoria con basura
-                logger.warning(f"Claudio memoria - Resumen descartado para {username} (stop_reason={response.stop_reason})")
+            nuevo_resumen = await self._pedir_memoria(username, prompt_memoria)
+            # SIN CAMBIOS: nada nuevo que guardar (sin memoria previa, el usuario sigue sin una)
+            if nuevo_resumen is None or nuevo_resumen == memoria_claude.SIN_CAMBIOS:
                 return
+            fallas = memoria_claude.problemas(nuevo_resumen)
+            if fallas:
+                logger.info(f"Claudio memoria - Resumen de {username} fuera de límites ({'; '.join(fallas)}), pidiendo compresión")
+                nuevo_resumen = await self._pedir_memoria(
+                    username, memoria_claude.prompt_compresion(nuevo_resumen, fallas)
+                )
+                fallas = memoria_claude.problemas(nuevo_resumen) if nuevo_resumen else ["respuesta vacía"]
+                if fallas:
+                    logger.warning(f"Claudio memoria - Se conserva la memoria anterior de {username} ({'; '.join(fallas)})")
+                    return
             await asyncio.to_thread(guardar_memoria_claude, username, nuevo_resumen)
             self.bot.state.claude_memoria_cache[username] = nuevo_resumen
         except Exception as e:
@@ -741,10 +785,7 @@ class ClaudioCommands(BaseCommand):
         self.bot.state.claude_canal_log.append({"user": username, "q": contexto, "a": respuesta})
         if len(self.bot.state.claude_canal_log) > 500:
             self.bot.state.claude_canal_log = self.bot.state.claude_canal_log[-500:]
-
-        asyncio.create_task(
-            self._actualizar_memoria(username, self.bot.state.claude_historial[username], memoria_usuario)
-        )
+        # Sin actualizar memoria: un evento (ej. la bienvenida) no dice nada del usuario
 
     @commands.command(aliases=("bot",))
     async def claudio(self, ctx: commands.Context):

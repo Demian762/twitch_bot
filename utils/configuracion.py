@@ -54,6 +54,7 @@ claude_config = {
     "modelo_horoscopo": "claude-sonnet-5-5", # Modelo de !horoscobot (independiente de "modelo" y de !setmodelo)
     "costo_horoscopo": 1,                 # Puntitos que paga un no-admin por !horoscobot
     "modelo_aviso": "claude-haiku-5-5",    # Modelo de !avisar (interpreta el pedido y redacta el aviso)
+    "modelo_memoria": "claude-sonnet-5-5", # Modelo que actualiza la memoria por usuario de !bot (independiente de !setmodelo)
 }
 
 # Situaciones para el tema "argentina" de !horoscobot: el código sortea UNA y se la pasa al modelo.
