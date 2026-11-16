@@ -25,6 +25,11 @@ _VACIOS = {"(no indicado)", "(estándar)", ""}
 _LINEA = re.compile(r"^(NOMBRE|TRATO|PERFIL|INTERESES):[ \t]*(.*)$")
 
 
+def es_sin_cambios(texto: str) -> bool:
+    """True si la respuesta es SIN CAMBIOS, tolerando mayúsculas, markdown y puntuación."""
+    return re.sub(r"[^a-z ]", "", texto.lower()).split() == SIN_CAMBIOS.lower().split()
+
+
 def parsear(resumen: str) -> dict | None:
     """Devuelve {campo: valor} si el resumen tiene exactamente los 4 campos, cada uno en su línea."""
     campos = {}

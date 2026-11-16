@@ -611,9 +611,14 @@ class ClaudioCommands(BaseCommand):
             mensajes = self._historial_sin_eventos(historial)[-6:]  # últimos 3 intercambios
             if not mensajes:
                 return
+            # Sin entrada en el cache = la lectura de D1 falló: no se conoce la memoria
+            # real, así que no se actualiza (se la pisaría con un resumen desde cero)
+            if username not in self.bot.state.claude_memoria_cache:
+                logger.warning(f"Claudio memoria - Memoria de {username} no leída de D1, se saltea la actualización")
+                return
             # El cache puede tener una versión más nueva que la que se cargó al empezar
             # la interacción, si otra actualización terminó mientras tanto
-            memoria_anterior = self.bot.state.claude_memoria_cache.get(username) or memoria_anterior
+            memoria_anterior = self.bot.state.claude_memoria_cache[username]
             fragmento = "\n".join(
                 f"{username if m['role'] == 'user' else 'Bot'}: {m['content'] if isinstance(m['content'], str) else '[tool use]'}"
                 for m in mensajes
@@ -625,7 +630,12 @@ class ClaudioCommands(BaseCommand):
             )
             nuevo_resumen = await self._pedir_memoria(username, prompt_memoria)
             # SIN CAMBIOS: nada nuevo que guardar (sin memoria previa, el usuario sigue sin una)
-            if nuevo_resumen is None or nuevo_resumen == memoria_claude.SIN_CAMBIOS:
+            if nuevo_resumen is None or memoria_claude.es_sin_cambios(nuevo_resumen):
+                return
+            # Formato roto: no se pide compresión, porque esa segunda pasada solo ve este
+            # texto y completaría los campos faltantes inventando (pisando TRATO, etc.)
+            if memoria_claude.parsear(nuevo_resumen) is None:
+                logger.warning(f"Claudio memoria - Formato inválido para {username}, se conserva la memoria anterior")
                 return
             fallas = memoria_claude.problemas(nuevo_resumen)
             if fallas:
@@ -650,6 +660,10 @@ class ClaudioCommands(BaseCommand):
         if username in self.bot.state.claude_memoria_cache:
             return self.bot.state.claude_memoria_cache[username]
         memoria = await asyncio.to_thread(get_memoria_claude, username)
+        if memoria is None:
+            # Falló la lectura: no se cachea, así el próximo !bot vuelve a intentar,
+            # y _actualizar_memoria no corre (no hay que pisar una memoria que no se leyó)
+            return ""
         self.bot.state.claude_memoria_cache[username] = memoria
         return memoria
 

@@ -685,7 +685,7 @@ def top_records_escupitajo(n: int = 3):
 
 # ─── Memoria de Claudio ────────────────────────────────────────────────────────
 
-def get_memoria_claude(username: str) -> str:
+def get_memoria_claude(username: str) -> str | None:
     """
     Lee el resumen de memoria de un usuario
 
@@ -693,13 +693,14 @@ def get_memoria_claude(username: str) -> str:
         username (str): Nombre del usuario (en minúsculas)
 
     Returns:
-        str: Resumen guardado, o "" si el usuario no tiene memoria aún
+        str | None: Resumen guardado, "" si el usuario no tiene memoria aún,
+        o None si falló la lectura (memoria desconocida: no hay que pisarla)
     """
     try:
         return d1_client.get_claude_memoria(username)
     except Exception as e:
         logger.error(f"Claude memoria - Error al leer memoria de {username}: {e}")
-        return ""
+        return None
 
 def guardar_memoria_claude(username: str, resumen: str) -> None:
     """
