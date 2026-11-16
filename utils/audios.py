@@ -50,6 +50,8 @@ comandos_audios = {
     'carlitox':['carlitox'],
     'sape':['sape'],
     'condor':['condor'],
+    'hello':['hello','hellothere','javy','javy077'],
+    'general':['general','generalkenobi'],
 }
 
 comandos_mensajes = {
@@ -70,6 +72,7 @@ autores_exclusivos = {
     'marit887':['yeahbaby'],
     'theredfallen':['presta'],
     'roque04_':['sega'],
+    'javy077':['hello'],
 }
 
 comandos_general = list(dict.fromkeys([item for sublista in comandos_audios.values() for item in sublista] + list(comandos_mensajes.keys())))

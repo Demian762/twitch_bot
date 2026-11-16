@@ -10,6 +10,10 @@ BOT_DIR = os.path.dirname(os.path.abspath(__file__))
 BOT_SCRIPT_TWITCH = os.path.join(BOT_DIR, "bot_del_estadio.py")
 BOT_SCRIPT_KICK = os.path.join(BOT_DIR, "bot_del_estadio_kick.py")
 AUDIO_MUTED_FLAG          = os.path.join(BOT_DIR, ".audio_muted")
+AUDIO_VOLUME_FILE         = os.path.join(BOT_DIR, ".audio_volume")
+# Mismos valores que utils/utiles_general.py (el bot lee .audio_volume en cada audio).
+VOLUMEN_NIVELES = 10
+VOLUMEN_DEFAULT = 6
 TTS_MUTED_FLAG            = os.path.join(BOT_DIR, ".tts_muted")
 METRICS_DISABLED_FLAG     = os.path.join(BOT_DIR, ".metrics_disabled")
 EMOJI_OVERLAY_DISABLED_FLAG = os.path.join(BOT_DIR, ".emoji_overlay_disabled")
@@ -324,6 +328,7 @@ class BotLauncher:
         self.tts_var     = tk.BooleanVar(value=not os.path.exists(TTS_MUTED_FLAG))
         self.metrics_var = tk.BooleanVar(value=not os.path.exists(METRICS_DISABLED_FLAG))
         self.emoji_var   = tk.BooleanVar(value=not os.path.exists(EMOJI_OVERLAY_DISABLED_FLAG))
+        self.volume_var  = tk.IntVar(value=self._read_volume())
         if not self._build_ui():
             return
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
@@ -416,6 +421,28 @@ class BotLauncher:
             command=self._toggle_emoji_overlay,
             font=("Segoe UI", 10),
         ).pack(side=tk.LEFT, padx=(10, 0))
+
+        # ── Volumen ─────────────────────────────────────────────────────────
+        volume_bar = tk.Frame(self.root)
+        volume_bar.pack(fill=tk.X, padx=16, pady=(0, 8))
+        tk.Label(volume_bar, text="Volumen", font=("Segoe UI", 10)).pack(side=tk.LEFT)
+        tk.Scale(
+            volume_bar,
+            from_=1,
+            to=VOLUMEN_NIVELES,
+            resolution=1,
+            orient=tk.HORIZONTAL,
+            length=220,
+            variable=self.volume_var,
+            command=self._on_volume_change,
+            font=("Segoe UI", 9),
+        ).pack(side=tk.LEFT, padx=(10, 0))
+        tk.Button(
+            volume_bar,
+            text="Normal",
+            font=("Segoe UI", 9),
+            command=lambda: self._on_volume_change(VOLUMEN_DEFAULT),
+        ).pack(side=tk.LEFT, padx=(10, 0), anchor=tk.S, pady=(0, 2))
 
         # ── Log area ─────────────────────────────────────────────────────────
         self.log = scrolledtext.ScrolledText(
@@ -558,6 +585,27 @@ class BotLauncher:
                 os.remove(AUDIO_MUTED_FLAG)
         else:
             open(AUDIO_MUTED_FLAG, "w").close()
+
+    @staticmethod
+    def _read_volume() -> int:
+        try:
+            with open(AUDIO_VOLUME_FILE) as f:
+                return min(max(int(f.read().strip()), 1), VOLUMEN_NIVELES)
+        except (OSError, ValueError):
+            return VOLUMEN_DEFAULT
+
+    def _on_volume_change(self, value):
+        nivel = int(float(value))
+        self.volume_var.set(nivel)
+        try:
+            if nivel == VOLUMEN_DEFAULT:
+                if os.path.exists(AUDIO_VOLUME_FILE):
+                    os.remove(AUDIO_VOLUME_FILE)
+            else:
+                with open(AUDIO_VOLUME_FILE, "w") as f:
+                    f.write(str(nivel))
+        except OSError:
+            pass
 
     def _toggle_tts(self):
         if self.tts_var.get():

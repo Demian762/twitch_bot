@@ -3,6 +3,7 @@ secretos.py
 .tio.tokens.json
 .kick.tokens.json
 .audio_muted
+.audio_volume
 .metrics_disabled
 .tts_muted
 .claude/
