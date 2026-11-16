@@ -14,7 +14,6 @@ Mecánica del juego:
     - Los admins juegan gratis, sin apostar puntos reales
     - Juego parejo: RTP ≈ 100% (EV ≈ +0.03% por puntito apostado)
     - Los no-admins tienen máximo 5 tiradas por sesión del bot (se resetea al reiniciar)
-    - Exclusivo de Kick: en Twitch responde que los slots son solo de Kick
     - Suena storage/audios/slots.wav la primera vez que se usa el comando en la sesión
 
 Commands:
@@ -30,7 +29,7 @@ from random import choices
 from twitchio.ext import commands
 
 # Imports locales
-from utils.mensaje import mensaje, es_kick
+from utils.mensaje import mensaje
 from utils.configuracion import admins
 from utils.puntitos_manager import consulta_puntitos, funcion_puntitos, registrar_victoria_jackpot
 from utils.utiles_general import resource_path, play_sound
@@ -72,10 +71,6 @@ class SlotCommands(BaseCommand):
             *args: Argumentos del comando (la apuesta, opcional)
         """
         if await self.check_coma_etilico():
-            return
-
-        if not es_kick():
-            await mensaje(f"@{ctx.author.name.lower()}, los slots son exclusivos de Kick.")
             return
 
         if not self.bot.state.slot_audio_reproducido:
