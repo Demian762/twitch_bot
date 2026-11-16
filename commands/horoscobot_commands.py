@@ -6,7 +6,8 @@ Características:
     - Cuesta puntitos a los no-admins (claude_config["costo_horoscopo"])
     - No consume el cupo de tokens de !bot ni toca su historial/memoria
     - Un solo tema al azar por predicción: su suerte en puntitos/minijuegos, lo que
-      dijo en el chat, el stream/programación o la vida cotidiana en Argentina.
+      dijo en el chat, el stream/programación o una situación cotidiana en Argentina
+      (sorteada de configuracion.horoscopo_situaciones).
       De fondo siempre: fecha, memoria del usuario (para el trato) y nivel de grog
 
 Author: Demian762
@@ -24,7 +25,7 @@ from utils.puntitos_manager import (
     funcion_puntitos,
     posicion_ranking,
 )
-from utils.configuracion import claude_config, admins
+from utils.configuracion import claude_config, admins, horoscopo_situaciones
 from utils.logger import logger
 from utils.claude_prompts import PROMPT_HOROSCOPO, SECCION_MEMORIA_USUARIO
 from .base_command import BaseCommand
@@ -137,11 +138,10 @@ class HoroscoboCommands(BaseCommand):
         elif tema == "chat":
             texto = self._tema_chat(username)
         else:
-            texto = (
-                "la vida cotidiana en Argentina\n"
-                "Elegí vos UNA situación cotidiana (el colectivo, el dólar, el asado, el fútbol, "
-                "el clima, los trámites, el súper, etc.) y hacé la predicción sobre eso."
-            )
+            # La situación la sortea el código: si la elige el modelo, cae casi siempre en el colectivo o el súper
+            situacion = random.choice(horoscopo_situaciones)
+            tema = f"argentina: {situacion}"
+            texto = f"la vida cotidiana en Argentina: {situacion}"
         return tema, f"[TEMA DE ESTA PREDICCIÓN] {texto}"
 
     def _contexto_horoscopos_previos(self) -> str | None:
@@ -188,7 +188,7 @@ class HoroscoboCommands(BaseCommand):
                 return
             if puntos < costo:
                 state.horoscopo_usados.discard(username)
-                await mensaje(f"@{username} necesitás {costo} puntitos para consultar a los astros.")
+                await mensaje(f"@{username} necesitás {costo} {'puntito' if costo == 1 else 'puntitos'} para consultar a los astros.")
                 return
             # funcion_puntitos no lanza: si D1 falla devuelve (False, error) y no se cobró nada
             cobrado, _ = await asyncio.to_thread(funcion_puntitos, username, -costo)
@@ -250,7 +250,7 @@ class HoroscoboCommands(BaseCommand):
             f"{response.usage.input_tokens} in / {response.usage.output_tokens} out ({claude_config['modelo_horoscopo']})"
         )
 
-        sufijo = f" (-{costo} puntitos)" if cobro_aplicado else ""
+        sufijo = f" (-{costo} {'puntito' if costo == 1 else 'puntitos'})" if cobro_aplicado else ""
         respuesta_completa = f"@{username} 🔮 {texto}{sufijo}"
         if len(respuesta_completa) <= 490:
             await mensaje(respuesta_completa)

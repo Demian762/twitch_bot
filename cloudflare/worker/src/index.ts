@@ -12,6 +12,10 @@ import {
   incrementarDaddyPoints,
   getClaudeMemoria,
   setClaudeMemoria,
+  getRecordatorios,
+  crearRecordatorio,
+  borrarRecordatorio,
+  type NuevoRecordatorio,
 } from "./db";
 
 export interface Env {
@@ -109,6 +113,22 @@ export default {
           const { usuario, resumen } = body as { usuario: string; resumen: string };
           await setClaudeMemoria(env.DB, usuario, resumen);
           return json({ ok: true });
+        }
+
+        // Recordatorios: hasta el listado va por POST con token, porque trae
+        // nombres de usuario y textos que escribe la gente (las GET son públicas).
+        if (pathname === "/recordatorios/listar") {
+          return json(await getRecordatorios(env.DB));
+        }
+
+        if (pathname === "/recordatorios/crear") {
+          const r = body as unknown as NuevoRecordatorio;
+          return json({ id: await crearRecordatorio(env.DB, r) });
+        }
+
+        if (pathname === "/recordatorios/borrar") {
+          const { id } = body as { id: number };
+          return json({ borrado: await borrarRecordatorio(env.DB, id) });
         }
       }
 

@@ -150,6 +150,43 @@ export async function getClaudeMemoria(db: D1Database, usuario: string): Promise
   return row?.resumen ?? "";
 }
 
+export interface RecordatorioRow {
+  id: number;
+  creador: string;
+  destinatarios: string;
+  titulo: string;
+  mensaje: string;
+  vence: string;
+  creado: string;
+  pedido: string;
+}
+
+export type NuevoRecordatorio = Omit<RecordatorioRow, "id">;
+
+export async function getRecordatorios(db: D1Database): Promise<RecordatorioRow[]> {
+  const { results } = await db
+    .prepare("SELECT * FROM recordatorios ORDER BY vence, id")
+    .all<RecordatorioRow>();
+  return results ?? [];
+}
+
+export async function crearRecordatorio(db: D1Database, r: NuevoRecordatorio): Promise<number> {
+  const row = await db
+    .prepare(
+      `INSERT INTO recordatorios (creador, destinatarios, titulo, mensaje, vence, creado, pedido)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7) RETURNING id`
+    )
+    .bind(r.creador, r.destinatarios, r.titulo, r.mensaje, r.vence, r.creado, r.pedido)
+    .first<{ id: number }>();
+  if (!row) throw new Error("crearRecordatorio no devolvió fila");
+  return row.id;
+}
+
+export async function borrarRecordatorio(db: D1Database, id: number): Promise<boolean> {
+  const res = await db.prepare("DELETE FROM recordatorios WHERE id = ?1").bind(id).run();
+  return (res.meta.changes ?? 0) > 0;
+}
+
 export async function setClaudeMemoria(db: D1Database, usuario: string, resumen: string): Promise<void> {
   const fecha = new Date().toISOString().slice(0, 16).replace("T", " ");
   await db

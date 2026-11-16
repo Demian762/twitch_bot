@@ -48,6 +48,7 @@ from .silla_commands import SillaCommands
 from .claude_commands import ClaudioCommands
 from .horoscobot_commands import HoroscoboCommands
 from .slot_commands import SlotCommands
+from .aviso_commands import AvisoCommands
 
 # Lista maestra de todos los cogs a cargar
 # Esta lista determina qué funcionalidades están activas en el bot
@@ -69,4 +70,5 @@ COGS = [
     ClaudioCommands,
     HoroscoboCommands,
     SlotCommands,
+    AvisoCommands,
 ]

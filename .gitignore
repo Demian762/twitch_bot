@@ -8,6 +8,7 @@ secretos.py
 .claude/
 *.ipynb
 nb_setup.py
+d1_nb.py
 backlog.txt
 bot-env
 build

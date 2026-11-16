@@ -109,3 +109,17 @@ def get_claude_memoria(usuario: str) -> str:
 
 def set_claude_memoria(usuario: str, resumen: str) -> None:
     _post("/claude_memoria", {"usuario": usuario, "resumen": resumen})
+
+
+def get_recordatorios() -> list[dict]:
+    return _post("/recordatorios/listar", {})
+
+
+def crear_recordatorio(recordatorio: dict) -> int:
+    data = _post("/recordatorios/crear", recordatorio)
+    return data["id"]
+
+
+def borrar_recordatorio(id_recordatorio: int) -> bool:
+    data = _post("/recordatorios/borrar", {"id": id_recordatorio})
+    return data["borrado"]

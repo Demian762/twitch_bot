@@ -90,9 +90,18 @@ The Kick app's Webhook URL (`https://kickbot.hablemosdepavadas.com.ar/kick/webho
 
 ## Points System
 
-Points ("puntitos") live in a Cloudflare D1 database (`botdelestadio_db`), accessed through `cloudflare/worker/` (`utils/d1_client.py` is the Python HTTP client). Tables: `puntitos` (`nombre`, `puntos` current, `historico` lifetime), `victorias`, `programacion`, `restricciones_escupir`, `daddy_points`, `claude_memoria`. Relevant commands: `!consulta`, `!puntos`, `!top`, `!sorteo`.
+Points ("puntitos") live in a Cloudflare D1 database (`botdelestadio_db`), accessed through `cloudflare/worker/` (`utils/d1_client.py` is the Python HTTP client). Tables: `puntitos` (`nombre`, `puntos` current, `historico` lifetime), `victorias`, `programacion`, `restricciones_escupir`, `daddy_points`, `claude_memoria`, `recordatorios` (pending `!avisar` reminders — see below). Relevant commands: `!consulta`, `!puntos`, `!top`, `!sorteo`.
 
 The Google Sheet that originally backed this is retired — D1 is the only source of truth, read and written directly by the Worker.
+
+## Reminders (`!avisar`)
+
+`commands/aviso_commands.py` — Haiku (`claude_config["modelo_aviso"]`, structured JSON output, prompt `PROMPT_AVISO`) interprets the request and writes the reminder text; the code does the date math and takes recipients only from `@mentions` (+ the author). Rows go to the D1 `recordatorios` table (times in fixed Argentina time, UTC-3) and are delivered by `utils/recordatorios.py` (`RecordatoriosManager`, one per bot as `bot.recordatorios`):
+- Due while the bot is on → posted at that time; deleted from D1 if any recipient is active (in `usuarios_activos` or wrote in chat in the last 10 min), otherwise it waits.
+- Waiting, or due while the bot was off → posted with the "aviso perdido" template the next time any recipient writes in chat, then deleted.
+- `!avisos` / `!cancelaraviso <id>` are admin-only. The Worker's `/recordatorios/*` routes are all POST + Bearer token (listing included).
+
+Bot personality text shared by the Claude prompts lives in `PERSONALIDAD_BOT` / `ESTILO_CHAT` / `REGLAS_PERSONAJE` in `utils/claude_prompts.py`.
 
 ## Remote secrets
 

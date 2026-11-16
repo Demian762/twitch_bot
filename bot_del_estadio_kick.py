@@ -50,6 +50,7 @@ from utils.secretos import rawg_url, rawg_key, telegram_bot_token, discord_webho
 from utils.puntitos_manager import set_bot_state
 from utils.discord_notifier import notificar_titulo
 from utils.metrics_server import MetricsServer
+from utils.recordatorios import RecordatoriosManager
 
 from utils.kick.auth import get_access_token
 from utils.kick.client import KickClient
@@ -104,6 +105,7 @@ class KickBot:
             raise
 
         self.state = BotState()
+        self.recordatorios = RecordatoriosManager(self.state)
         self.metrics = MetricsServer()
         self.metrics._bot_state = self.state
         set_bot_state(self.state)
@@ -235,6 +237,9 @@ class KickBot:
         if text.startswith("!"):
             self.state.usuarios_activos.add(username)
 
+        # Actividad para !avisar: entrega los avisos que esperaban a este usuario
+        self.recordatorios.registrar_mensaje(username)
+
         self._log_chat(username, text)
 
         texto_lower = text.lower()
@@ -326,6 +331,7 @@ class KickBot:
 
         asyncio.create_task(self._start_telegram_bot())
         asyncio.create_task(self._notificar_discord_si_en_vivo())
+        self.recordatorios.iniciar()
 
         try:
             claudio_cog = self.my_cogs.get("ClaudioCommands")

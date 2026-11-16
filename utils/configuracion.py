@@ -47,13 +47,57 @@ kick_config = {
 
 # Configuración del comando !claudio
 claude_config = {
-    "modelo": "claude-haiku-4-5-20251001", # Modelo a usar — opciones: claude-haiku-4-5-20251001 | claude-sonnet-4-6 | claude-opus-4-6
-    "max_tokens_respuesta": 250,            # Máx tokens por respuesta (controla costo por llamada)
-    "max_tokens_por_usuario_sesion": 30000, # Máx tokens totales por usuario por sesión (admins: 10x)
+    "modelo": "claude-haiku-5-5",          # Modelo a usar — opciones: claude-haiku-5-5 | claude-sonnet-5-5 | claude-opus-5-5
+    "max_tokens_respuesta": 325,            # Máx tokens por respuesta (controla costo por llamada; los 5.5 cuentan ~30% más tokens por el mismo texto)
+    "max_tokens_por_usuario_sesion": 39000, # Máx tokens totales por usuario por sesión (admins: 10x)
     "historial_max_pares": 5,              # Pares user/assistant a recordar por usuario
     "modelo_horoscopo": "claude-sonnet-5-5", # Modelo de !horoscobot (independiente de "modelo" y de !setmodelo)
-    "costo_horoscopo": 5,                  # Puntitos que paga un no-admin por !horoscobot
+    "costo_horoscopo": 1,                 # Puntitos que paga un no-admin por !horoscobot
+    "modelo_aviso": "claude-haiku-5-5",    # Modelo de !avisar (interpreta el pedido y redacta el aviso)
+    "modelo_memoria": "claude-sonnet-5-5", # Modelo que actualiza la memoria por usuario de !bot (independiente de !setmodelo)
 }
+
+# Situaciones para el tema "argentina" de !horoscobot: el código sortea UNA y se la pasa al modelo.
+# Si lo dejamos elegir a él, cae siempre en el colectivo (el 60) o el súper.
+horoscopo_situaciones = [
+    # Transporte y calle
+    "el colectivo que no llega",
+    "el subte o el tren en hora pico",
+    "cruzar la avenida con el semáforo que dura dos segundos",
+    "buscar estacionamiento (y el trapito)",
+    # Plata
+    "el dólar y las cotizaciones",
+    "los aumentos en el súper",
+    "la tarjeta de crédito y las cuotas sin interés",
+    "el cajero automático sin plata un viernes",
+    # Casa y barrio
+    "el encargado o la reunión de consorcio",
+    "el vecino que hace obra (o taladra un domingo)",
+    "los cortes de luz o de agua",
+    "el técnico que dice que viene \"entre las 8 y las 18\"",
+    "el delivery que se pierde o llega frío",
+    # Comida
+    "el asado y quién es el asador",
+    "la verdulería y el verdulero que te elige las frutas",
+    "la panadería y las facturas",
+    "el mate (el que lo lava, el que no lo pasa)",
+    # Familia y vínculos
+    "el grupo de WhatsApp de la familia",
+    "los cumpleaños y la vaquita para el regalo",
+    "la tía que pregunta \"¿y el novio/la novia?\"",
+    "devolver un táper que no es tuyo",
+    # Trámites y oficios
+    "los trámites y los turnos online",
+    "la fila en el banco o el correo",
+    "el call center y \"su llamada es muy importante\"",
+    "la cola en la farmacia o en la obra social",
+    # Ocio y clima
+    "el fútbol del domingo y el clásico",
+    "el clima loco (cuatro estaciones en un día)",
+    "el calor y el ventilador que no alcanza",
+    "el celular sin batería o el wifi que se cae",
+    "las vacaciones en la costa y el lugar en la playa",
+]
 
 # Lista de usuarios con permisos de administrador
 # Estos usuarios pueden ejecutar comandos restringidos
